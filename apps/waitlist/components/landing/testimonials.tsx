@@ -1,4 +1,4 @@
-import { Avatar, asset, Badge, Container, canvas } from "./primitives";
+import { Avatar, asset, Badge, Container, canvas, revealDelay } from "./primitives";
 
 // Figma: Waitlist / Hero (62:677), mosaic-row frame is 1240 x 500.
 const row = canvas(1240, 500);
@@ -65,21 +65,31 @@ function Stars() {
   return (
     <div className="flex items-center gap-0.5" role="img" aria-label="Rated 5 out of 5">
       {[0, 1, 2, 3, 4].map((i) => (
-        <img key={i} alt="" src={asset("icon-star.svg")} className="block size-6" />
+        <img
+          key={i}
+          alt=""
+          src={asset("icon-star.svg")}
+          className="block size-6 group-hover:animate-twinkle"
+          style={{ animationDelay: `${i * 70}ms` }}
+        />
       ))}
     </div>
   );
 }
 
-function TestimonialCard({ quote, name, role, avatar }: Testimonial) {
+function TestimonialCard({ quote, name, role, avatar, delay }: Testimonial & { delay: number }) {
   return (
-    <figure className="flex flex-1 flex-col items-start gap-4">
+    <figure
+      data-reveal
+      className="group flex flex-1 flex-col items-start gap-4"
+      style={revealDelay(delay)}
+    >
       <Stars />
       <blockquote className="min-h-24 text-base text-text leading-6 tracking-[-0.08px]">
         &ldquo;{quote}&rdquo;
       </blockquote>
       <figcaption className="flex items-center gap-2.5">
-        <span className="relative size-9 shrink-0 overflow-hidden rounded-full">
+        <span className="relative size-9 shrink-0 overflow-hidden rounded-full ring-primary transition-all duration-500 group-hover:scale-110 group-hover:ring-2">
           {avatar.map((src) => (
             <img
               key={src}
@@ -104,26 +114,31 @@ export function Testimonials() {
   return (
     <section className="px-4 py-12">
       <Container className="flex flex-col items-center">
-        <div aria-hidden className="relative aspect-[1240/500] w-full">
-          {PHOTOS.map(([x, y, w, h]) => (
+        <div aria-hidden data-reveal="fade" className="relative aspect-[1240/500] w-full">
+          {PHOTOS.map(([x, y, w, h], i) => (
             <div
               key={`${x}-${y}`}
-              className="absolute rounded-lg bg-bg-fill2 md:rounded-[18px]"
-              style={row(x, y, w, h)}
+              data-reveal-child="pop"
+              className="absolute rounded-lg bg-bg-fill2 transition-all duration-500 ease-smooth hover:-translate-y-1.5 hover:bg-bg-fill4 md:rounded-[18px]"
+              style={{ ...row(x, y, w, h), ...revealDelay(i * 50) }}
             />
           ))}
-          {AVATARS.map(([src, x, y]) => (
+          {AVATARS.map(([src, x, y], i) => (
             <Avatar
               key={src}
               src={asset(src)}
-              className="absolute aspect-square"
-              style={{ ...row(x, y), width: `${(60 / 1240) * 100}%` }}
+              className="absolute aspect-square ring-primary transition-all duration-500 ease-smooth hover:z-10 hover:scale-125 hover:ring-2"
+              reveal="pop"
+              style={{ ...row(x, y), width: `${(60 / 1240) * 100}%`, ...revealDelay(500 + i * 90) }}
             />
           ))}
         </div>
 
         {/* Overlaps the bottom of the mosaic on wider screens, as in the design. */}
-        <div className="mt-8 flex w-full max-w-[660px] flex-col items-center gap-3.5 text-center md:-mt-[8.688%]">
+        <div
+          data-reveal
+          className="mt-8 flex w-full max-w-[660px] flex-col items-center gap-3.5 text-center md:-mt-[8.688%]"
+        >
           <Badge>Testimonials</Badge>
           <h2 className="font-display font-medium text-[32px] text-text leading-10 tracking-[-0.64px]">
             Built for the design community
@@ -135,8 +150,8 @@ export function Testimonials() {
         </div>
 
         <div className="mt-12 flex w-full flex-col gap-12 md:mt-[62.73px] md:flex-row">
-          {TESTIMONIALS.map((t) => (
-            <TestimonialCard key={t.name} {...t} />
+          {TESTIMONIALS.map((t, i) => (
+            <TestimonialCard key={t.name} {...t} delay={i * 120} />
           ))}
         </div>
       </Container>

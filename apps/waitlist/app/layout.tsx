@@ -1,5 +1,6 @@
 import { Geist, Manrope } from "next/font/google";
 import type { ReactNode } from "react";
+import { themeInitScript } from "../lib/theme";
 import "./globals.css";
 
 // Self-hosted at build time by next/font, so the static export makes no requests to Google.
@@ -14,7 +15,12 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} ${manrope.variable}`}>
+    // data-theme is set by the inline script before hydration, so React must not flag the mismatch.
+    <html lang="en" className={`${geist.variable} ${manrope.variable}`} suppressHydrationWarning>
+      <head>
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static, first-party theme script */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body>{children}</body>
     </html>
   );

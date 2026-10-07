@@ -4,6 +4,204 @@
 /* Tailwind v4 only scans the current project by default. Point it at the shared UI package. */
 @source "../../../packages/ui/src";
 
+/* Hover micro-interactions. Keyframes animate the individual transform properties (translate,
+   rotate, scale) so they compose with Tailwind's transform utilities instead of replacing them. */
+@theme {
+  /* One soft deceleration curve (ease-out-quint) for every hover and entrance, so motion
+     settles gently instead of snapping. Used as the `ease-smooth` utility. */
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-gentle: cubic-bezier(0.45, 0, 0.55, 1);
+
+  --animate-wiggle: wiggle 0.9s var(--ease-gentle);
+  --animate-launch: launch 1.4s var(--ease-gentle);
+  --animate-beat: beat 1.2s var(--ease-gentle);
+  --animate-twinkle: twinkle 0.8s var(--ease-gentle) both;
+  --animate-wave: wave 1s var(--ease-gentle);
+  --animate-float: float 3.6s var(--ease-gentle) infinite;
+
+  @keyframes wiggle {
+    0%,
+    100% {
+      rotate: 0deg;
+    }
+    25% {
+      rotate: -8deg;
+    }
+    50% {
+      rotate: 6deg;
+    }
+    75% {
+      rotate: -3deg;
+    }
+  }
+
+  /* Rocket flies out of its tile top-right and slides back in from bottom-left. */
+  @keyframes launch {
+    0% {
+      translate: 0 0;
+      opacity: 1;
+    }
+    45% {
+      translate: 10px -10px;
+      opacity: 0;
+    }
+    46% {
+      translate: -10px 10px;
+      opacity: 0;
+    }
+    100% {
+      translate: 0 0;
+      opacity: 1;
+    }
+  }
+
+  @keyframes beat {
+    0%,
+    45%,
+    100% {
+      scale: 1;
+    }
+    25% {
+      scale: 1.15;
+    }
+    65% {
+      scale: 1.08;
+    }
+  }
+
+  @keyframes twinkle {
+    0%,
+    100% {
+      scale: 1;
+      rotate: 0deg;
+    }
+    50% {
+      scale: 1.2;
+      rotate: 12deg;
+    }
+  }
+
+  @keyframes wave {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    50% {
+      translate: 0 -4px;
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    50% {
+      translate: 0 -4px;
+    }
+  }
+}
+
+/* Scroll reveal. RevealObserver adds [data-revealed] the first time an element marked
+   [data-reveal] scrolls into view. Until then it is hidden, but only when JS is running
+   ([data-js], set in <head>), so the page never stays blank without JS.
+   The entrance is a CSS animation with fill-mode "backwards": once it ends the element falls
+   back to its normal styles, so hover transitions on the same element keep working.
+   [data-reveal-child] elements animate when their nearest revealed ancestor appears; put
+   them on wrappers, not on elements that run their own hover animations. */
+@layer base {
+  [data-js] [data-reveal]:not([data-revealed]) {
+    opacity: 0;
+    /* Promote to its own layer before the entrance starts, so the first frames don't stutter.
+       The hint drops off once the element is revealed. */
+    will-change: opacity, translate, scale;
+  }
+
+  [data-revealed],
+  [data-revealed] [data-reveal-child] {
+    animation: var(--reveal-anim, reveal-up) var(--reveal-duration, 1.2s) var(--ease-smooth)
+      var(--reveal-delay, 0ms) backwards;
+  }
+
+  [data-reveal="left"],
+  [data-reveal-child="left"] {
+    --reveal-anim: reveal-left;
+  }
+  [data-reveal="right"],
+  [data-reveal-child="right"] {
+    --reveal-anim: reveal-right;
+  }
+  [data-reveal="pop"],
+  [data-reveal-child="pop"] {
+    --reveal-anim: reveal-pop;
+    --reveal-duration: 1s;
+  }
+  [data-reveal="fade"],
+  [data-reveal-child="fade"] {
+    --reveal-anim: reveal-fade;
+  }
+  /* Progress ring arc sweeping in. */
+  [data-reveal-child="sweep"] {
+    --reveal-anim: reveal-sweep;
+    --reveal-duration: 1.8s;
+  }
+  /* Score segments growing from the baseline. */
+  [data-reveal-child="grow"] {
+    --reveal-anim: reveal-grow;
+    --reveal-duration: 0.9s;
+    transform-origin: bottom;
+  }
+
+  @keyframes reveal-up {
+    from {
+      opacity: 0;
+      translate: 0 24px;
+    }
+  }
+  @keyframes reveal-left {
+    from {
+      opacity: 0;
+      translate: -32px 0;
+    }
+  }
+  @keyframes reveal-right {
+    from {
+      opacity: 0;
+      translate: 32px 0;
+    }
+  }
+  @keyframes reveal-pop {
+    from {
+      opacity: 0;
+      scale: 0.92;
+    }
+  }
+  @keyframes reveal-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes reveal-sweep {
+    from {
+      opacity: 0;
+      rotate: -120deg;
+    }
+  }
+  @keyframes reveal-grow {
+    from {
+      opacity: 0;
+      scale: 1 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-revealed],
+    [data-revealed] [data-reveal-child] {
+      animation: none;
+    }
+  }
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -18,5 +216,20 @@
     -webkit-font-smoothing: antialiased;
     /* clip, not hidden: overflow-x: hidden makes <body> a scroll container and breaks the sticky navbar. */
     overflow-x: clip;
+  }
+
+  /* Visitors who ask for less motion get the end states without the movement.
+     !important is required to beat the per-element duration utilities. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      /* biome-ignore-start lint/complexity/noImportantStyles: must override utility classes */
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+      /* biome-ignore-end lint/complexity/noImportantStyles: must override utility classes */
+    }
   }
 }

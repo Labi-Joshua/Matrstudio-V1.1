@@ -13,6 +13,8 @@ type WaitlistFormProps = {
   variant?: "ink" | "primary";
   /** Recorded in the signup metadata so we can tell which form converted. */
   source?: string;
+  /** Overrides the default input id (email-<source>) when the source can change. */
+  inputId?: string;
   /** Let the email field fill the available width instead of the design's fixed 280px. */
   fluid?: boolean;
   className?: string;
@@ -23,8 +25,10 @@ export function WaitlistForm({
   variant = "ink",
   source = "waitlist-site",
   fluid = false,
+  inputId,
   className,
 }: WaitlistFormProps) {
+  const emailId = inputId ?? `email-${source}`;
   const [state, setState] = useState<State>("idle");
   const [message, setMessage] = useState("");
 
@@ -68,18 +72,18 @@ export function WaitlistForm({
           variant === "primary" && "p-0.5",
         )}
       >
-        <label htmlFor={`email-${source}`} className="sr-only">
+        <label htmlFor={emailId} className="sr-only">
           Email address
         </label>
         <input
-          id={`email-${source}`}
+          id={emailId}
           name="email"
           type="email"
           required
           placeholder="Enter your email address"
           autoComplete="email"
           className={cn(
-            "h-10 min-w-0 flex-1 rounded-full border border-border-soft bg-bg-base px-4 font-medium text-sm text-text leading-5 tracking-[-0.14px] outline-none transition-colors placeholder:text-text-secondary focus:border-primary-border",
+            "h-10 min-w-0 flex-1 rounded-full border border-border-soft bg-bg-base px-4 font-medium text-sm text-text leading-5 tracking-[-0.14px] outline-none transition-colors duration-500 ease-smooth placeholder:text-text-secondary focus:border-primary-border",
             !fluid && "sm:w-[280px] sm:flex-none",
           )}
         />
@@ -87,8 +91,8 @@ export function WaitlistForm({
           type="submit"
           disabled={state === "submitting"}
           className={cn(
-            "shrink-0 rounded-full px-3.5 py-2.5 font-medium text-sm text-white leading-5 tracking-[-0.14px] transition-opacity hover:opacity-90 disabled:opacity-60",
-            variant === "ink" ? "bg-[#060606]" : "bg-primary",
+            "shrink-0 rounded-full px-3.5 py-2.5 font-medium text-sm text-white leading-5 tracking-[-0.14px] transition-all duration-500 ease-smooth hover:-translate-y-0.5 hover:shadow-[0_8px_20px_-8px_rgba(214,92,31,0.7)] active:translate-y-0 active:scale-[0.97] disabled:translate-y-0 disabled:opacity-60",
+            variant === "ink" ? "bg-[#060606] dark:bg-primary" : "bg-primary",
           )}
         >
           {state === "submitting" ? "Joining…" : "Join the Waitlist"}

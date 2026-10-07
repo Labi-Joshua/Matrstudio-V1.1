@@ -1,8 +1,14 @@
-/* Matr Studio theme tokens, taken from the Figma variables (MatrStudio V 1.1, light mode).
-   Raw values live on :root so a dark theme can override them later; @theme inline exposes
-   them as Tailwind utilities (bg-bg-base, text-text-secondary, border-border-soft, ...). */
+/* Matr Studio theme tokens, taken from the Figma variables (MatrStudio V 1.1).
+   Raw values live on :root (light) and [data-theme="dark"]; @theme inline exposes them as
+   Tailwind utilities (bg-bg-base, text-text-secondary, border-border-soft, ...), so components
+   switch theme without dark: classes. The `dark:` variant is for the few things that are not
+   tokens in Figma (image swaps, the ink button, text on the pastel badges). */
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
+  color-scheme: light;
+
   --matr-bg-base: #ffffff;
   --matr-bg-fill1: #f7f7f8;
   --matr-bg-fill2: #eeeff1;
@@ -17,13 +23,42 @@
   --matr-text-secondary: #5e636e;
 
   --matr-primary: #d65c1f;
+  --matr-primary-text: #d65c1f;
   --matr-primary-accent: #ffeee5;
   --matr-primary-focus: #ffe4d6;
   --matr-primary-border: #f68851;
 
+  /* utility/Black/key: near-black in light mode, white in dark mode. */
   --matr-black: #090a0b;
   --matr-success: #1da54a;
   --matr-success-accent: #edfdf2;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --matr-bg-base: #090a0b;
+  --matr-bg-fill1: #131416;
+  --matr-bg-fill2: #1c1e21;
+  --matr-bg-fill4: #2f3237;
+
+  --matr-border: #26282c;
+  --matr-border-soft: #1c1e21;
+  --matr-border-alpha: rgba(200, 210, 229, 0.16);
+  --matr-border-soft-alpha: rgba(200, 210, 229, 0.12);
+
+  --matr-text: #f7f7f8;
+  --matr-text-secondary: #9ca1ab;
+
+  --matr-primary: #d65c1f;
+  --matr-primary-text: #f68851;
+  --matr-primary-accent: #361e12;
+  --matr-primary-focus: #522914;
+  --matr-primary-border: #d65c1f;
+
+  --matr-black: #ffffff;
+  --matr-success: #1da54a;
+  --matr-success-accent: #0f2e19;
 }
 
 @theme inline {
@@ -41,6 +76,7 @@
   --color-text-secondary: var(--matr-text-secondary);
 
   --color-primary: var(--matr-primary);
+  --color-primary-text: var(--matr-primary-text);
   --color-primary-accent: var(--matr-primary-accent);
   --color-primary-focus: var(--matr-primary-focus);
   --color-primary-border: var(--matr-primary-border);

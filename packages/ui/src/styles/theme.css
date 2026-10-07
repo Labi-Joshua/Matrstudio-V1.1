@@ -1,0 +1,60 @@
+/* Matr Studio theme tokens, taken from the Figma variables (MatrStudio V 1.1, light mode).
+   Raw values live on :root so a dark theme can override them later; @theme inline exposes
+   them as Tailwind utilities (bg-bg-base, text-text-secondary, border-border-soft, ...). */
+
+:root {
+  --matr-bg-base: #ffffff;
+  --matr-bg-fill1: #f7f7f8;
+  --matr-bg-fill2: #eeeff1;
+  --matr-bg-fill4: #dee0e3;
+
+  --matr-border: #dee0e3;
+  --matr-border-soft: #e9eaec;
+  --matr-border-alpha: rgba(36, 46, 66, 0.12);
+  --matr-border-soft-alpha: rgba(36, 46, 66, 0.08);
+
+  --matr-text: #26282c;
+  --matr-text-secondary: #5e636e;
+
+  --matr-primary: #d65c1f;
+  --matr-primary-accent: #ffeee5;
+  --matr-primary-focus: #ffe4d6;
+  --matr-primary-border: #f68851;
+
+  --matr-black: #090a0b;
+  --matr-success: #1da54a;
+  --matr-success-accent: #edfdf2;
+}
+
+@theme inline {
+  --color-bg-base: var(--matr-bg-base);
+  --color-bg-fill1: var(--matr-bg-fill1);
+  --color-bg-fill2: var(--matr-bg-fill2);
+  --color-bg-fill4: var(--matr-bg-fill4);
+
+  --color-border: var(--matr-border);
+  --color-border-soft: var(--matr-border-soft);
+  --color-border-alpha: var(--matr-border-alpha);
+  --color-border-soft-alpha: var(--matr-border-soft-alpha);
+
+  --color-text: var(--matr-text);
+  --color-text-secondary: var(--matr-text-secondary);
+
+  --color-primary: var(--matr-primary);
+  --color-primary-accent: var(--matr-primary-accent);
+  --color-primary-focus: var(--matr-primary-focus);
+  --color-primary-border: var(--matr-primary-border);
+
+  --color-ink: var(--matr-black);
+  --color-success: var(--matr-success);
+  --color-success-accent: var(--matr-success-accent);
+
+  /* Body font: Geist. Display font: Manrope. Both are loaded by next/font in each app. */
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-e2: 0px 4px 8px 0px rgba(25, 24, 27, 0.08);
+  --shadow-card: 0px 2px 6px -2px rgba(25, 24, 27, 0.04), 0px 8px 24px -8px rgba(25, 24, 27, 0.08);
+  --drop-shadow-e1: 0px 1px 0.5px rgba(25, 24, 27, 0.04);
+  --drop-shadow-badge: 0px 3.894px 3.894px rgba(25, 24, 27, 0.08);
+}

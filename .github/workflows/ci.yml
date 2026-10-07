@@ -1,0 +1,37 @@
+name: CI
+
+# Runs on every PR. Deliberately NOT path-filtered: a required check that is
+# skipped by a path filter stays "Pending" and blocks the merge forever.
+# Turborepo does the selection instead, from the files that changed.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  TURBO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # turbo needs history to diff against the base branch
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Lint (Biome, whole repo, takes seconds)
+        run: pnpm lint
+      - name: Typecheck, test and build what this PR affects
+        run: pnpm turbo run typecheck test build --filter="...[origin/${{ github.base_ref }}]"

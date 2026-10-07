@@ -1,0 +1,13 @@
+ENVIRONMENT=development
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003
+PUBLIC_WEB_URL=http://localhost:3000
+PUBLIC_API_URL=http://localhost:8787
+VERIFY_SECRET=dev-only-change-me
+ADMIN_API_TOKEN=dev-admin-token
+R2_ACCOUNT_ID=dev
+R2_ACCESS_KEY_ID=dev
+R2_SECRET_ACCESS_KEY=dev
+CF_ACCOUNT_ID=dev
+CF_API_TOKEN=dev
+ALERT_WEBHOOK_URL=http://localhost:9999/hook
+# Optional locally: RESEND_API_KEY= (verification email), TURNSTILE_SECRET= (captcha)

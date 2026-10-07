@@ -1,0 +1,26 @@
+# Dependencies
+node_modules
+
+# Turborepo
+.turbo
+
+# Next.js (the static export is written to out/)
+.next
+out
+
+# Build output
+dist
+*.tsbuildinfo
+
+# Cloudflare and Wrangler local state (local D1, R2 and KV live under .wrangler)
+.wrangler
+.dev.vars
+.secrets.production.json
+
+# Environment secrets
+.env
+.env.local
+.env.*.local
+
+# Editors and OS
+.DS_Store

@@ -1,0 +1,33 @@
+name: Deploy waitlist
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/waitlist/**"
+      - "packages/ui/**"
+      - "packages/api-client/**"
+      - "packages/types/**" # api-client and the app import it
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "tsconfig.base.json"
+      - "turbo.json"
+      - "package.json"
+      - ".github/workflows/deploy-waitlist.yml"
+      - ".github/workflows/_deploy-frontend.yml"
+  workflow_dispatch: # manual redeploy from the Actions tab
+
+# One deploy at a time per app; never cancel a deploy that is already running.
+concurrency:
+  group: deploy-waitlist
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/_deploy-frontend.yml
+    with:
+      app: waitlist
+    secrets: inherit

@@ -1,0 +1,22 @@
+@import "tailwindcss";
+@import "../../../packages/ui/src/styles/theme.css";
+
+/* Tailwind v4 only scans the current project by default. Point it at the shared UI package. */
+@source "../../../packages/ui/src";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Anchor jumps (#join, #mission) land below the sticky navbar: 16px offset + 60px bar + gap. */
+    scroll-padding-top: 96px;
+  }
+
+  body {
+    background-color: var(--color-bg-base);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    /* clip, not hidden: overflow-x: hidden makes <body> a scroll container and breaks the sticky navbar. */
+    overflow-x: clip;
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "matr-studio",
+  "private": true,
+  "packageManager": "pnpm@12.9.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:waitlist": "turbo run dev --filter=@matr/waitlist --filter=@matr/backend",
+    "build": "turbo run build",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "db:migrate:local": "pnpm --filter @matr/backend db:migrate:local"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "turbo": "^2.11.7",
+    "typescript": "^7.0.2"
+  }
+}

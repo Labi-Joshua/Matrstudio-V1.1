@@ -1,0 +1,36 @@
+language: "en-US"
+reviews:
+  profile: "chill"
+  high_level_summary: true
+  request_changes_workflow: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:
+    - "!**/pnpm-lock.yaml"
+    - "!**/out/**"
+    - "!**/.next/**"
+    - "!**/dist/**"
+  path_instructions:
+    - path: "apps/**"
+      instructions: >-
+        Next.js static export (output: export). Flag anything that needs a server runtime:
+        server actions, route handlers, cookies() or headers(), next/image optimisation.
+        Flag any NEXT_PUBLIC_ variable that holds a secret.
+    - path: "packages/backend/src/**"
+      instructions: >-
+        Hono on Cloudflare Workers with D1. Check that every route validates input with zod,
+        SQL is parameterised (never string-built), CORS stays an allow-list, secrets are never
+        logged, and D1 writes are kept to the minimum because of the free-tier quota.
+    - path: "packages/backend/migrations/**"
+      instructions: >-
+        Migrations must work with both the previous and the new Worker code. Flag any DROP,
+        RENAME or NOT NULL addition on a column the live Worker still reads or writes.
+    - path: "packages/ui/**"
+      instructions: >-
+        Shared Radian components on Tailwind and Radix. Check accessibility and keep
+        app-specific logic out of the shared package.
+    - path: ".github/workflows/**"
+      instructions: >-
+        Check least-privilege permissions, that secrets are never echoed, and that every
+        deploy workflow's path filter lists all of its dependencies.

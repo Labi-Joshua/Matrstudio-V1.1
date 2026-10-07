@@ -1,0 +1,16 @@
+{
+  "rules": [
+    {
+      "allowed": {
+        "origins": [
+          "https://app.matr.studio",
+          "https://admin.matr.studio",
+          "http://localhost:3001",
+          "http://localhost:3002"
+        ],
+        "methods": ["PUT", "GET", "HEAD"],
+        "headers": ["content-type"]
+      }
+    }
+  ]
+}

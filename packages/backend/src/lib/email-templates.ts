@@ -31,6 +31,9 @@ const C = {
 
 const DARK_CSS = `
   :root { color-scheme: light dark; supported-color-schemes: light dark; }
+  @media (max-width: 480px) {
+    .m-pad { padding: 32px 20px 24px !important; }
+  }
   @media (prefers-color-scheme: dark) {
     .m-page { background-color: #131416 !important; }
     .m-card { background-color: #090a0b !important; border-color: #1c1e21 !important; }
@@ -40,9 +43,14 @@ const DARK_CSS = `
     .m-badge { background-color: #522914 !important; color: #f68851 !important; }
     .m-rule { border-color: #1c1e21 !important; }
     .m-note { background-color: #131416 !important; }
+    .m-logo { background-color: #131416 !important; background-image: linear-gradient(#131416, #131416) !important; }
     .m-light { display: none !important; }
     .m-dark { display: block !important; max-height: none !important; overflow: visible !important; }
   }
+  /* Outlook.com and the Outlook apps recolour dark mode themselves and mark it with these attributes. */
+  [data-ogsc] .m-light { display: none !important; }
+  [data-ogsc] .m-dark { display: block !important; max-height: none !important; overflow: visible !important; }
+  [data-ogsb] .m-logo { background-color: #131416 !important; background-image: linear-gradient(#131416, #131416) !important; }
 `;
 
 /** An image with a dark-mode twin: the twin is hidden inline and shown only by the media query. */
@@ -89,16 +97,24 @@ export function confirmEmail({ link, email, webUrl, expiresIn }: ConfirmEmailInp
 <body class="m-page" style="margin:0;padding:0;background-color:${C.page};-webkit-text-size-adjust:100%;">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">${esc(preview)}${"&nbsp;&zwnj;".repeat(40)}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="m-page" style="background-color:${C.page};">
-<tr><td align="center" style="padding:48px 16px;">
+<tr><td align="center" style="padding:40px 16px 48px;">
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
 
-    <!-- Logo -->
-    <tr><td align="center" style="padding:0 0 32px;">
-      <a href="${esc(webUrl)}" style="text-decoration:none;display:inline-block;">${themedImg(img, "logo", 95, 15, "matrstudio.")}</a>
+    <!-- Logo. Gmail ignores the dark-mode CSS and darkens the page itself but never images, so the
+         dark wordmark would vanish on its dark background. It sits on a pill painted with a
+         gradient, which Gmail does not recolour: in light mode the pill matches the page and is
+         invisible, in Gmail dark mode it keeps the logo on light grey, and Apple Mail / Outlook
+         switch it to dark with the white logo. 8px padding; outer spacing reduced to match. -->
+    <tr><td align="center" style="padding:0 0 24px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+        <td class="m-logo" style="background-color:${C.page};background-image:linear-gradient(${C.page}, ${C.page});border-radius:999px;padding:8px 14px;">
+          <a href="${esc(webUrl)}" style="text-decoration:none;display:block;">${themedImg(img, "logo", 95, 15, "matrstudio.")}</a>
+        </td>
+      </tr></table>
     </td></tr>
 
     <!-- Card -->
-    <tr><td class="m-card" style="background-color:${C.card};border:1px solid ${C.border};border-radius:16px;padding:48px 48px 40px;box-shadow:0 1px 1px rgba(25,24,27,0.04);">
+    <tr><td class="m-card m-pad" style="background-color:${C.card};border:1px solid ${C.border};border-radius:16px;padding:40px 32px 32px;box-shadow:0 1px 1px rgba(25,24,27,0.04);">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
 
         <!-- Icon tile -->

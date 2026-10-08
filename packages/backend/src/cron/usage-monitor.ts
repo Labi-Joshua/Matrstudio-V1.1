@@ -64,6 +64,9 @@ async function fetchUsage(env: Bindings, now: Date) {
 
 /** Runs from the cron trigger. Alerts once per (day, metric, threshold) via a Slack/Discord-style webhook. */
 export async function checkUsage(env: Bindings): Promise<void> {
+  // Not configured yet: skip quietly instead of logging a failed GraphQL call every 30 minutes.
+  if (!env.CF_API_TOKEN || !env.ALERT_WEBHOOK_URL) return;
+  const webhook = env.ALERT_WEBHOOK_URL;
   const { day, usage } = await fetchUsage(env, new Date());
 
   for (const metric of Object.keys(LIMITS) as Array<keyof typeof LIMITS>) {
@@ -80,7 +83,7 @@ export async function checkUsage(env: Bindings): Promise<void> {
       if (res.meta.changes !== 1) continue;
 
       const text = `Matr Studio: ${metric} at ${pct.toFixed(0)}% of the free daily limit (${usage[metric].toLocaleString("en-US")} / ${LIMITS[metric].toLocaleString("en-US")}). Resets 00:00 UTC.`;
-      await fetch(env.ALERT_WEBHOOK_URL, {
+      await fetch(webhook, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: text, text }), // Discord reads "content", Slack reads "text"

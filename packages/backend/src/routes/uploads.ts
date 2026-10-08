@@ -67,6 +67,7 @@ uploads.post("/presign", zValidator("json", presignSchema), async (c) => {
 // PUT /api/uploads/dev/*: development-only stand-in for the R2 S3 endpoint.
 uploads.put("/dev/*", async (c) => {
   if (c.env.ENVIRONMENT !== "development") return c.json(apiError("not_found", "Not found."), 404);
+  if (!c.env.BUCKET) return c.json(apiError("r2_disabled", "R2 is not configured."), 503);
   const key = c.req.path.replace("/api/uploads/dev/", "");
   await c.env.BUCKET.put(key, c.req.raw.body, {
     httpMetadata: { contentType: c.req.header("Content-Type") ?? "application/octet-stream" },

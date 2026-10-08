@@ -1,7 +1,7 @@
 export type Bindings = {
   // Resource bindings
   DB: D1Database;
-  BUCKET: R2Bucket;
+  BUCKET?: R2Bucket; // optional until R2 is enabled on the account (see wrangler.toml)
   SIGNUP_LIMITER: RateLimit;
   API_LIMITER: RateLimit;
 
@@ -20,8 +20,9 @@ export type Bindings = {
   R2_ACCESS_KEY_ID: string;
   R2_SECRET_ACCESS_KEY: string;
   CF_ACCOUNT_ID: string;
-  CF_API_TOKEN: string; // Account Analytics: Read
-  ALERT_WEBHOOK_URL: string;
+  // Usage alerts (cron): optional; the monitor skips itself until both are set.
+  CF_API_TOKEN?: string; // Account Analytics: Read
+  ALERT_WEBHOOK_URL?: string;
   RESEND_API_KEY?: string;
   TURNSTILE_SECRET?: string;
 };

@@ -3,15 +3,17 @@ name = "matr-api"
 main = "src/index.ts"
 compatibility_date = "2026-10-01"
 
-workers_dev = false # production traffic must use api.matr.studio, where the WAF rule and Cache API apply
-routes = [{ pattern = "api.matr.studio", custom_domain = true }]
+workers_dev = false # production traffic must use api.matrstudio.com, where the WAF rule and Cache API apply
+routes = [{ pattern = "api.matrstudio.com", custom_domain = true }]
 
 [vars]
 ENVIRONMENT = "production"
-ALLOWED_ORIGINS = "https://waitlist.matr.studio,https://matr.studio,https://app.matr.studio,https://admin.matr.studio"
-PUBLIC_WEB_URL = "https://waitlist.matr.studio"
-PUBLIC_API_URL = "https://api.matr.studio"
-EMAIL_FROM = "Matr Studio <hello@matr.studio>"
+# The waitlist is served from Vercel at matrstudio.com (and its vercel.app review URL).
+# Add app./admin. origins here when those apps ship.
+ALLOWED_ORIGINS = "https://matrstudio.com,https://www.matrstudio.com,https://matr-studio-waitlist.vercel.app"
+PUBLIC_WEB_URL = "https://matrstudio.com"
+PUBLIC_API_URL = "https://api.matrstudio.com"
+EMAIL_FROM = "Matr Studio <hello@matrstudio.com>"
 R2_BUCKET_NAME = "matr-assets"
 
 [observability]
@@ -20,12 +22,15 @@ enabled = true
 [[d1_databases]]
 binding = "DB"
 database_name = "matr-d1"
-database_id = "REPLACE_WITH_ID_FROM_wrangler_d1_create"
+database_id = "c4de1969-60c3-4b48-8cf6-31c2cd766c7e"
 migrations_dir = "migrations"
 
-[[r2_buckets]]
-binding = "BUCKET"
-bucket_name = "matr-assets"
+# R2 is not activated on the account yet (it needs a card on file, even on the free tier),
+# and the waitlist doesn't upload files. Uncomment once R2 is enabled and the bucket exists:
+#   pnpm --filter @matr/backend exec wrangler r2 bucket create matr-assets
+# [[r2_buckets]]
+# binding = "BUCKET"
+# bucket_name = "matr-assets"
 
 [[ratelimits]]
 name = "SIGNUP_LIMITER"

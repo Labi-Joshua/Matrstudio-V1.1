@@ -1,3 +1,9 @@
+// Landing page for confirmation-email links: keep it out of search results.
+export const metadata = {
+  title: "Link expired | Matr Studio",
+  robots: { index: false, follow: false },
+};
+
 export default function VerifyFailedPage() {
   return (
     <main>

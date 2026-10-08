@@ -4,6 +4,8 @@ import { HomeAndMissionActions, VerifyState } from "../../components/verify/veri
 export const metadata = {
   title: "Already confirmed | Matr Studio",
   robots: { index: false, follow: false },
+  // Own canonical (the layout default points at the homepage, which mixes signals with noindex).
+  alternates: { canonical: "/verify-already" },
 };
 
 // Figma: Link Already Confirmed (187:2498 light, 187:3057 dark).

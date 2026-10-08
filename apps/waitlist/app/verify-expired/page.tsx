@@ -5,6 +5,8 @@ import { VerifyState } from "../../components/verify/verify-state";
 export const metadata = {
   title: "Link expired | Matr Studio",
   robots: { index: false, follow: false },
+  // Own canonical (the layout default points at the homepage, which mixes signals with noindex).
+  alternates: { canonical: "/verify-expired" },
 };
 
 // Figma: Link Expired (187:335 light, 187:1069 dark). The API redirects here with the expired

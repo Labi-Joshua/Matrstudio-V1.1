@@ -5,6 +5,8 @@ import { WaitlistForm } from "../../components/waitlist-form";
 export const metadata = {
   title: "Link not recognised | Matr Studio",
   robots: { index: false, follow: false },
+  // Own canonical (the layout default points at the homepage, which mixes signals with noindex).
+  alternates: { canonical: "/verify-failed" },
 };
 
 // Figma: Link Not Recognised (187:1510 light, 187:2063 dark). For links that are broken, unknown

@@ -4,6 +4,8 @@ import { HomeAndMissionActions, VerifyState } from "../../components/verify/veri
 export const metadata = {
   title: "You’re on the list | Matr Studio",
   robots: { index: false, follow: false },
+  // Own canonical (the layout default points at the homepage, which mixes signals with noindex).
+  alternates: { canonical: "/verified" },
 };
 
 // Figma: Email Confirmation (171:5071 light, 174:165 dark).

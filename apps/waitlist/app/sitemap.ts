@@ -5,8 +5,9 @@ import { SITE_URL } from "../lib/site";
 export const dynamic = "force-static";
 
 /**
- * The landing and mission pages are listed. /verified and /verify-failed are the targets of
- * confirmation-email links and are marked noindex, so they stay out of search results.
+ * The public pages: the landing page and Our Mission. The email-confirmation pages
+ * (/verified, /verify-already, /verify-expired, /verify-failed) are only reached from
+ * confirmation links and are marked noindex, so they stay out of the sitemap and search results.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

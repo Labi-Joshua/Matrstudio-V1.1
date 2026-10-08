@@ -1,7 +1,17 @@
 import { cn } from "@matr/ui";
 import type { CSSProperties } from "react";
 import { WaitlistForm } from "../waitlist-form";
-import { Avatar, asset, Container, canvas, Icon, revealDelay, ThemedImg } from "./primitives";
+import { CursorParallax } from "./cursor-parallax";
+import {
+  Avatar,
+  asset,
+  Container,
+  canvas,
+  Icon,
+  parallax,
+  revealDelay,
+  ThemedImg,
+} from "./primitives";
 
 // Figma: Waitlist / Hero (62:739), arc-section frame is 1240 x 460.
 const arc = canvas(1240, 460);
@@ -20,6 +30,7 @@ function Pill({
   at,
   mobileAt,
   delay,
+  depth = 12,
 }: {
   icon: string;
   label?: string;
@@ -30,13 +41,16 @@ function Pill({
   /** Optional position below md, where pills hit their minimum size and need more room. */
   mobileAt?: [number, number];
   delay: number;
+  /** How far (px) the badge drifts toward the cursor; varied per badge for a sense of depth. */
+  depth?: number;
 }) {
   const desktop = arc(...at);
   const mobile = mobileAt ? arc(...mobileAt) : desktop;
   return (
     <div
       className={cn(
-        "group absolute top-[var(--t)] left-[var(--l)] flex items-center whitespace-nowrap rounded-full border border-border-soft transition-all duration-500 ease-smooth hover:z-10 hover:-translate-y-1 hover:scale-105 hover:shadow-e2 max-md:top-[var(--mt)] max-md:left-[var(--ml)]",
+        parallax,
+        "group absolute top-[var(--t)] left-[var(--l)] flex items-center whitespace-nowrap rounded-full border border-border-soft transition-[translate,scale,box-shadow] duration-500 ease-smooth hover:z-10 hover:-translate-y-1 hover:scale-105 hover:shadow-e2 max-md:top-[var(--mt)] max-md:left-[var(--ml)]",
         size === "md"
           ? "gap-[0.43em] px-[0.71em] py-[0.43em]"
           : "gap-[0.29em] px-[0.57em] py-[0.29em]",
@@ -50,6 +64,9 @@ function Pill({
           "--t": desktop.top,
           "--ml": mobile.left,
           "--mt": mobile.top,
+          // Cursor parallax: CursorParallax sets --mx/--my on the arc; transform is left out of the
+          // transition so the per-frame easing there is the only smoothing.
+          "--depth": depth,
           ...revealDelay(delay),
         } as CSSProperties
       }
@@ -104,7 +121,7 @@ export function Community() {
       <Container className="flex flex-col items-center pt-[33.55px] pb-[49.45px]">
         {/* The wrapper is a size container so the arc can set its font-size from its width
             (1.129cqw = 14px at 1240px), which is what the em-sized pills scale from. */}
-        <div className="w-full [container-type:inline-size]">
+        <CursorParallax className="w-full [container-type:inline-size]">
           <div
             aria-hidden
             data-reveal="fade"
@@ -123,6 +140,7 @@ export function Community() {
 
             <Pill
               icon="icon-circle-check.svg"
+              depth={14}
               label="Voting Completed"
               tone="success"
               at={[150, 157.273]}
@@ -130,23 +148,38 @@ export function Community() {
             />
             <Pill
               icon="icon-message-circle.svg"
+              depth={10}
               label="12 New Posts"
               at={[550, 17.545]}
               delay={330}
             />
-            <Pill icon="icon-heart.svg" label="12" at={[845, 57.273]} delay={410} />
+            <Pill icon="icon-heart.svg" depth={18} label="12" at={[845, 57.273]} delay={410} />
             {/* Phones: nudged right and down so it clears "Voting Completed" at minimum size. */}
             <Pill
               icon="icon-thumbs-up.svg"
+              depth={22}
               label="12"
               size="sm"
               at={[388, 169.545]}
               mobileAt={[480, 186]}
               delay={490}
             />
-            <Pill icon="icon-files.svg" size="sm" at={[809, 161.273]} delay={570} />
-            <Pill icon="icon-shopping-cart.svg" size="sm" at={[368, 51.545]} delay={650} />
-            <Pill icon="icon-layers.svg" label="12" size="sm" at={[1090, 287.545]} delay={730} />
+            <Pill icon="icon-files.svg" depth={20} size="sm" at={[809, 161.273]} delay={570} />
+            <Pill
+              icon="icon-shopping-cart.svg"
+              depth={12}
+              size="sm"
+              at={[368, 51.545]}
+              delay={650}
+            />
+            <Pill
+              icon="icon-layers.svg"
+              depth={24}
+              label="12"
+              size="sm"
+              at={[1090, 287.545]}
+              delay={730}
+            />
 
             <ArcAvatar src="arc-avatar-left.jpg" x={228} y={255.545} size={60} delay={350} />
             <ArcAvatar src="arc-avatar-center.jpg" x={596} y={117.545} size={48} delay={500} />
@@ -162,7 +195,7 @@ export function Community() {
               />
             </div>
           </div>
-        </div>
+        </CursorParallax>
 
         {/* Phones: the arc runs to its bottom edge, so give the form some breathing room. */}
         <div data-reveal className="mt-10 flex w-full flex-col items-center gap-9 md:mt-0">

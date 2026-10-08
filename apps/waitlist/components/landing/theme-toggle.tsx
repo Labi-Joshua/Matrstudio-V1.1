@@ -57,10 +57,16 @@ export function ThemeToggle() {
       <span className="relative h-4 w-8">
         {/* Knob left (light) and knob right (dark) are separate exports with different insets. */}
         <span className="absolute inset-[-6.25%_0_-18.75%_-6.25%] dark:hidden">
-          <img alt="" src={asset("toggle-switch.svg")} className="block size-full max-w-none" />
+          <img
+            decoding="async"
+            alt=""
+            src={asset("toggle-switch.svg")}
+            className="block size-full max-w-none"
+          />
         </span>
         <span className="absolute inset-[-6.25%_-6.25%_-18.75%_0] hidden dark:block">
           <img
+            decoding="async"
             alt=""
             src={asset("toggle-switch-dark.svg")}
             className="block size-full max-w-none"

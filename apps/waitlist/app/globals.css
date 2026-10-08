@@ -112,15 +112,21 @@
 @layer base {
   [data-js] [data-reveal]:not([data-revealed]) {
     opacity: 0;
-    /* Promote to its own layer before the entrance starts, so the first frames don't stutter.
-       The hint drops off once the element is revealed. */
-    will-change: opacity, translate, scale;
   }
 
   [data-revealed],
   [data-revealed] [data-reveal-child] {
     animation: var(--reveal-anim, reveal-up) var(--reveal-duration, 1.2s) var(--ease-smooth)
       var(--reveal-delay, 0ms) backwards;
+  }
+
+  /* Each animating element keeps its own compositor layer from before the entrance until it
+     has finished (RevealObserver sets [data-reveal-done]), so the browser never rebuilds the
+     layer mid-animation. That rebuild is what caused stutter on wide screens, where many
+     larger elements enter at once. */
+  [data-js] [data-reveal]:not([data-reveal-done]),
+  [data-js] [data-reveal]:not([data-reveal-done]) [data-reveal-child] {
+    will-change: opacity, translate, scale, rotate;
   }
 
   [data-reveal="left"],

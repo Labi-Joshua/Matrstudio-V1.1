@@ -51,12 +51,19 @@ export function ThemedImg({
 }) {
   const props = { style, width, height };
   if (!DARK_VARIANTS.has(name)) {
-    return <img alt={alt} src={asset(name)} className={className} {...props} />;
+    return <img decoding="async" alt={alt} src={asset(name)} className={className} {...props} />;
   }
   return (
     <>
-      <img alt={alt} src={asset(name)} className={cn(className, "dark:hidden")} {...props} />
       <img
+        decoding="async"
+        alt={alt}
+        src={asset(name)}
+        className={cn(className, "dark:hidden")}
+        {...props}
+      />
+      <img
+        decoding="async"
         alt={alt}
         src={asset(darkName(name))}
         className={cn(className, "hidden dark:block")}
@@ -113,7 +120,7 @@ export function Avatar({
       className={cn("block overflow-hidden rounded-full", className)}
       style={style}
     >
-      <img alt="" src={src} className="size-full object-cover" />
+      <img decoding="async" alt="" src={src} className="size-full object-cover" />
     </span>
   );
 }
@@ -152,3 +159,12 @@ export function Badge({
 export function Icon({ name, className }: { name: string; className?: string }) {
   return <ThemedImg name={name} className={cn("block size-5 shrink-0", className)} />;
 }
+
+/**
+ * Class for a badge inside CursorParallax; pair it with a `--depth` (px) style. Uses transform,
+ * which composes with the translate/rotate/scale used by hover and entrance animations; keep
+ * transform out of the element transition so CursorParallax easing is the only smoothing.
+ * Lives here rather than in the "use client" module so server components get the string.
+ */
+export const parallax =
+  "[transform:translate3d(calc(var(--mx,0)*var(--depth,12)*1px),calc(var(--my,0)*var(--depth,12)*1px),0)]";

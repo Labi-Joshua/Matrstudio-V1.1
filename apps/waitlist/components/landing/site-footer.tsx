@@ -1,7 +1,8 @@
 import { cn } from "@matr/ui";
 import type { CSSProperties, ReactNode } from "react";
+import { CursorParallax } from "./cursor-parallax";
 import { atmosphere } from "./join-cta";
-import { asset, Container, canvas, ThemedImg } from "./primitives";
+import { asset, Container, canvas, parallax, ThemedImg } from "./primitives";
 import { ThemeToggle } from "./theme-toggle";
 
 // Figma: Waitlist / Footer (62:817). The logo composition is laid out on a 1240 x 478 canvas
@@ -54,6 +55,8 @@ type FooterBadge = {
   className: string;
   /** Desktop position on the 1240 x 478 canvas. */
   at: [number, number];
+  /** Desktop cursor parallax: px the badge drifts toward the cursor. */
+  depth: number;
   /** Shown below lg (under the wordmark) only when set, with a small tilt. */
   mobile?: { rotate: number };
   content: ReactNode;
@@ -64,6 +67,7 @@ const BADGES: FooterBadge[] = [
     id: "components",
     className: cn(pill, "border-primary-border bg-[#ffe8e0]"),
     at: [300, 109],
+    depth: 14,
     content: (
       <>
         <BadgeIcon name="icon-component.svg" color="var(--color-primary)" />
@@ -75,6 +79,7 @@ const BADGES: FooterBadge[] = [
     id: "layers",
     className: cn(pill, "border-[#c7ccfa] bg-[#eef0ff]"),
     at: [637, 112],
+    depth: 18,
     content: (
       <>
         <BadgeIcon name="icon-layers-white.svg" color="#6e78f7" />
@@ -86,6 +91,7 @@ const BADGES: FooterBadge[] = [
     id: "design-system",
     className: cn(pill, "border-border bg-bg-fill1"),
     at: [-39, 196],
+    depth: 10,
     content: (
       <>
         <span className="flex size-[19.469px] shrink-0 items-center justify-center rounded-full bg-primary-focus font-display font-semibold text-[11.68px] text-primary-text">
@@ -102,6 +108,7 @@ const BADGES: FooterBadge[] = [
     id: "dev-exports",
     className: cn(pill, "border-[#7de0b0] bg-[#e8fff4]"),
     at: [188, 280],
+    depth: 22,
     content: (
       <>
         <BadgeIcon name="icon-code.svg" color="#1da54a" />
@@ -113,6 +120,7 @@ const BADGES: FooterBadge[] = [
     id: "color-tokens",
     className: cn(pill, "border-[#ffd98a] bg-[#fff5e0]"),
     at: [1066, 144],
+    depth: 16,
     content: (
       <>
         <BadgeIcon name="icon-palette.svg" color="#f5a623" />
@@ -124,12 +132,14 @@ const BADGES: FooterBadge[] = [
     id: "community",
     className: "rounded-[13.628px] border-border bg-bg-base px-[9.735px] py-[7.788px]",
     at: [746, 281],
+    depth: 20,
     mobile: { rotate: 1 },
     content: (
       <>
         <span className="flex items-center">
           {["footer-avatar-1.jpg", "footer-avatar-2.jpg", "footer-avatar-3.jpg"].map((src, i) => (
             <img
+              decoding="async"
               key={src}
               alt=""
               src={asset(src)}
@@ -147,7 +157,7 @@ const BADGES: FooterBadge[] = [
 ];
 
 const badgeBase =
-  "flex items-center gap-[5.841px] whitespace-nowrap border-[0.973px] drop-shadow-badge transition-all duration-500 ease-smooth";
+  "flex items-center gap-[5.841px] whitespace-nowrap border-[0.973px] shadow-badge transition-[translate,rotate,scale,box-shadow] duration-500 ease-smooth";
 
 function Wordmark({ className, style }: { className?: string; style?: CSSProperties }) {
   return (
@@ -185,28 +195,38 @@ function MobileComposition() {
 /** lg and up: the Figma composition, scaled with its container. */
 function DesktopComposition() {
   return (
-    <div data-reveal className="group/comp relative hidden aspect-[1240/478] w-full lg:block">
-      <Wordmark className="absolute" style={comp(10, 106.273, 1220, 192.817)} />
-      {BADGES.map(({ id, className, at: [x, y], content }, index) => {
-        const style = comp(x, y);
-        // Badges that hang outside the 1240 frame (x < 0) must not run off a narrow viewport:
-        // (100% - 100vw) / 2 is the viewport edge relative to the centred container.
-        if (x < 0) style.left = `max(${style.left}, calc((100% - 100vw) / 2 + 8px))`;
-        return (
-          <div
-            key={id}
-            className={cn(
-              badgeBase,
-              "absolute hover:z-10 hover:-rotate-3 hover:scale-110 group-hover/comp:animate-float",
-              className,
-            )}
-            style={{ ...style, animationDelay: `${index * -0.4}s` }}
-          >
-            {content}
-          </div>
-        );
-      })}
-    </div>
+    // Badges drift toward the cursor anywhere in the footer (same effect as the community arc).
+    <CursorParallax className="hidden lg:block">
+      <div data-reveal className="group/comp relative aspect-[1240/478] w-full">
+        <Wordmark className="absolute" style={comp(10, 106.273, 1220, 192.817)} />
+        {BADGES.map(({ id, className, at: [x, y], depth, content }, index) => {
+          const style = comp(x, y);
+          // Badges that hang outside the 1240 frame (x < 0) must not run off a narrow viewport:
+          // (100% - 100vw) / 2 is the viewport edge relative to the centred container.
+          if (x < 0) style.left = `max(${style.left}, calc((100% - 100vw) / 2 + 8px))`;
+          return (
+            <div
+              key={id}
+              className={cn(
+                badgeBase,
+                parallax,
+                "absolute hover:z-10 hover:-rotate-3 hover:scale-110 group-hover/comp:animate-float",
+                className,
+              )}
+              style={
+                {
+                  ...style,
+                  "--depth": depth,
+                  animationDelay: `${index * -0.4}s`,
+                } as CSSProperties
+              }
+            >
+              {content}
+            </div>
+          );
+        })}
+      </div>
+    </CursorParallax>
   );
 }
 
@@ -261,9 +281,19 @@ export function SiteFooter() {
               <Dot />
               <FooterLink href="#">
                 Docs
-                <img alt="" src={asset("icon-chevron-right.svg")} className="block size-5" />
+                <img
+                  decoding="async"
+                  alt=""
+                  src={asset("icon-chevron-right.svg")}
+                  className="block size-5"
+                />
               </FooterLink>
-              <img alt="" src={asset("icon-external-link.svg")} className="block size-3.5" />
+              <img
+                decoding="async"
+                alt=""
+                src={asset("icon-external-link.svg")}
+                className="block size-3.5"
+              />
             </nav>
             <ThemeToggle />
           </div>

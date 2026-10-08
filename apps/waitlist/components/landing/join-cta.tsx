@@ -99,7 +99,12 @@ export function JoinCta() {
                     } as CSSProperties
                   }
                 >
-                  <img alt="" src={asset(src)} className="size-full object-cover" />
+                  <img
+                    decoding="async"
+                    alt=""
+                    src={asset(src)}
+                    className="size-full object-cover"
+                  />
                 </div>
               </div>
             ),

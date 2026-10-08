@@ -20,7 +20,7 @@ function Card({
   return (
     <div
       className={cn(
-        "group flex w-full flex-col items-start rounded-lg border border-border-soft p-6 drop-shadow-e1 transition-all duration-500 ease-smooth hover:-translate-y-1 hover:border-primary-border/60 hover:shadow-[0_16px_32px_-16px_rgba(214,92,31,0.35)]",
+        "group flex w-full flex-col items-start rounded-lg border border-border-soft p-6 shadow-e1 transition-all duration-500 ease-smooth hover:-translate-y-1 hover:border-primary-border/60 hover:shadow-[0_16px_32px_-16px_rgba(214,92,31,0.35)]",
         tone === "base" ? "bg-bg-base" : "bg-bg-fill1",
         className,
       )}
@@ -80,7 +80,7 @@ function ProgressRing({
         {/* Separate wrapper so the entrance sweep and the hover spin don't fight. */}
         <div data-reveal-child="sweep" className="absolute inset-0" style={revealDelay(350)}>
           <div className={cn("absolute", arcClassName)}>
-            <img alt="" src={asset(arc)} className="block size-full max-w-none" />
+            <img decoding="async" alt="" src={asset(arc)} className="block size-full max-w-none" />
           </div>
         </div>
       </div>

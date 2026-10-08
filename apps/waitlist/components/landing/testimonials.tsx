@@ -66,6 +66,7 @@ function Stars() {
     <div className="flex items-center gap-0.5" role="img" aria-label="Rated 5 out of 5">
       {[0, 1, 2, 3, 4].map((i) => (
         <img
+          decoding="async"
           key={i}
           alt=""
           src={asset("icon-star.svg")}
@@ -92,6 +93,7 @@ function TestimonialCard({ quote, name, role, avatar, delay }: Testimonial & { d
         <span className="relative size-9 shrink-0 overflow-hidden rounded-full ring-primary transition-all duration-500 group-hover:scale-110 group-hover:ring-2">
           {avatar.map((src) => (
             <img
+              decoding="async"
               key={src}
               alt=""
               src={asset(src)}

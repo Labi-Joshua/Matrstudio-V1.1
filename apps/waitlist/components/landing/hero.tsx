@@ -36,6 +36,7 @@ function Mosaic() {
         style={{ ...mosaic(198.327, 0, 209.345, 183.636), ...revealDelay(270) }}
       >
         <img
+          decoding="async"
           alt=""
           src={asset("hero-photo-top.jpg")}
           className="absolute top-0 left-[-0.29%] h-full w-[131.58%] max-w-none"
@@ -81,7 +82,12 @@ function Mosaic() {
         data-reveal="pop"
         style={{ ...mosaic(0, 381.964, 209.345, 183.636), ...revealDelay(620) }}
       >
-        <img alt="" src={asset("hero-photo-bottom-left.jpg")} className="size-full object-cover" />
+        <img
+          decoding="async"
+          alt=""
+          src={asset("hero-photo-bottom-left.jpg")}
+          className="size-full object-cover"
+        />
       </div>
       <div
         className={cn(greyTile, "rounded-full hover:bg-primary-focus")}
@@ -108,6 +114,7 @@ function Mosaic() {
         style={{ ...mosaic(224.036, 580.291, 381.964, 91.818), ...revealDelay(900) }}
       >
         <img
+          decoding="async"
           alt=""
           src={asset("hero-photo-bottom-right.jpg")}
           className="absolute top-[-456.11%] left-0 h-[624.41%] w-full max-w-none"

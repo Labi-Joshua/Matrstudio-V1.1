@@ -12,7 +12,27 @@ export function RevealObserver() {
     const root = document.documentElement;
     const targets = document.querySelectorAll<HTMLElement>("[data-reveal]");
 
-    const reveal = (el: Element) => el.setAttribute("data-revealed", "");
+    /** Longest delay + duration among the element's own entrance and its children's, in ms. */
+    const entranceLength = (el: Element) => {
+      let longest = 0;
+      for (const node of [el, ...el.querySelectorAll("[data-reveal-child]")]) {
+        const style = getComputedStyle(node);
+        const delay =
+          Number.parseFloat(style.animationDelay) *
+          (style.animationDelay.endsWith("ms") ? 1 : 1000);
+        const duration =
+          Number.parseFloat(style.animationDuration) *
+          (style.animationDuration.endsWith("ms") ? 1 : 1000);
+        longest = Math.max(longest, (delay || 0) + (duration || 0));
+      }
+      return longest;
+    };
+
+    const reveal = (el: Element) => {
+      el.setAttribute("data-revealed", "");
+      // Release the will-change layers once every entrance inside this element has finished.
+      window.setTimeout(() => el.setAttribute("data-reveal-done", ""), entranceLength(el) + 100);
+    };
 
     if (!("IntersectionObserver" in window)) {
       targets.forEach(reveal);

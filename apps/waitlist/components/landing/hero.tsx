@@ -27,18 +27,18 @@ function Mosaic() {
           tile,
           "rounded-[4%_80%_4%_4%] bg-primary duration-500 hover:rounded-[80%_4%_4%_4%]",
         )}
-        data-reveal="pop"
+        data-reveal-load="pop"
         style={{ ...mosaic(0, 0, 183.636, 183.636), ...revealDelay(200) }}
       />
       <div
         className={cn(photoTile, "rounded-[14.691px]")}
-        data-reveal="pop"
+        data-reveal-load="pop"
         style={{ ...mosaic(198.327, 0, 209.345, 183.636), ...revealDelay(270) }}
       >
         <img
           decoding="async"
           alt=""
-          src={asset("hero-photo-top.jpg")}
+          src={asset("hero-photo-top.webp")}
           className="absolute top-0 left-[-0.29%] h-full w-[131.58%] max-w-none"
         />
       </div>
@@ -47,7 +47,7 @@ function Mosaic() {
           greyTile,
           "flex items-center justify-center overflow-clip rounded-lg hover:bg-primary-accent",
         )}
-        data-reveal="pop"
+        data-reveal-load="pop"
         style={{ ...mosaic(422.364, 0, 183.636, 183.636), ...revealDelay(340) }}
       >
         <span className="font-display text-[7.273cqw] text-bg-fill4 leading-none transition-colors duration-500 ease-smooth group-hover:text-primary">
@@ -56,12 +56,12 @@ function Mosaic() {
       </div>
       <div
         className={cn(greyTile, "rounded-lg hover:bg-primary-focus")}
-        data-reveal="pop"
+        data-reveal-load="pop"
         style={{ ...mosaic(0, 198.327, 183.636, 168.945), ...revealDelay(410) }}
       />
       <div
         className="absolute overflow-clip rounded-lg bg-ink"
-        data-reveal="pop"
+        data-reveal-load="pop"
         style={{ ...mosaic(198.327, 198.327, 209.345, 168.945), ...revealDelay(480) }}
       >
         <div className="absolute inset-[-53.92%_-102.08%_0_0]">
@@ -74,29 +74,29 @@ function Mosaic() {
           tile,
           "rounded-[4%_4%_4%_80%/4.35%_4.35%_4.35%_86.96%] bg-primary duration-500 hover:rounded-[4%_4%_80%_4%/4.35%_4.35%_86.96%_4.35%]",
         )}
-        data-reveal="pop"
+        data-reveal-load="pop"
         style={{ ...mosaic(422.364, 198.327, 183.636, 168.945), ...revealDelay(550) }}
       />
       <div
         className={cn(photoTile, "rounded-[14.691px]")}
-        data-reveal="pop"
+        data-reveal-load="pop"
         style={{ ...mosaic(0, 381.964, 209.345, 183.636), ...revealDelay(620) }}
       >
         <img
           decoding="async"
           alt=""
-          src={asset("hero-photo-bottom-left.jpg")}
+          src={asset("hero-photo-bottom-left.webp")}
           className="size-full object-cover"
         />
       </div>
       <div
         className={cn(greyTile, "rounded-full hover:bg-primary-focus")}
-        data-reveal="pop"
+        data-reveal-load="pop"
         style={{ ...mosaic(224.036, 381.964, 183.636, 183.636), ...revealDelay(690) }}
       />
       <div
         className="absolute overflow-clip rounded-lg bg-ink"
-        data-reveal="pop"
+        data-reveal-load="pop"
         style={{ ...mosaic(422.364, 381.964, 183.636, 183.636), ...revealDelay(760) }}
       >
         <div className="absolute inset-[-30.71%_0_0_-110.76%]">
@@ -105,18 +105,18 @@ function Mosaic() {
       </div>
       <div
         className={cn(tile, "rounded-lg bg-primary hover:rounded-[40px]")}
-        data-reveal="pop"
+        data-reveal-load="pop"
         style={{ ...mosaic(0, 580.291, 209.345, 91.818), ...revealDelay(830) }}
       />
       <div
         className={cn(photoTile, "rounded-lg")}
-        data-reveal="pop"
+        data-reveal-load="pop"
         style={{ ...mosaic(224.036, 580.291, 381.964, 91.818), ...revealDelay(900) }}
       >
         <img
           decoding="async"
           alt=""
-          src={asset("hero-photo-bottom-right.jpg")}
+          src={asset("hero-photo-bottom-right.webp")}
           className="absolute top-[-456.11%] left-0 h-[624.41%] w-full max-w-none"
         />
       </div>
@@ -127,12 +127,12 @@ function Mosaic() {
 export function Hero() {
   return (
     // Figma 62:543: 56px from the navbar to the hero body.
-    <section className="flex flex-col items-center px-4 pt-14 pb-8">
+    <section data-reveal-load="section" className="flex flex-col items-center px-4 pt-14 pb-8">
       <Container className="flex flex-col items-center gap-12 lg:flex-row lg:justify-between lg:px-6">
         {/* Spacing per Figma: badge→headline 20px, headline→body 32px, copy→form 32px. */}
         <div
           id="join"
-          data-reveal="left"
+          data-reveal-load="left"
           className="flex w-full max-w-[500px] flex-col items-start gap-8"
         >
           <div className="flex w-full flex-col items-start gap-8">

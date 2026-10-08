@@ -80,7 +80,13 @@ function ProgressRing({
         {/* Separate wrapper so the entrance sweep and the hover spin don't fight. */}
         <div data-reveal-child="sweep" className="absolute inset-0" style={revealDelay(350)}>
           <div className={cn("absolute", arcClassName)}>
-            <img decoding="async" alt="" src={asset(arc)} className="block size-full max-w-none" />
+            <img
+              decoding="async"
+              loading="lazy"
+              alt=""
+              src={asset(arc)}
+              className="block size-full max-w-none"
+            />
           </div>
         </div>
       </div>
@@ -137,7 +143,7 @@ function ProfileStack() {
       <div className="absolute top-[32.27px] left-[22px] flex h-[190px] w-[316px] flex-col items-start gap-3 overflow-clip rounded-2xl border border-border-alpha bg-bg-base p-5 shadow-card transition-all duration-700 ease-smooth group-hover:translate-y-1 group-hover:shadow-[0_20px_40px_-16px_rgba(25,24,27,0.25)]">
         <div className="flex items-center gap-3">
           <Avatar
-            src={asset("avatar-arthur.jpg")}
+            src={asset("avatar-arthur.webp")}
             className="size-9 shrink-0 ring-0 ring-primary transition-all duration-500 group-hover:scale-110 group-hover:ring-2"
           />
           <div className="flex flex-col items-start gap-0.5 whitespace-nowrap leading-normal">
@@ -199,7 +205,7 @@ function ContributionScore() {
 
 export function Features() {
   return (
-    <section id="mission" className="px-4 py-8">
+    <section data-reveal="section" id="mission" className="px-4 py-8">
       <Container className="flex flex-col items-center justify-center gap-10 rounded-3xl py-12 lg:h-[550px] lg:flex-row">
         <div data-reveal="left" className="flex w-full max-w-[280px] flex-col items-start gap-4">
           <Card className="gap-4">

@@ -59,6 +59,7 @@ export function ThemeToggle() {
         <span className="absolute inset-[-6.25%_0_-18.75%_-6.25%] dark:hidden">
           <img
             decoding="async"
+            loading="lazy"
             alt=""
             src={asset("toggle-switch.svg")}
             className="block size-full max-w-none"
@@ -67,6 +68,7 @@ export function ThemeToggle() {
         <span className="absolute inset-[-6.25%_-6.25%_-18.75%_0] hidden dark:block">
           <img
             decoding="async"
+            loading="lazy"
             alt=""
             src={asset("toggle-switch-dark.svg")}
             className="block size-full max-w-none"

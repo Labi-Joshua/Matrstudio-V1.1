@@ -52,12 +52,22 @@ export function ThemedImg({
 }) {
   const props = { style, width, height };
   if (!DARK_VARIANTS.has(name)) {
-    return <img decoding="async" alt={alt} src={asset(name)} className={className} {...props} />;
+    return (
+      <img
+        decoding="async"
+        loading="lazy"
+        alt={alt}
+        src={asset(name)}
+        className={className}
+        {...props}
+      />
+    );
   }
   return (
     <>
       <img
         decoding="async"
+        loading="lazy"
         alt={alt}
         src={asset(name)}
         className={cn(className, "dark:hidden")}
@@ -65,6 +75,7 @@ export function ThemedImg({
       />
       <img
         decoding="async"
+        loading="lazy"
         alt={alt}
         src={asset(darkName(name))}
         className={cn(className, "hidden dark:block")}
@@ -121,7 +132,7 @@ export function Avatar({
       className={cn("block overflow-hidden rounded-full", className)}
       style={style}
     >
-      <img decoding="async" alt="" src={src} className="size-full object-cover" />
+      <img decoding="async" loading="lazy" alt="" src={src} className="size-full object-cover" />
     </span>
   );
 }

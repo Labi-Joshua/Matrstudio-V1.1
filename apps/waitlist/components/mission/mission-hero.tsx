@@ -13,10 +13,10 @@ const BRIDGES: Link[] = [
 export function MissionHero() {
   return (
     // 56px from the navbar to the body, which has another 48px of top padding.
-    <section className="px-4 pt-14 pb-8">
+    <section data-reveal-load="section" className="px-4 pt-14 pb-8">
       <Container className="flex flex-col items-center gap-12">
         <div
-          data-reveal
+          data-reveal-load
           className="flex w-full max-w-[600px] flex-col items-center gap-8 pt-6 md:pt-12"
         >
           <div className="flex w-full flex-col items-center gap-4">
@@ -31,7 +31,7 @@ export function MissionHero() {
           </div>
           <WaitlistForm variant="primary" source="mission-hero" className="w-full items-center" />
         </div>
-        <AvatarNetwork extraLinks={BRIDGES} />
+        <AvatarNetwork extraLinks={BRIDGES} onLoad />
       </Container>
     </section>
   );

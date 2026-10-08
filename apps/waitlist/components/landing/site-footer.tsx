@@ -124,18 +124,21 @@ const BADGES: FooterBadge[] = [
     content: (
       <>
         <span className="flex items-center">
-          {["footer-avatar-1.jpg", "footer-avatar-2.jpg", "footer-avatar-3.jpg"].map((src, i) => (
-            <img
-              decoding="async"
-              key={src}
-              alt=""
-              src={asset(src)}
-              className={cn(
-                "size-[15.162px] rounded-full border-[1.895px] border-bg-base object-cover",
-                i < 2 && "mr-[-3.894px]",
-              )}
-            />
-          ))}
+          {["footer-avatar-1.webp", "footer-avatar-2.webp", "footer-avatar-3.webp"].map(
+            (src, i) => (
+              <img
+                decoding="async"
+                loading="lazy"
+                key={src}
+                alt=""
+                src={asset(src)}
+                className={cn(
+                  "size-[15.162px] rounded-full border-[1.895px] border-bg-base object-cover",
+                  i < 2 && "mr-[-3.894px]",
+                )}
+              />
+            ),
+          )}
         </span>
         <BadgeText title="Built by the community" subtitle="Made for designers" />
       </>
@@ -236,7 +239,7 @@ const Dot = () => (
 
 export function SiteFooter() {
   return (
-    <footer className="relative overflow-hidden px-4 py-8">
+    <footer data-reveal="section" className="relative overflow-hidden px-4 py-8">
       {/* Glows: Figma sizes from md up; smaller and pulled to the edges on phones. Dark mode uses
           the info/primary focus tints (Figma 164:759). */}
       <div
@@ -269,6 +272,7 @@ export function SiteFooter() {
                 Docs
                 <img
                   decoding="async"
+                  loading="lazy"
                   alt=""
                   src={asset("icon-chevron-right.svg")}
                   className="block size-5"
@@ -276,6 +280,7 @@ export function SiteFooter() {
               </FooterLink>
               <img
                 decoding="async"
+                loading="lazy"
                 alt=""
                 src={asset("icon-external-link.svg")}
                 className="block size-3.5"

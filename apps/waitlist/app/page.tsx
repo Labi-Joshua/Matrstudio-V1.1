@@ -12,7 +12,7 @@ import { RevealObserver } from "../components/reveal-observer";
 export default function Page() {
   return (
     <>
-      <SiteHeader />
+      <SiteHeader current="home" />
       <main>
         <Hero />
         <Features />

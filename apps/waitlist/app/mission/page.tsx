@@ -17,7 +17,7 @@ export const metadata = {
 export default function MissionPage() {
   return (
     <>
-      <SiteHeader />
+      <SiteHeader current="mission" />
       <main>
         <MissionHero />
         <Yardstick />

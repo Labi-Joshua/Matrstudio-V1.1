@@ -114,8 +114,13 @@
     opacity: 0;
   }
 
+  /* [data-reveal-load] is for content on screen at load (the heroes): the same entrance, but
+     pure CSS from the first paint. It never waits for JS, so the headline (the page LCP)
+     paints immediately instead of after hydration. */
   [data-revealed],
-  [data-revealed] [data-reveal-child] {
+  [data-revealed] [data-reveal-child],
+  [data-reveal-load],
+  [data-reveal-load] [data-reveal-child] {
     animation: var(--reveal-anim, reveal-up) var(--reveal-duration, 1.2s) var(--ease-smooth)
       var(--reveal-delay, 0ms) backwards;
   }
@@ -130,21 +135,32 @@
   }
 
   [data-reveal="left"],
+  [data-reveal-load="left"],
   [data-reveal-child="left"] {
     --reveal-anim: reveal-left;
   }
   [data-reveal="right"],
+  [data-reveal-load="right"],
   [data-reveal-child="right"] {
     --reveal-anim: reveal-right;
   }
   [data-reveal="pop"],
+  [data-reveal-load="pop"],
   [data-reveal-child="pop"] {
     --reveal-anim: reveal-pop;
     --reveal-duration: 1s;
   }
   [data-reveal="fade"],
+  [data-reveal-load="fade"],
   [data-reveal-child="fade"] {
     --reveal-anim: reveal-fade;
+  }
+  /* Whole sections (and the footer) fade in as they first scroll into view; the elements
+     inside keep their own entrances on top. */
+  [data-reveal="section"],
+  [data-reveal-load="section"] {
+    --reveal-anim: reveal-fade;
+    --reveal-duration: 1.6s;
   }
   /* Progress ring arc sweeping in. */
   [data-reveal-child="sweep"] {
@@ -202,7 +218,9 @@
 
   @media (prefers-reduced-motion: reduce) {
     [data-revealed],
-    [data-revealed] [data-reveal-child] {
+    [data-revealed] [data-reveal-child],
+    [data-reveal-load],
+    [data-reveal-load] [data-reveal-child] {
       animation: none;
     }
   }

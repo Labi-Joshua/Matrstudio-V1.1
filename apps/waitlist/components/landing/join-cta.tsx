@@ -5,7 +5,7 @@ import { Badge, Container } from "./primitives";
 // Figma: Waitlist / Join Us (62:794).
 export function JoinCta() {
   return (
-    <section className="px-4 py-16">
+    <section data-reveal="section" className="px-4 py-16">
       <Container className="flex flex-col items-center gap-12">
         <AvatarNetwork />
         {/* Spacing per Figma: badge→headline 16px, headline→body 16px, body→button 32px. */}

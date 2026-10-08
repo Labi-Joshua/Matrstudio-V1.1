@@ -22,11 +22,11 @@ const PHOTOS: Array<[number, number, number, number]> = [
 ];
 
 const AVATARS: Array<[string, number, number]> = [
-  ["gallery-avatar-1.jpg", 590, 250.727],
-  ["gallery-avatar-2.jpg", 103, 240.727],
-  ["gallery-avatar-3.jpg", 748, 79.727],
-  ["gallery-avatar-4.jpg", 274, 111.727],
-  ["gallery-avatar-5.jpg", 1064, 219.727],
+  ["gallery-avatar-1.webp", 590, 250.727],
+  ["gallery-avatar-2.webp", 103, 240.727],
+  ["gallery-avatar-3.webp", 748, 79.727],
+  ["gallery-avatar-4.webp", 274, 111.727],
+  ["gallery-avatar-5.webp", 1064, 219.727],
 ];
 
 type Testimonial = {
@@ -43,21 +43,21 @@ const TESTIMONIALS: Testimonial[] = [
       "The V1 resource index was pinned to my browser. If the new learning paths are as well-organized as that directory, this is going to be incredibly useful.",
     name: "Abraham O.",
     role: "UI UX Newbie",
-    avatar: ["testimonial-abraham-base.jpg", "testimonial-abraham.jpg"],
+    avatar: ["testimonial-abraham-base.webp", "testimonial-abraham.webp"],
   },
   {
     quote:
       "They always kept the fluff out of the original directory. I’m really excited to see that same level of curation applied to self-paced courses and a community.",
     name: "Faith A.",
     role: "Brand Designer",
-    avatar: ["testimonial-faith-base.jpg", "testimonial-faith.jpg"],
+    avatar: ["testimonial-faith-base.webp", "testimonial-faith.webp"],
   },
   {
     quote:
       "I found some of my most-used tools through the first version of Matrstudio. Adding structured learning and chat rooms feels like the perfect next step.",
     name: "Ebube V.",
     role: "Graphic Designer",
-    avatar: ["testimonial-ebube.jpg"],
+    avatar: ["testimonial-ebube.webp"],
   },
 ];
 
@@ -67,6 +67,7 @@ function Stars() {
       {[0, 1, 2, 3, 4].map((i) => (
         <img
           decoding="async"
+          loading="lazy"
           key={i}
           alt=""
           src={asset("icon-star.svg")}
@@ -94,6 +95,7 @@ function TestimonialCard({ quote, name, role, avatar, delay }: Testimonial & { d
           {avatar.map((src) => (
             <img
               decoding="async"
+              loading="lazy"
               key={src}
               alt=""
               src={asset(src)}
@@ -114,7 +116,7 @@ function TestimonialCard({ quote, name, role, avatar, delay }: Testimonial & { d
 
 export function Testimonials() {
   return (
-    <section className="px-4 py-12">
+    <section data-reveal="section" className="px-4 py-12">
       <Container className="flex flex-col items-center">
         <div aria-hidden data-reveal="fade" className="relative aspect-[1240/500] w-full">
           {PHOTOS.map(([x, y, w, h], i) => (

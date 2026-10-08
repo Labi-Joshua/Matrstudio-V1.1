@@ -20,6 +20,7 @@ function ThemedArt({ name, inset, darkInset }: { name: string; inset: string; da
     <>
       <img
         decoding="async"
+        loading="lazy"
         alt=""
         src={asset(`${name}.svg`)}
         className="absolute block max-w-none dark:hidden"
@@ -27,6 +28,7 @@ function ThemedArt({ name, inset, darkInset }: { name: string; inset: string; da
       />
       <img
         decoding="async"
+        loading="lazy"
         alt=""
         src={asset(`${name}-dark.svg`)}
         className="absolute hidden max-w-none dark:block"
@@ -65,6 +67,7 @@ function UiCard({
   const img = (name: string, size: number) => (
     <img
       decoding="async"
+      loading="lazy"
       alt=""
       src={asset(`mission-${name}.svg`)}
       className="block shrink-0"
@@ -117,6 +120,7 @@ function UiCard({
       <div className="flex items-center" style={{ gap: p(8) }}>
         <img
           decoding="async"
+          loading="lazy"
           alt=""
           src={asset(`mission-${avatar}.svg`)}
           className="block shrink-0"
@@ -138,6 +142,7 @@ function CornerBadge({ icon, style }: { icon: string; style: CSSProperties }) {
     >
       <img
         decoding="async"
+        loading="lazy"
         alt=""
         src={asset(`mission-${icon}.svg`)}
         className="block"
@@ -357,7 +362,7 @@ const FEATURES: {
 
 export function Yardstick() {
   return (
-    <section className="px-4 py-8">
+    <section data-reveal="section" className="px-4 py-8">
       <Container className="flex flex-col items-center gap-[58px]">
         <div data-reveal className="flex w-full max-w-[600px] flex-col items-center gap-4">
           <Badge tone="primary">Our Yard Stick</Badge>

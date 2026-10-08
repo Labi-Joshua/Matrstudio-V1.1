@@ -117,7 +117,7 @@ const TOPICS = [
 
 export function Community() {
   return (
-    <section className="px-4 py-8">
+    <section data-reveal="section" className="px-4 py-8">
       <Container className="flex flex-col items-center pt-[33.55px] pb-[49.45px]">
         {/* The wrapper is a size container so the arc can set its font-size from its width
             (1.129cqw = 14px at 1240px), which is what the em-sized pills scale from. */}
@@ -181,9 +181,9 @@ export function Community() {
               delay={730}
             />
 
-            <ArcAvatar src="arc-avatar-left.jpg" x={228} y={255.545} size={60} delay={350} />
-            <ArcAvatar src="arc-avatar-center.jpg" x={596} y={117.545} size={48} delay={500} />
-            <ArcAvatar src="gallery-avatar-3.jpg" x={978} y={136.545} size={60} delay={650} />
+            <ArcAvatar src="arc-avatar-left.webp" x={228} y={255.545} size={60} delay={350} />
+            <ArcAvatar src="arc-avatar-center.webp" x={596} y={117.545} size={48} delay={500} />
+            <ArcAvatar src="gallery-avatar-3.webp" x={978} y={136.545} size={60} delay={650} />
 
             <div
               className="absolute transition-transform duration-500 ease-smooth hover:scale-150"

@@ -4,7 +4,7 @@ import { WaitlistForm } from "../waitlist-form";
 // Figma: Our Mission / Join the Community (134:2082 light, 164:690 dark).
 export function MissionJoin() {
   return (
-    <section className="px-4 py-8">
+    <section data-reveal="section" className="px-4 py-8">
       <Container className="flex flex-col items-center gap-[58px] py-8">
         <div data-reveal className="flex w-full max-w-[600px] flex-col items-center gap-4">
           <Badge tone="primary">Join the Community</Badge>

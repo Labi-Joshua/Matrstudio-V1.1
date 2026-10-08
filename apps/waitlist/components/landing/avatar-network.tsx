@@ -86,12 +86,19 @@ const highlight = [
 ].join("\n");
 
 /** Below md it runs edge to edge (past the 16px page gutter) so the portraits stay legible. */
-export function AvatarNetwork({ extraLinks = [] }: { extraLinks?: Link[] }) {
+/** onLoad: the network is on screen at load (mission hero), so it animates in without JS. */
+export function AvatarNetwork({
+  extraLinks = [],
+  onLoad = false,
+}: {
+  extraLinks?: Link[];
+  onLoad?: boolean;
+}) {
   const lines = [...LINKS, ...extraLinks].map(toLine);
   return (
     <div
       aria-hidden
-      data-reveal="fade"
+      {...(onLoad ? { "data-reveal-load": "fade" } : { "data-reveal": "fade" })}
       className="avatar-net relative -mx-4 aspect-[900/480] w-[calc(100%+2rem)] max-w-none md:mx-0 md:w-full md:max-w-[900px]"
     >
       <style>{highlight}</style>
@@ -128,7 +135,7 @@ export function AvatarNetwork({ extraLinks = [] }: { extraLinks?: Link[] }) {
           style={net(x, y, size, size)}
         >
           <Avatar
-            src={asset(`cta-avatar-${photo}.jpg`)}
+            src={asset(`cta-avatar-${photo}.webp`)}
             reveal="pop"
             className="size-full"
             style={revealDelay(100 + index * 45)}

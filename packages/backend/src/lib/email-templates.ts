@@ -1,13 +1,13 @@
-// Figma: MatrStudio V 1.1 / Email Templates (180:2): "Confirm your email" dark (181:43) and
-// the inbox preview (180:13704: subject + preview text). Always sent in the dark design, to
-// every reader, so the email looks the same in every app (the light frame 180:13334 is unused).
+// Figma: MatrStudio V 1.1 / Email Templates (180:2): "Confirm your email" light (180:13334),
+// dark (181:43) and the inbox preview (180:13704: subject + preview text). The email follows the
+// reader's theme: light by default, the dark frame where the app supports it.
 //
 // Both text styles use Manrope (the email's Body and Header font families in Figma).
 //
-// Email-client HTML: table layout and inline styles (Gmail strips most <style> rules) and PNG
-// images (Gmail and Outlook do not render SVG) hosted on the website. color-scheme "dark" tells
-// Apple Mail and Outlook the email is already dark, so they leave it alone. Gmail on iPhone may
-// still invert it; the logo pill below keeps the wordmark readable even then.
+// Email-client HTML: table layout and inline styles (Gmail strips most <style> rules), PNG
+// images (Gmail and Outlook do not render SVG) hosted on the website, and dark mode through
+// prefers-color-scheme for the clients that support it (Apple Mail, Outlook for Mac, iOS).
+// Gmail ignores it and applies its own dark adjustments to the light version.
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
 
@@ -16,28 +16,52 @@ const FONT_BODY =
 const FONT_HEAD =
   "'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
 
-// Figma Email · Dark (181:43) tokens.
+// Light values inline; the dark ones (Figma Email · Dark) are applied by the media query below.
 const C = {
-  page: "#131416", // background/bg-fill1
-  card: "#090a0b", // background/bg-base
-  border: "#1c1e21", // border/border-soft
-  rule: "rgba(36,46,66,0.08)", // divider: border/border-soft-alpha
-  text: "#f7f7f8",
-  muted: "#9ca1ab", // text/text-secondary
-  primary: "#d65c1f", // primary/key (button, fallback link)
-  accent: "#361e12", // primary/accent (icon tile)
-  accentBorder: "#d65c1f", // primary/border
-  focus: "#522914", // primary/focus (badge)
-  badgeText: "#f68851", // primary/text
-  note: "#131416", // security note background
+  page: "#f7f7f8", // background/bg-fill1
+  card: "#ffffff", // background/bg-base
+  border: "#e9eaec", // border/border-soft
+  rule: "rgba(36,46,66,0.08)", // divider: border/border-soft-alpha, the same in both themes
+  text: "#26282c",
+  muted: "#5e636e",
+  primary: "#d65c1f",
+  accent: "#ffeee5", // primary/accent (icon tile)
+  accentBorder: "#f68851", // primary/border
+  focus: "#ffe4d6", // primary/focus (badge)
+  note: "#f7f7f8", // security note background
 };
 
-const CSS = `
-  :root { color-scheme: dark; supported-color-schemes: dark; }
+const DARK_CSS = `
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
   @media (max-width: 480px) {
     .m-pad { padding: 32px 20px 24px !important; }
   }
+  @media (prefers-color-scheme: dark) {
+    .m-page { background-color: #131416 !important; }
+    .m-card { background-color: #090a0b !important; border-color: #1c1e21 !important; }
+    .m-text { color: #f7f7f8 !important; }
+    .m-muted { color: #9ca1ab !important; }
+    .m-tile { background-color: #361e12 !important; border-color: #d65c1f !important; }
+    .m-badge { background-color: #522914 !important; color: #f68851 !important; }
+    .m-note { background-color: #131416 !important; }
+    .m-logo { background-color: #131416 !important; background-image: linear-gradient(#131416, #131416) !important; }
+    .m-light { display: none !important; }
+    .m-dark { display: block !important; max-height: none !important; overflow: visible !important; }
+  }
+  /* Outlook.com and the Outlook apps recolour dark mode themselves and mark it with these attributes. */
+  [data-ogsc] .m-light { display: none !important; }
+  [data-ogsc] .m-dark { display: block !important; max-height: none !important; overflow: visible !important; }
+  [data-ogsb] .m-logo { background-color: #131416 !important; background-image: linear-gradient(#131416, #131416) !important; }
 `;
+
+/** An image with a dark-mode twin: the twin is hidden inline and shown only by the media query. */
+function themedImg(base: string, name: string, w: number, h: number, alt: string, extra = "") {
+  const common = `width="${w}" height="${h}" alt="${esc(alt)}" style="display:block;border:0;outline:none;width:${w}px;height:${h}px;${extra}"`;
+  return (
+    `<img class="m-light" src="${base}/${name}.png" ${common}>` +
+    `<!--[if !mso]><!--><img class="m-dark" src="${base}/${name}-dark.png" width="${w}" height="${h}" alt="${esc(alt)}" style="display:none;max-height:0;overflow:hidden;border:0;outline:none;width:${w}px;height:${h}px;${extra}"><!--<![endif]-->`
+  );
+}
 
 export type ConfirmEmailInput = {
   /** Verification link (the API's /api/waitlist/verify?token=...). */
@@ -65,11 +89,11 @@ export function confirmEmail({ link, email, webUrl, expiresIn }: ConfirmEmailInp
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="dark">
-<meta name="supported-color-schemes" content="dark">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
 <title>${esc(subject)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500&display=swap" rel="stylesheet">
-<style>${CSS}</style>
+<style>${DARK_CSS}</style>
 </head>
 <body class="m-page" style="margin:0;padding:0;background-color:${C.page};-webkit-text-size-adjust:100%;">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">${esc(preview)}${"&nbsp;&zwnj;".repeat(40)}</div>
@@ -77,14 +101,15 @@ export function confirmEmail({ link, email, webUrl, expiresIn }: ConfirmEmailInp
 <tr><td align="center" style="padding:40px 16px 48px;">
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
 
-    <!-- Logo. The white wordmark sits on a pill painted with a gradient, which Gmail never
-         recolours: if Gmail inverts the page to light, the logo still has a dark backdrop.
-         The pill matches the page colour, so normally it is invisible. 8px padding; outer
-         spacing reduced to match. -->
+    <!-- Logo. Gmail ignores the dark-mode CSS and darkens the page itself but never images, so the
+         dark wordmark would vanish on its dark background. It sits on a pill painted with a
+         gradient, which Gmail does not recolour: in light mode the pill matches the page and is
+         invisible, in Gmail dark mode it keeps the logo on light grey, and Apple Mail / Outlook
+         switch it to dark with the white logo. 8px padding; outer spacing reduced to match. -->
     <tr><td align="center" style="padding:0 0 24px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
         <td class="m-logo" style="background-color:${C.page};background-image:linear-gradient(${C.page}, ${C.page});border-radius:999px;padding:8px 14px;">
-          <a href="${esc(webUrl)}" style="text-decoration:none;display:block;"><img src="${img}/logo-dark.png" width="95" height="15" alt="matrstudio." style="display:block;border:0;outline:none;width:95px;height:15px;"></a>
+          <a href="${esc(webUrl)}" style="text-decoration:none;display:block;">${themedImg(img, "logo", 95, 15, "matrstudio.")}</a>
         </td>
       </tr></table>
     </td></tr>
@@ -104,7 +129,7 @@ export function confirmEmail({ link, email, webUrl, expiresIn }: ConfirmEmailInp
 
         <!-- Badge, title, body -->
         <tr><td align="center" style="padding:0 0 12px;">
-          <span class="m-badge" style="display:inline-block;background-color:${C.focus};color:${C.badgeText};border-radius:6px;padding:3px 8px;font-family:${FONT_HEAD};font-weight:500;font-size:13px;line-height:18px;letter-spacing:-0.13px;">One last step</span>
+          <span class="m-badge" style="display:inline-block;background-color:${C.focus};color:${C.primary};border-radius:6px;padding:3px 8px;font-family:${FONT_HEAD};font-weight:500;font-size:13px;line-height:18px;letter-spacing:-0.13px;">One last step</span>
         </td></tr>
         <tr><td align="center" style="padding:0 0 12px;">
           ${p("m-text", `font-family:${FONT_HEAD};font-weight:500;font-size:32px;line-height:40px;letter-spacing:-0.32px;color:${C.text};text-align:center;`, "Confirm your email")}

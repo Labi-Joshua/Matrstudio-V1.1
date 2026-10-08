@@ -30,7 +30,7 @@ describe("confirmEmail", () => {
 
   it("serves images from the website as PNG", () => {
     const { html } = confirmEmail(input);
-    expect(html).toContain('src="https://example.com/images/email/logo-dark.png"');
+    expect(html).toContain('src="https://example.com/images/email/logo.png"');
     expect(html).not.toMatch(/\.svg"/);
   });
 });

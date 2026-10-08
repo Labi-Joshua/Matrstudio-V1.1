@@ -3,6 +3,30 @@ import { MobileMenu } from "./mobile-menu";
 import { Container, ThemedImg } from "./primitives";
 
 /**
+ * Logo-only navbar for standalone pages (Figma: Email Confirmation / navbar 171:5584): the same
+ * frosted pill, centred, with nothing but the wordmark linking home.
+ */
+export function LogoHeader() {
+  return (
+    <header className="sticky top-4 z-40 mt-8 flex justify-center px-4">
+      <a
+        href="/"
+        aria-label="Matr Studio home"
+        className="group flex h-[60px] items-center rounded-full border border-border-soft bg-bg-fill1/90 px-5 backdrop-blur-[8px]"
+      >
+        <ThemedImg
+          name="logo-nav.svg"
+          alt="matrstudio."
+          width={94.909}
+          height={15}
+          className="block h-[15px] w-[94.909px] transition-transform duration-500 ease-smooth group-hover:-rotate-3 group-hover:scale-105"
+        />
+      </a>
+    </header>
+  );
+}
+
+/**
  * Figma: Waitlist / Hero / navbar (62:544). Sits 32px from the top as in the design, then
  * sticks 16px from the top while the page scrolls. Below sm the links live in MobileMenu.
  */

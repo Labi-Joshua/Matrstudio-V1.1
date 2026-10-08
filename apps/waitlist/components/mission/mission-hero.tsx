@@ -1,13 +1,6 @@
-import { AvatarNetwork, type Link } from "../landing/avatar-network";
+import { AvatarNetwork, BRIDGE_LINKS } from "../landing/avatar-network";
 import { Badge, Container } from "../landing/primitives";
 import { WaitlistForm } from "../waitlist-form";
-
-// The mission network is the Join Us one plus two links from portrait 5 across the gap
-// (Figma 151:2152 and 151:2153).
-const BRIDGES: Link[] = [
-  [5, 10, 297, 167, 120, 3, 1.43, 120.037],
-  [5, 16, 294, 178, 153, 95, 31.84, 180.094],
-];
 
 // Figma: Our Mission / Hero (134:1662 light, 164:519 dark).
 export function MissionHero() {
@@ -31,7 +24,7 @@ export function MissionHero() {
           </div>
           <WaitlistForm variant="primary" source="mission-hero" className="w-full items-center" />
         </div>
-        <AvatarNetwork extraLinks={BRIDGES} onLoad />
+        <AvatarNetwork extraLinks={BRIDGE_LINKS} onLoad />
       </Container>
     </section>
   );

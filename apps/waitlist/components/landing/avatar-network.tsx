@@ -68,6 +68,15 @@ const LINKS: Link[] = [
   [15, 18, 563.8, 246.22, 100.768, 111.488, 47.89, 150.278],
 ];
 
+/**
+ * Two extra links from portrait 5 across the gap between the clusters, used by the Our Mission
+ * hero (Figma 151:2152, 151:2153) and the email-confirmed page (171:5116, 171:5117).
+ */
+export const BRIDGE_LINKS: Link[] = [
+  [5, 10, 297, 167, 120, 3, 1.43, 120.037],
+  [5, 16, 294, 178, 153, 95, 31.84, 180.094],
+];
+
 const toLine = ([a, b, x, y, w, h, deg, length]: Link) => {
   const rad = (deg * Math.PI) / 180;
   const dx = (Math.cos(rad) * length) / 2;

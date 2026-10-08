@@ -1,8 +1,0 @@
-name = "matr-waitlist"
-compatibility_date = "2026-10-01"
-routes = [{ pattern = "waitlist.matr.studio", custom_domain = true }]
-
-# Assets-only Worker: no `main`, so no Worker code ever runs for page views.
-[assets]
-directory = "./out"
-not_found_handling = "404-page"

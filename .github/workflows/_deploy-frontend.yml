@@ -7,12 +7,19 @@ on:
         description: Directory name under apps/ (for example waitlist)
         type: string
         required: true
+      vercel-project:
+        description: Vercel project the static export is deployed to
+        type: string
+        required: true
 
 permissions:
   contents: read
 
 env:
   TURBO_TELEMETRY_DISABLED: "1"
+  VERCEL_TELEMETRY_DISABLED: "1"
+  # Team that owns the Vercel projects (not a secret).
+  VERCEL_SCOPE: jospecial34-9432s-projects
 
 jobs:
   deploy:
@@ -30,10 +37,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Build static export
         run: pnpm turbo run build --filter=@matr/${{ inputs.app }}
-      - name: Deploy static assets to Cloudflare
-        uses: cloudflare/wrangler-action@v4
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: apps/${{ inputs.app }}
-          command: deploy
+      # The site is hosted on Vercel (matrstudio.com); the API stays on Cloudflare Workers.
+      # Deploys the prebuilt out/ directory, the same command used for manual deploys.
+      - name: Deploy static export to Vercel
+        working-directory: apps/${{ inputs.app }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: >-
+          npx --yes vercel@latest deploy out --prod --yes
+          --token "$VERCEL_TOKEN" --scope "$VERCEL_SCOPE" --project ${{ inputs.vercel-project }}

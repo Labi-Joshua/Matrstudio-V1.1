@@ -30,4 +30,5 @@ jobs:
     uses: ./.github/workflows/_deploy-frontend.yml
     with:
       app: waitlist
+      vercel-project: matr-studio-waitlist
     secrets: inherit

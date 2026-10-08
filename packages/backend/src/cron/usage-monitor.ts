@@ -1,4 +1,5 @@
 import type { Bindings } from "../env";
+import { sendAlertEmail } from "../lib/email";
 
 // Workers Free limits (daily, reset 00:00 UTC). Keep in sync with the quota table in the docs.
 const LIMITS = { requests: 100_000, rowsRead: 5_000_000, rowsWritten: 100_000 } as const;
@@ -62,11 +63,13 @@ async function fetchUsage(env: Bindings, now: Date) {
   };
 }
 
-/** Runs from the cron trigger. Alerts once per (day, metric, threshold) via a Slack/Discord-style webhook. */
+/**
+ * Runs from the cron trigger. Alerts once per (day, metric, threshold) to every configured
+ * destination: a Slack/Discord-style webhook and/or an email through Resend.
+ */
 export async function checkUsage(env: Bindings): Promise<void> {
   // Not configured yet: skip quietly instead of logging a failed GraphQL call every 30 minutes.
-  if (!env.CF_API_TOKEN || !env.ALERT_WEBHOOK_URL) return;
-  const webhook = env.ALERT_WEBHOOK_URL;
+  if (!env.CF_API_TOKEN || !(env.ALERT_WEBHOOK_URL || env.ALERT_EMAIL)) return;
   const { day, usage } = await fetchUsage(env, new Date());
 
   for (const metric of Object.keys(LIMITS) as Array<keyof typeof LIMITS>) {
@@ -83,11 +86,14 @@ export async function checkUsage(env: Bindings): Promise<void> {
       if (res.meta.changes !== 1) continue;
 
       const text = `Matr Studio: ${metric} at ${pct.toFixed(0)}% of the free daily limit (${usage[metric].toLocaleString("en-US")} / ${LIMITS[metric].toLocaleString("en-US")}). Resets 00:00 UTC.`;
-      await fetch(webhook, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: text, text }), // Discord reads "content", Slack reads "text"
-      });
+      if (env.ALERT_WEBHOOK_URL) {
+        await fetch(env.ALERT_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: text, text }), // Discord reads "content", Slack reads "text"
+        });
+      }
+      await sendAlertEmail(env, `Matr Studio usage alert: ${metric} at ${level}%`, text);
     }
   }
 }

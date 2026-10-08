@@ -20,9 +20,11 @@ export type Bindings = {
   R2_ACCESS_KEY_ID: string;
   R2_SECRET_ACCESS_KEY: string;
   CF_ACCOUNT_ID: string;
-  // Usage alerts (cron): optional; the monitor skips itself until both are set.
+  // Usage alerts (cron): optional; the monitor skips itself until CF_API_TOKEN and at least
+  // one destination (webhook or email) are set.
   CF_API_TOKEN?: string; // Account Analytics: Read
-  ALERT_WEBHOOK_URL?: string;
+  ALERT_WEBHOOK_URL?: string; // Slack/Discord-style webhook
+  ALERT_EMAIL?: string; // sent through Resend; a secret so the address stays out of the repo
   RESEND_API_KEY?: string;
   TURNSTILE_SECRET?: string;
 };

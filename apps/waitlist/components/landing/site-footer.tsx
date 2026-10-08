@@ -267,24 +267,7 @@ export function SiteFooter() {
               <FooterLink href="#">Privacy</FooterLink>
               <Dot />
               <FooterLink href="#">Terms</FooterLink>
-              <Dot />
-              <FooterLink href="#">
-                Docs
-                <img
-                  decoding="async"
-                  loading="lazy"
-                  alt=""
-                  src={asset("icon-chevron-right.svg")}
-                  className="block size-5"
-                />
-              </FooterLink>
-              <img
-                decoding="async"
-                loading="lazy"
-                alt=""
-                src={asset("icon-external-link.svg")}
-                className="block size-3.5"
-              />
+              {/* Docs (with its chevron and external-link icons) is hidden until the docs exist. */}
             </nav>
             <ThemeToggle />
           </div>

@@ -1,0 +1,17 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="286.157" height="241.857" viewBox="0 0 286.157 241.857" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="growth-arrow" filter="url(#filter0_d_0_331)">
+<path id="arrow" d="M20.0787 216.419L95.0787 152.419L167.079 88.4192L266.079 16.4192M260.279 39.7192L266.079 16.4192L242.179 14.7192" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" stroke="#26282C"/>
+</g>
+<defs>
+<filter id="filter0_d_0_331" x="-3.99992" y="-3.99983" width="294.157" height="249.857" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="5.35954"/>
+<feGaussianBlur stdDeviation="8.03931"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.14 0 0 0 0 0.18 0 0 0 0 0.28 0 0 0 0.18 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_331"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_331" result="shape"/>
+</filter>
+</defs>
+</svg>

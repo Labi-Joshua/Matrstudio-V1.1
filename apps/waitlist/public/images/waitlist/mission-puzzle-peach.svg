@@ -1,0 +1,18 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="168" height="168" viewBox="0 0 168 168" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Puzzle piece &#226;&#128;&#148; peach">
+<g id="Vector" filter="url(#filter0_d_0_353)">
+<path d="M29.6471 33.2941H59.7353C63.6176 33.2941 64.5882 29.4118 62.6471 26.5C54.8824 12.9118 63.6176 10 72.3529 10C82.0588 10 90.7941 12.9118 83.0294 26.5C81.0882 29.4118 82.0588 33.2941 85.9412 33.2941H115.059C122.824 33.2941 126.706 37.1765 126.706 44.9412V74.0588C126.706 77.9412 130.588 78.9118 133.5 76.9706C146.118 70.1765 150 78.9118 150 87.6471C150 97.3529 146.118 106.088 133.5 99.2941C130.588 97.3529 126.706 98.3235 126.706 102.206V130.353C126.706 138.118 122.824 142 115.059 142H85.9412C82.0588 142 81.0882 138.118 83.0294 135.206C90.7941 121.618 82.0588 118.706 72.3529 118.706C63.6176 118.706 54.8824 121.618 62.6471 135.206C64.5882 138.118 63.6176 142 59.7353 142H29.6471C21.8824 142 18 138.118 18 130.353V102.206C18 98.3235 21.8824 97.3529 24.7941 99.2941C37.4118 106.088 41.2941 97.3529 41.2941 87.6471C41.2941 78.9118 37.4118 70.1765 24.7941 76.9706C21.8824 78.9118 18 77.9412 18 74.0588V44.9412C18 37.1765 21.8824 33.2941 29.6471 33.2941Z" fill="#FFC9AD"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_d_0_353" x="0" y="0" width="168" height="168" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="9"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.14 0 0 0 0 0.18 0 0 0 0 0.28 0 0 0 0.15 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_353"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_353" result="shape"/>
+</filter>
+</defs>
+</svg>

@@ -1,0 +1,18 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="141" height="141" viewBox="0 0 141 141" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Puzzle piece &#226;&#128;&#148; soft blue">
+<g id="Vector" filter="url(#filter0_d_0_338)">
+<path d="M27.2647 28.5294H51.1985C54.2868 28.5294 55.0588 25.4412 53.5147 23.125C47.3382 12.3162 54.2868 10 61.2353 10C68.9559 10 75.9044 12.3162 69.7279 23.125C68.1838 25.4412 68.9559 28.5294 72.0441 28.5294H95.2059C101.382 28.5294 104.471 31.6176 104.471 37.7941V60.9559C104.471 64.0441 107.559 64.8162 109.875 63.2721C119.912 57.8676 123 64.8162 123 71.7647C123 79.4853 119.912 86.4338 109.875 81.0294C107.559 79.4853 104.471 80.2574 104.471 83.3456V105.735C104.471 111.912 101.382 115 95.2059 115H72.0441C68.9559 115 68.1838 111.912 69.7279 109.596C75.9044 98.7868 68.9559 96.4706 61.2353 96.4706C54.2868 96.4706 47.3382 98.7868 53.5147 109.596C55.0588 111.912 54.2868 115 51.1985 115H27.2647C21.0882 115 18 111.912 18 105.735V83.3456C18 80.2574 21.0882 79.4853 23.4044 81.0294C33.4412 86.4338 36.5294 79.4853 36.5294 71.7647C36.5294 64.8162 33.4412 57.8676 23.4044 63.2721C21.0882 64.8162 18 64.0441 18 60.9559V37.7941C18 31.6176 21.0882 28.5294 27.2647 28.5294Z" fill="#D1E5FA"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_d_0_338" x="0" y="0" width="141" height="141" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="9"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.14 0 0 0 0 0.18 0 0 0 0 0.28 0 0 0 0.15 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_338"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_338" result="shape"/>
+</filter>
+</defs>
+</svg>

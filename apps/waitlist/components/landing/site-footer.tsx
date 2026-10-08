@@ -1,7 +1,6 @@
 import { cn } from "@matr/ui";
 import type { CSSProperties, ReactNode } from "react";
 import { CursorParallax } from "./cursor-parallax";
-import { atmosphere } from "./join-cta";
 import { asset, Container, canvas, parallax, ThemedImg } from "./primitives";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -10,35 +9,23 @@ import { ThemeToggle } from "./theme-toggle";
 // There is no mobile frame: below lg only the community badge is kept, under the wordmark.
 const comp = canvas(1240, 478);
 
-function BadgeIcon({ name, color }: { name: string; color: string }) {
+function BadgeIcon({ name, className }: { name: string; className: string }) {
   return (
     <span
-      className="flex size-[23.363px] shrink-0 items-center justify-center rounded-[5.841px]"
-      style={{ backgroundColor: color }}
+      className={cn(
+        "flex size-[23.363px] shrink-0 items-center justify-center rounded-[5.841px]",
+        className,
+      )}
     >
       <ThemedImg name={name} className="block size-[13.628px]" />
     </span>
   );
 }
 
-function BadgeText({
-  title,
-  subtitle,
-  onPastel = false,
-}: {
-  title: string;
-  subtitle?: string;
-  /** Pastel badges keep their light fill in dark mode, so their title stays dark. */
-  onPastel?: boolean;
-}) {
+function BadgeText({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <span className="flex flex-col items-start gap-[0.973px]">
-      <span
-        className={cn(
-          "font-display font-semibold text-[9.735px] text-text leading-[12.655px]",
-          onPastel && "dark:text-[#131416]",
-        )}
-      >
+      <span className="font-display font-semibold text-[9.735px] text-text leading-[12.655px]">
         {title}
       </span>
       {subtitle && (
@@ -65,25 +52,25 @@ type FooterBadge = {
 const BADGES: FooterBadge[] = [
   {
     id: "components",
-    className: cn(pill, "border-primary-border bg-[#ffe8e0]"),
+    className: cn(pill, "border-primary-border bg-[#ffe8e0] dark:bg-primary-accent"),
     at: [300, 109],
     depth: 14,
     content: (
       <>
-        <BadgeIcon name="icon-component.svg" color="var(--color-primary)" />
-        <BadgeText onPastel title="Reusable components" />
+        <BadgeIcon name="icon-component.svg" className="bg-primary" />
+        <BadgeText title="Reusable components" />
       </>
     ),
   },
   {
     id: "layers",
-    className: cn(pill, "border-[#c7ccfa] bg-[#eef0ff]"),
+    className: cn(pill, "border-[#c7ccfa] bg-[#eef0ff] dark:border-[#623df5] dark:bg-[#25194d]"),
     at: [637, 112],
     depth: 18,
     content: (
       <>
-        <BadgeIcon name="icon-layers-white.svg" color="#6e78f7" />
-        <BadgeText onPastel title="Layers & Theming" subtitle="Dark & light ready" />
+        <BadgeIcon name="icon-layers-white.svg" className="bg-[#6e78f7] dark:bg-[#623df5]" />
+        <BadgeText title="Layers & Theming" subtitle="Dark & light ready" />
       </>
     ),
   },
@@ -106,25 +93,25 @@ const BADGES: FooterBadge[] = [
   },
   {
     id: "dev-exports",
-    className: cn(pill, "border-[#7de0b0] bg-[#e8fff4]"),
+    className: cn(pill, "border-[#7de0b0] bg-[#e8fff4] dark:border-[#218341] dark:bg-[#0f2e19]"),
     at: [188, 280],
     depth: 22,
     content: (
       <>
-        <BadgeIcon name="icon-code.svg" color="#1da54a" />
-        <BadgeText onPastel title="Dev-ready Exports" subtitle="JSX & Tokens" />
+        <BadgeIcon name="icon-code.svg" className="bg-[#1da54a]" />
+        <BadgeText title="Dev-ready Exports" subtitle="JSX & Tokens" />
       </>
     ),
   },
   {
     id: "color-tokens",
-    className: cn(pill, "border-[#ffd98a] bg-[#fff5e0]"),
+    className: cn(pill, "border-[#ffd98a] bg-[#fff5e0] dark:border-[#6e4d0c] dark:bg-[#2e240f]"),
     at: [1066, 144],
     depth: 16,
     content: (
       <>
-        <BadgeIcon name="icon-palette.svg" color="#f5a623" />
-        <BadgeText onPastel title="Color Tokens" subtitle="Semantic palette" />
+        <BadgeIcon name="icon-palette.svg" className="bg-[#f5a623] dark:bg-[#ffaa00]" />
+        <BadgeText title="Color Tokens" subtitle="Semantic palette" />
       </>
     ),
   },
@@ -164,7 +151,7 @@ function Wordmark({ className, style }: { className?: string; style?: CSSPropert
     <ThemedImg
       name="logo-wordmark.svg"
       alt="matrstudio."
-      className={cn("block max-w-none dark:opacity-60", className)}
+      className={cn("block max-w-none", className)}
       style={style}
     />
   );
@@ -250,16 +237,15 @@ const Dot = () => (
 export function SiteFooter() {
   return (
     <footer className="relative overflow-hidden px-4 py-8">
-      {/* Glows: Figma sizes from md up; smaller and pulled to the edges on phones. */}
+      {/* Glows: Figma sizes from md up; smaller and pulled to the edges on phones. Dark mode uses
+          the info/primary focus tints (Figma 164:759). */}
       <div
         aria-hidden
-        className="pointer-events-none absolute top-0 dark:opacity-20 left-[-30%] h-[340px] w-[320px] md:top-[-8.27px] md:left-[8.28%] md:h-[484px] md:w-[449px]"
-        style={{ background: atmosphere.cool }}
+        className="pointer-events-none absolute top-0 left-[-30%] bg-[radial-gradient(closest-side,rgba(194,219,255,0.55),rgba(194,219,255,0))] dark:bg-[radial-gradient(closest-side,#143352,rgba(20,51,82,0))] dark:opacity-55 h-[340px] w-[320px] md:top-[-8.27px] md:left-[8.28%] md:h-[484px] md:w-[449px]"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute right-[-35%] dark:opacity-20 bottom-0 h-[380px] w-[350px] md:top-[103.73px] md:right-auto md:bottom-auto md:left-[69.9%] md:h-[560px] md:w-[520px]"
-        style={{ background: atmosphere.warm }}
+        className="pointer-events-none absolute right-[-35%] bottom-0 bg-[radial-gradient(closest-side,rgba(255,219,194,0.4),rgba(255,219,194,0))] dark:bg-[radial-gradient(closest-side,#522914,rgba(82,41,20,0))] dark:opacity-40 h-[380px] w-[350px] md:top-[103.73px] md:right-auto md:bottom-auto md:left-[69.9%] md:h-[560px] md:w-[520px]"
       />
 
       <Container className="relative lg:pb-[22px]">

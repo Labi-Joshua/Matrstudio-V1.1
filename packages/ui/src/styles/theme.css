@@ -27,6 +27,7 @@
   --matr-primary-accent: #ffeee5;
   --matr-primary-focus: #ffe4d6;
   --matr-primary-border: #f68851;
+  --matr-info-focus: #d1e5fa;
 
   /* utility/Black/key: near-black in light mode, white in dark mode. */
   --matr-black: #090a0b;
@@ -55,6 +56,7 @@
   --matr-primary-accent: #361e12;
   --matr-primary-focus: #522914;
   --matr-primary-border: #d65c1f;
+  --matr-info-focus: #143352;
 
   --matr-black: #ffffff;
   --matr-success: #1da54a;
@@ -80,6 +82,7 @@
   --color-primary-accent: var(--matr-primary-accent);
   --color-primary-focus: var(--matr-primary-focus);
   --color-primary-border: var(--matr-primary-border);
+  --color-info-focus: var(--matr-info-focus);
 
   --color-ink: var(--matr-black);
   --color-success: var(--matr-success);

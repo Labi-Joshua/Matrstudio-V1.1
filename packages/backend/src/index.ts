@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { deleteStaleUnconfirmed, isCleanupTick } from "./cron/cleanup";
 import { checkUsage } from "./cron/usage-monitor";
 import type { AppEnv, Bindings } from "./env";
 import { apiError } from "./lib/errors";
@@ -33,7 +34,8 @@ app.onError((err, c) => {
 
 export default {
   fetch: app.fetch,
-  scheduled(_controller, env, ctx) {
+  scheduled(controller, env, ctx) {
     ctx.waitUntil(checkUsage(env));
+    if (isCleanupTick(controller.scheduledTime)) ctx.waitUntil(deleteStaleUnconfirmed(env));
   },
 } satisfies ExportedHandler<Bindings>;

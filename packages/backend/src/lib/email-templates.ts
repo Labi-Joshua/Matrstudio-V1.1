@@ -80,6 +80,11 @@ export function confirmEmail({ link, email, webUrl, expiresIn }: ConfirmEmailInp
   const img = `${webUrl}/images/email`;
   const year = new Date().getUTCFullYear();
   const href = esc(link);
+  const FOOTER_LINKS = {
+    Privacy: esc(`${webUrl}/privacy`),
+    Terms: esc(`${webUrl}/terms`),
+    "Help centre": "mailto:hello@matrstudio.com",
+  };
 
   const p = (cls: string, style: string, body: string) =>
     `<p class="${cls}" style="margin:0;${style}">${body}</p>`;
@@ -178,10 +183,10 @@ export function confirmEmail({ link, email, webUrl, expiresIn }: ConfirmEmailInp
 
     <!-- Footer -->
     <tr><td align="center" style="padding:32px 0 12px;">
-      ${["Privacy", "Terms", "Help centre"]
+      ${(["Privacy", "Terms", "Help centre"] as const)
         .map(
           (label, i) =>
-            `<a class="m-muted" href="${label === "Help centre" ? "mailto:hello@matrstudio.com" : esc(webUrl)}" style="font-family:${FONT_BODY};font-weight:500;font-size:14px;line-height:20px;letter-spacing:-0.14px;color:${C.muted};text-decoration:none;${i ? "margin-left:16px;" : ""}">${label}</a>`,
+            `<a class="m-muted" href="${FOOTER_LINKS[label]}" style="font-family:${FONT_BODY};font-weight:500;font-size:14px;line-height:20px;letter-spacing:-0.14px;color:${C.muted};text-decoration:none;${i ? "margin-left:16px;" : ""}">${label}</a>`,
         )
         .join("")}
     </td></tr>

@@ -58,3 +58,12 @@ describe("waitlistSignupSchema", () => {
     );
   });
 });
+
+describe("cleanup schedule", () => {
+  it("runs once a day, on the 03:00 UTC tick", async () => {
+    const { isCleanupTick } = await import("../src/cron/cleanup");
+    expect(isCleanupTick(Date.UTC(2026, 9, 9, 3, 0))).toBe(true);
+    expect(isCleanupTick(Date.UTC(2026, 9, 9, 3, 30))).toBe(false);
+    expect(isCleanupTick(Date.UTC(2026, 9, 9, 15, 0))).toBe(false);
+  });
+});

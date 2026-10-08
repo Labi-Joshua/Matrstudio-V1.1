@@ -5,9 +5,10 @@ import { SITE_URL } from "../lib/site";
 export const dynamic = "force-static";
 
 /**
- * The public pages: the landing page and Our Mission. The email-confirmation pages
- * (/verified, /verify-already, /verify-expired, /verify-failed) are only reached from
- * confirmation links and are marked noindex, so they stay out of the sitemap and search results.
+ * The public pages: the landing page, Our Mission, the Privacy Policy and the Terms of Service.
+ * The email-confirmation pages (/verified, /verify-already, /verify-expired, /verify-failed) are
+ * only reached from confirmation links and are marked noindex, so they stay out of the sitemap
+ * and search results.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -23,5 +24,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.8,
     },
+    ...["privacy", "terms"].map((page) => ({
+      url: `${SITE_URL}/${page}`,
+      lastModified: new Date(),
+      changeFrequency: "yearly" as const,
+      priority: 0.3,
+    })),
   ];
 }

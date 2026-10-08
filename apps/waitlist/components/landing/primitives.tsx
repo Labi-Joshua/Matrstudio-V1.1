@@ -21,6 +21,7 @@ const DARK_VARIANTS = new Set([
   "icon-sun.svg",
   "logo-nav.svg",
   "logo-wordmark.svg",
+  "legal-mail.svg",
   "mission-globe.svg",
   "orbit-inner.svg",
   "orbit-outer.svg",

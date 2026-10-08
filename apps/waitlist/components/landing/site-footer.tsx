@@ -264,9 +264,9 @@ export function SiteFooter() {
           </p>
           <div className="flex items-center justify-center gap-6 md:justify-end md:gap-8">
             <nav aria-label="Legal" className="flex items-center gap-1">
-              <FooterLink href="#">Privacy</FooterLink>
+              <FooterLink href="/privacy">Privacy</FooterLink>
               <Dot />
-              <FooterLink href="#">Terms</FooterLink>
+              <FooterLink href="/terms">Terms</FooterLink>
               {/* Docs (with its chevron and external-link icons) is hidden until the docs exist. */}
             </nav>
             <ThemeToggle />

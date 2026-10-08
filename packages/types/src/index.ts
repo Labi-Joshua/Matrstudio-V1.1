@@ -18,6 +18,13 @@ export const waitlistSignupSchema = z.object({
 });
 export type WaitlistSignupRequest = z.input<typeof waitlistSignupSchema>;
 
+/**
+ * POST /api/waitlist/resend: a new confirmation link for the address in an expired link.
+ * The signed token proves the request came from that email, so no address is typed.
+ */
+export const waitlistResendSchema = z.object({ token: z.string().min(16).max(1024) });
+export type WaitlistResendRequest = z.input<typeof waitlistResendSchema>;
+
 export type WaitlistSignupResponse = { ok: true };
 export type WaitlistStatsResponse = { total: number };
 export type HealthResponse = { ok: true; env: string; time: string };

@@ -20,10 +20,16 @@ const importKey = (secret: string, usage: "sign" | "verify") =>
     usage,
   ]);
 
+/**
+ * How long a confirmation link stays valid. The email copy states it too. Readers who miss it
+ * can get a new link from the expired page or by signing up again.
+ */
+export const VERIFY_TTL_SECONDS = 24 * 3600;
+
 export async function signVerifyToken(
   secret: string,
   email: string,
-  ttlSeconds = 7 * 24 * 3600,
+  ttlSeconds = VERIFY_TTL_SECONDS,
 ): Promise<string> {
   const exp = Math.floor(Date.now() / 1000) + ttlSeconds;
   const payload = `${b64u.encode(enc.encode(email))}.${exp}`;
@@ -35,8 +41,21 @@ export async function signVerifyToken(
   return `${payload}.${b64u.encode(new Uint8Array(sig))}`;
 }
 
-/** Returns the email if the token is authentic and unexpired, otherwise null. */
-export async function verifyVerifyToken(secret: string, token: string): Promise<string | null> {
+export type VerifyTokenInfo = {
+  email: string;
+  /** Expiry, unix seconds. */
+  exp: number;
+  expired: boolean;
+};
+
+/**
+ * Checks the signature and reads the token, expired or not, so the caller can tell an expired
+ * link (offer a new one) from a broken or forged one (null).
+ */
+export async function readVerifyToken(
+  secret: string,
+  token: string,
+): Promise<VerifyTokenInfo | null> {
   const [emailPart, expPart, sigPart] = token.split(".");
   if (!emailPart || !expPart || !sigPart) return null;
   try {
@@ -46,9 +65,20 @@ export async function verifyVerifyToken(secret: string, token: string): Promise<
       b64u.decode(sigPart),
       enc.encode(`${emailPart}.${expPart}`),
     );
-    if (!ok || Number(expPart) < Math.floor(Date.now() / 1000)) return null;
-    return dec.decode(b64u.decode(emailPart));
+    const exp = Number(expPart);
+    if (!ok || !Number.isFinite(exp)) return null;
+    return {
+      email: dec.decode(b64u.decode(emailPart)),
+      exp,
+      expired: exp < Math.floor(Date.now() / 1000),
+    };
   } catch {
     return null;
   }
+}
+
+/** Returns the email if the token is authentic and unexpired, otherwise null. */
+export async function verifyVerifyToken(secret: string, token: string): Promise<string | null> {
+  const info = await readVerifyToken(secret, token);
+  return info && !info.expired ? info.email : null;
 }

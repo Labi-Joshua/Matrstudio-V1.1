@@ -17,6 +17,9 @@ type WaitlistFormProps = {
   inputId?: string;
   /** Let the email field fill the available width instead of the design's fixed 280px. */
   fluid?: boolean;
+  /** Button text, and the text while submitting. */
+  submitLabel?: string;
+  pendingLabel?: string;
   className?: string;
 };
 
@@ -25,6 +28,8 @@ export function WaitlistForm({
   variant = "ink",
   source = "waitlist-site",
   fluid = false,
+  submitLabel = "Join the Waitlist",
+  pendingLabel = "Joining…",
   inputId,
   className,
 }: WaitlistFormProps) {
@@ -95,7 +100,7 @@ export function WaitlistForm({
             variant === "ink" ? "bg-[#060606] dark:bg-primary" : "bg-primary",
           )}
         >
-          {state === "submitting" ? "Joining…" : "Join the Waitlist"}
+          {state === "submitting" ? pendingLabel : submitLabel}
         </button>
       </form>
       {state === "error" && (

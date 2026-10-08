@@ -1,16 +1,40 @@
 import { zValidator } from "@hono/zod-validator";
-import { waitlistSignupSchema } from "@matr/types";
+import { waitlistResendSchema, waitlistSignupSchema } from "@matr/types";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
-import type { AppEnv } from "../env";
+import type { AppEnv, Bindings } from "../env";
 import { cachedJson } from "../lib/cache";
 import { sendVerificationEmail } from "../lib/email";
 import { apiError } from "../lib/errors";
 import { generateReferralCode } from "../lib/referral";
-import { verifyVerifyToken } from "../lib/token";
+import { readVerifyToken, VERIFY_TTL_SECONDS } from "../lib/token";
 import { rateLimit } from "../middleware/rate-limit";
 
 export const waitlist = new Hono<AppEnv>();
+
+/** Minimum gap between two confirmation emails to the same address. */
+const RESEND_COOLDOWN_SECONDS = 60;
+
+/**
+ * Sends a new confirmation link if the address is still pending and the last one went out more
+ * than a minute ago. updated_at records when the latest link was sent (see /verify).
+ * One statement: the cooldown check and the timestamp update cannot race.
+ */
+async function resendIfPending(
+  env: Bindings,
+  ctx: { waitUntil(promise: Promise<unknown>): void },
+  email: string,
+) {
+  const row = await env.DB.prepare(
+    `UPDATE waitlist_subscribers
+        SET updated_at = unixepoch()
+      WHERE email = ?1 AND status = 'pending' AND updated_at <= unixepoch() - ?2
+      RETURNING id`,
+  )
+    .bind(email, RESEND_COOLDOWN_SECONDS)
+    .first<{ id: number }>();
+  if (row) ctx.waitUntil(sendVerificationEmail(env, email));
+}
 
 async function turnstileOk(secret: string, token: string | undefined, ip: string | undefined) {
   if (!token) return false;
@@ -64,6 +88,9 @@ waitlist.post(
 
     if (inserted) {
       c.executionCtx.waitUntil(sendVerificationEmail(c.env, body.email));
+    } else {
+      // Already signed up: a pending address gets a fresh link (the old one may have expired).
+      await resendIfPending(c.env, c.executionCtx, body.email);
     }
 
     // Same response for new and existing emails: the endpoint cannot be used to enumerate subscribers.
@@ -72,20 +99,69 @@ waitlist.post(
 );
 
 // GET /api/waitlist/verify?token=...
+// Redirects to the page for each outcome:
+//   /verified          confirmed now
+//   /verify-already    this address was confirmed before
+//   /verify-expired    authentic but past its 24 hours (the page offers a new link)
+//   /verify-failed     broken, unknown, or replaced by a newer link ("only the latest link works")
 waitlist.get("/verify", rateLimit("API_LIMITER"), async (c) => {
-  const email = await verifyVerifyToken(c.env.VERIFY_SECRET, c.req.query("token") ?? "");
-  if (!email) return c.redirect(`${c.env.PUBLIC_WEB_URL}/verify-failed`, 302);
+  const web = c.env.PUBLIC_WEB_URL;
+  const token = c.req.query("token") ?? "";
+  const info = await readVerifyToken(c.env.VERIFY_SECRET, token);
+  if (!info) return c.redirect(`${web}/verify-failed`, 302);
+
+  const row = await c.env.DB.prepare(
+    "SELECT status, updated_at FROM waitlist_subscribers WHERE email = ?1",
+  )
+    .bind(info.email)
+    .first<{ status: string; updated_at: number }>();
+  if (!row) return c.redirect(`${web}/verify-failed`, 302);
+  if (row.status === "verified") return c.redirect(`${web}/verify-already`, 302);
+  if (row.status !== "pending") return c.redirect(`${web}/verify-failed`, 302);
+
+  // A newer link was sent after this one was issued: only the latest works. 5s of slack, since
+  // the email is signed just after the row is written.
+  const issuedAt = info.exp - VERIFY_TTL_SECONDS;
+  if (issuedAt + 5 < row.updated_at) return c.redirect(`${web}/verify-failed`, 302);
+
+  if (info.expired) {
+    return c.redirect(`${web}/verify-expired?token=${encodeURIComponent(token)}`, 302);
+  }
 
   await c.env.DB.prepare(
     `UPDATE waitlist_subscribers
         SET status = 'verified', updated_at = unixepoch()
       WHERE email = ?1 AND status = 'pending'`,
   )
-    .bind(email)
+    .bind(info.email)
     .run();
 
-  return c.redirect(`${c.env.PUBLIC_WEB_URL}/verified`, 302);
+  return c.redirect(`${web}/verified`, 302);
 });
+
+// POST /api/waitlist/resend: "Send a new link" on the expired page. The token must be authentic
+// (it may be expired, up to 30 days); the new link goes to the address inside it, so this can
+// only ever email someone who already received one.
+waitlist.post(
+  "/resend",
+  rateLimit("SIGNUP_LIMITER"),
+  bodyLimit({
+    maxSize: 2 * 1024,
+    onError: (c) => c.json(apiError("payload_too_large", "Request body too large."), 413),
+  }),
+  zValidator("json", waitlistResendSchema, (result, c) => {
+    if (!result.success) return c.json(apiError("invalid_request", "That link is not valid."), 400);
+  }),
+  async (c) => {
+    const info = await readVerifyToken(c.env.VERIFY_SECRET, c.req.valid("json").token);
+    const tooOld = !info || info.exp < Math.floor(Date.now() / 1000) - 30 * 24 * 3600;
+    if (tooOld) return c.json(apiError("invalid_request", "That link is not valid."), 400);
+
+    await resendIfPending(c.env, c.executionCtx, info.email);
+    // Same response whether or not an email went out (cooldown, already confirmed).
+    return c.json({ ok: true as const }, 202);
+  },
+);
 
 // GET /api/waitlist/stats: public counter, 1 row read on a miss, 0 on a hit.
 waitlist.get("/stats", rateLimit("API_LIMITER"), async (c) => {

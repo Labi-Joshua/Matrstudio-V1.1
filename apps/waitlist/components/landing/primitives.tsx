@@ -137,6 +137,14 @@ export function Avatar({
   );
 }
 
+const BADGE_TONES = {
+  neutral: "bg-bg-fill1 text-text-secondary",
+  primary: "bg-primary-focus text-primary-text",
+  warning: "bg-warning-focus text-warning-text",
+  error: "bg-error-focus text-error-text",
+  success: "bg-success-focus text-success-text",
+};
+
 export function Badge({
   children,
   dot = false,
@@ -144,16 +152,11 @@ export function Badge({
 }: {
   children: ReactNode;
   dot?: boolean;
-  tone?: "neutral" | "primary";
+  tone?: keyof typeof BADGE_TONES;
 }) {
   return (
     <span
-      className={cn(
-        "inline-flex items-center gap-0.5 rounded-md px-1 py-0.5",
-        tone === "neutral"
-          ? "bg-bg-fill1 text-text-secondary"
-          : "bg-primary-focus text-primary-text",
-      )}
+      className={cn("inline-flex items-center gap-0.5 rounded-md px-1 py-0.5", BADGE_TONES[tone])}
     >
       {dot && (
         <span className="flex items-center justify-center p-[3px]">

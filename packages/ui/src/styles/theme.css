@@ -28,6 +28,19 @@
   --matr-primary-focus: #ffe4d6;
   --matr-primary-border: #f68851;
   --matr-info-focus: #d1e5fa;
+  /* State colours: amber (warning), red (error), green (success); Figma state/* and utility/*. */
+  --matr-warning-accent: #fff6e5;
+  --matr-warning-border: #ffaa00;
+  --matr-warning-focus: #ffebc2;
+  --matr-warning-text: #6e4d0c;
+  --matr-error-accent: #feebeb;
+  --matr-error-border: #ff7070;
+  --matr-error-focus: #fdd8d8;
+  --matr-error-text: #d92626;
+  --matr-success-border: #2eb85c;
+  --matr-success-focus: #d1fad1;
+  --matr-success-text: #188b18;
+  --matr-bg-elevation-1: #ffffff;
 
   /* utility/Black/key: near-black in light mode, white in dark mode. */
   --matr-black: #090a0b;
@@ -57,6 +70,19 @@
   --matr-primary-focus: #522914;
   --matr-primary-border: #d65c1f;
   --matr-info-focus: #143352;
+  /* State colours: amber (warning), red (error), green (success); Figma state/* and utility/*. */
+  --matr-warning-accent: #2e240f;
+  --matr-warning-border: #6e4d0c;
+  --matr-warning-focus: #523d14;
+  --matr-warning-text: #ffcf70;
+  --matr-error-accent: #3d1414;
+  --matr-error-border: #932525;
+  --matr-error-focus: #521414;
+  --matr-error-text: #ff7070;
+  --matr-success-border: #218341;
+  --matr-success-focus: #145214;
+  --matr-success-text: #19e519;
+  --matr-bg-elevation-1: #131416;
 
   --matr-black: #ffffff;
   --matr-success: #1da54a;
@@ -83,6 +109,18 @@
   --color-primary-focus: var(--matr-primary-focus);
   --color-primary-border: var(--matr-primary-border);
   --color-info-focus: var(--matr-info-focus);
+  --color-warning-accent: var(--matr-warning-accent);
+  --color-warning-border: var(--matr-warning-border);
+  --color-warning-focus: var(--matr-warning-focus);
+  --color-warning-text: var(--matr-warning-text);
+  --color-error-accent: var(--matr-error-accent);
+  --color-error-border: var(--matr-error-border);
+  --color-error-focus: var(--matr-error-focus);
+  --color-error-text: var(--matr-error-text);
+  --color-success-border: var(--matr-success-border);
+  --color-success-focus: var(--matr-success-focus);
+  --color-success-text: var(--matr-success-text);
+  --color-bg-elevation-1: var(--matr-bg-elevation-1);
 
   --color-ink: var(--matr-black);
   --color-success: var(--matr-success);

@@ -3,6 +3,7 @@ import type {
   HealthResponse,
   PresignUploadRequest,
   PresignUploadResponse,
+  WaitlistResendRequest,
   WaitlistSignupRequest,
   WaitlistSignupResponse,
   WaitlistStatsResponse,
@@ -59,6 +60,12 @@ export function createApiClient(options: ApiClientOptions) {
     waitlist: {
       join: (body: WaitlistSignupRequest) =>
         request<WaitlistSignupResponse>("/api/waitlist", {
+          method: "POST",
+          body: JSON.stringify(body),
+        }),
+      /** New confirmation link for the email in an (expired) link token. */
+      resend: (body: WaitlistResendRequest) =>
+        request<WaitlistSignupResponse>("/api/waitlist/resend", {
           method: "POST",
           body: JSON.stringify(body),
         }),

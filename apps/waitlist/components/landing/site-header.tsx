@@ -1,21 +1,22 @@
 import { JoinDialogTrigger } from "./join-dialog";
+import { MobileMenu } from "./mobile-menu";
 import { Container, ThemedImg } from "./primitives";
 
 /**
  * Figma: Waitlist / Hero / navbar (62:544). Sits 32px from the top as in the design, then
- * sticks 16px from the top while the page scrolls.
+ * sticks 16px from the top while the page scrolls. Below sm the links live in MobileMenu.
  */
 export function SiteHeader() {
   return (
     <header className="sticky top-4 z-40 mt-8 px-4">
       <Container>
-        <nav className="flex items-center justify-between gap-1.5 rounded-full border border-border-soft bg-bg-fill1/90 py-2.5 pr-2 pl-3.5 min-[360px]:pr-2.5 min-[360px]:pl-4 backdrop-blur-[8px] sm:pl-5">
+        <nav className="relative flex items-center justify-between gap-1.5 rounded-full border border-border-soft bg-bg-fill1/90 py-2.5 pr-2 pl-3.5 min-[360px]:pr-2.5 min-[360px]:pl-4 backdrop-blur-[8px] sm:pl-5">
           <a
             href="/"
             aria-label="Matr Studio home"
             className="shrink-0 transition-transform duration-500 ease-smooth hover:-rotate-3 hover:scale-105"
           >
-            {/* Slightly smaller below sm so the logo, link and button fit on one line, down to 320px. */}
+            {/* Slightly smaller below sm so the logo, button and menu fit on one line, down to 320px. */}
             <ThemedImg
               name="logo-nav.svg"
               alt="matrstudio."
@@ -27,7 +28,7 @@ export function SiteHeader() {
           <div className="flex items-center justify-end gap-2 min-[360px]:gap-2.5 sm:gap-3">
             <a
               href="/mission"
-              className="relative after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-500 hover:after:scale-x-100 whitespace-nowrap font-medium text-[12px] text-text leading-5 tracking-[-0.12px] min-[360px]:text-[13px] min-[360px]:tracking-[-0.13px] sm:text-sm sm:tracking-[-0.14px]"
+              className="relative after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-500 hover:after:scale-x-100 hidden whitespace-nowrap font-medium text-sm text-text leading-5 tracking-[-0.14px] sm:block"
             >
               Our Mission
             </a>
@@ -37,6 +38,7 @@ export function SiteHeader() {
             >
               Join the Waitlist
             </JoinDialogTrigger>
+            <MobileMenu />
           </div>
         </nav>
       </Container>

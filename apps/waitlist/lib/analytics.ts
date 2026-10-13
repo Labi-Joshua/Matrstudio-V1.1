@@ -1,5 +1,5 @@
-// Google Analytics 4 (gtag.js). The tag loads after the page is interactive, so it never delays
-// first paint. Consent Mode keeps analytics cookies off where the law requires consent first.
+// Google Analytics 4 (gtag.js), loaded async from <head> so it never blocks first paint.
+// Consent Mode keeps analytics cookies off where the law requires consent first.
 
 export const GA_ID = "G-82J9GRSB53";
 

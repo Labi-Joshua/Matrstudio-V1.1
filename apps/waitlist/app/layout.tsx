@@ -1,5 +1,4 @@
 import { Geist, Manrope } from "next/font/google";
-import Script from "next/script";
 import type { ReactNode } from "react";
 import { analyticsInitScript, GA_ID } from "../lib/analytics";
 import { SITE_URL } from "../lib/site";
@@ -26,17 +25,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static, first-party theme script */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        {/* Google Analytics: consent defaults + config first, then gtag.js after hydration. */}
+        {/* Google Analytics: consent defaults + config inline first, then gtag.js. In the static
+            HTML (as in Google's snippet) so Google's tag checker finds it; async, so it never
+            blocks rendering. */}
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static, first-party analytics bootstrap */}
         <script dangerouslySetInnerHTML={{ __html: analyticsInitScript }} />
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} />
       </head>
-      <body>
-        {children}
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-          strategy="afterInteractive"
-        />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

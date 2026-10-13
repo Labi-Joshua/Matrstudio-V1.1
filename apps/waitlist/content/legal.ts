@@ -32,11 +32,11 @@ export const PRIVACY: LegalDoc = {
     "What personal information Matr Studio collects during pre-launch, why, and your choices.",
   intro:
     "This policy explains what personal information Matr Studio collects while we’re in pre-launch, why we collect it, and the choices you have.",
-  updated: "9 October 2026",
-  effective: "9 October 2026",
+  updated: "13 October 2026",
+  effective: "13 October 2026",
   summary: [
     "We only collect what we need to run the waitlist: your email address and referral details.",
-    "We never sell your data, and we don’t use advertising or tracking cookies.",
+    "We never sell your data, and we don’t use advertising cookies. We use Google Analytics to understand how the site is used.",
     "You can ask us to see, correct or delete your information at any time.",
   ],
   sections: [
@@ -72,6 +72,12 @@ export const PRIVACY: LegalDoc = {
         {
           p: [
             "When you visit matrstudio.com, our hosting providers automatically process technical information such as your IP address, browser type and the pages you request. We use it to deliver the site securely and to block spam and abuse, including by limiting how often sign-ups can be sent.",
+          ],
+        },
+        {
+          p: [
+            { b: "Usage analytics" },
+            " — we use Google Analytics to understand how people use the site: the pages viewed, how you arrived (for example a search or a link), your device and browser, and your approximate location (country and city). Google Analytics never receives your email address.",
           ],
         },
       ],
@@ -117,6 +123,7 @@ export const PRIVACY: LegalDoc = {
             [{ b: "Vercel" }, " — website hosting."],
             [{ b: "Cloudflare" }, " — our API, database storage and security."],
             [{ b: "Resend" }, " — sending confirmation and update emails."],
+            [{ b: "Google" }, " — website analytics (Google Analytics)."],
           ],
         },
         {
@@ -178,7 +185,12 @@ export const PRIVACY: LegalDoc = {
       blocks: [
         {
           p: [
-            "matrstudio.com doesn’t use cookies. Your light or dark theme choice is saved only in your own browser. We don’t use advertising or cross-site tracking. If we add analytics or anything that needs cookies in the future, we’ll update this policy first.",
+            "We use Google Analytics cookies (named _ga and _ga_*) to count visits and understand how the site is used. They don’t identify you by name or email, and Google keeps the data for up to 14 months. Advertising features and cross-site tracking are turned off.",
+          ],
+        },
+        {
+          p: [
+            "If you’re in the EU, EEA, UK or Switzerland, analytics cookies are off by default; Google only receives anonymous, cookieless signals. Everyone can opt out at any time with Google’s browser add-on (tools.google.com/dlpage/gaoptout) or by blocking cookies in their browser. Your light or dark theme choice is saved only in your own browser and isn’t a cookie.",
           ],
         },
       ],

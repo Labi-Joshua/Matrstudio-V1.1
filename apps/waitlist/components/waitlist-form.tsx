@@ -3,6 +3,7 @@
 import { ApiClientError } from "@matr/api-client";
 import { cn } from "@matr/ui";
 import { type FormEvent, useState } from "react";
+import { trackSignUp } from "../lib/analytics";
 import { api } from "../lib/api";
 
 type State = "idle" | "submitting" | "done" | "error";
@@ -44,6 +45,7 @@ export function WaitlistForm({
     try {
       await api.waitlist.join({ email, referralCode, metadata: { source } });
       setState("done");
+      trackSignUp(source);
     } catch (err) {
       setState("error");
       setMessage(

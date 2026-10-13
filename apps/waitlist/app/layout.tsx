@@ -1,5 +1,7 @@
 import { Geist, Manrope } from "next/font/google";
+import Script from "next/script";
 import type { ReactNode } from "react";
+import { analyticsInitScript, GA_ID } from "../lib/analytics";
 import { SITE_URL } from "../lib/site";
 import { themeInitScript } from "../lib/theme";
 import "./globals.css";
@@ -24,8 +26,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static, first-party theme script */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        {/* Google Analytics: consent defaults + config first, then gtag.js after hydration. */}
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static, first-party analytics bootstrap */}
+        <script dangerouslySetInnerHTML={{ __html: analyticsInitScript }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+          strategy="afterInteractive"
+        />
+      </body>
     </html>
   );
 }

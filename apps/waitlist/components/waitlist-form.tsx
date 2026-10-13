@@ -5,6 +5,7 @@ import { cn } from "@matr/ui";
 import { type FormEvent, useState } from "react";
 import { trackSignUp } from "../lib/analytics";
 import { api } from "../lib/api";
+import { storedReferral } from "../lib/referral";
 
 type State = "idle" | "submitting" | "done" | "error";
 
@@ -43,7 +44,11 @@ export function WaitlistForm({
     const email = String(new FormData(event.currentTarget).get("email") ?? "");
     setState("submitting");
     try {
-      await api.waitlist.join({ email, referralCode, metadata: { source } });
+      await api.waitlist.join({
+        email,
+        referralCode: referralCode ?? storedReferral(),
+        metadata: { source },
+      });
       setState("done");
       trackSignUp(source);
     } catch (err) {

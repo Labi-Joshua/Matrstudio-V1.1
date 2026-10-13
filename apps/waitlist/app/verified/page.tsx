@@ -1,3 +1,4 @@
+import { ReferralShare } from "../../components/verify/referral-share";
 import { HomeAndMissionActions, VerifyState } from "../../components/verify/verify-state";
 
 // Landing page for confirmation-email links: keep it out of search results.
@@ -19,7 +20,12 @@ export default function VerifiedPage() {
           You’re now on the <span className="whitespace-nowrap">waitlist🎊</span>
         </>
       }
-      actions={<HomeAndMissionActions />}
+      actions={
+        <>
+          <HomeAndMissionActions />
+          <ReferralShare />
+        </>
+      }
     >
       Welcome to the community. Your email has been confirmed and we’ll be in touch once Matr Studio
       launches.

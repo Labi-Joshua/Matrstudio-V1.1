@@ -100,8 +100,8 @@ waitlist.post(
 
 // GET /api/waitlist/verify?token=...
 // Redirects to the page for each outcome:
-//   /verified          confirmed now
-//   /verify-already    this address was confirmed before
+//   /verified          confirmed now (?code= is their own referral code, for the share link)
+//   /verify-already    this address was confirmed before (also with ?code=)
 //   /verify-expired    authentic but past its 24 hours (the page offers a new link)
 //   /verify-failed     broken, unknown, or replaced by a newer link ("only the latest link works")
 waitlist.get("/verify", rateLimit("API_LIMITER"), async (c) => {
@@ -111,12 +111,13 @@ waitlist.get("/verify", rateLimit("API_LIMITER"), async (c) => {
   if (!info) return c.redirect(`${web}/verify-failed`, 302);
 
   const row = await c.env.DB.prepare(
-    "SELECT status, updated_at FROM waitlist_subscribers WHERE email = ?1",
+    "SELECT status, updated_at, referral_code FROM waitlist_subscribers WHERE email = ?1",
   )
     .bind(info.email)
-    .first<{ status: string; updated_at: number }>();
+    .first<{ status: string; updated_at: number; referral_code: string }>();
   if (!row) return c.redirect(`${web}/verify-failed`, 302);
-  if (row.status === "verified") return c.redirect(`${web}/verify-already`, 302);
+  if (row.status === "verified")
+    return c.redirect(`${web}/verify-already?code=${row.referral_code}`, 302);
   if (row.status !== "pending") return c.redirect(`${web}/verify-failed`, 302);
 
   // A newer link was sent after this one was issued: only the latest works. 5s of slack, since
@@ -136,7 +137,7 @@ waitlist.get("/verify", rateLimit("API_LIMITER"), async (c) => {
     .bind(info.email)
     .run();
 
-  return c.redirect(`${web}/verified`, 302);
+  return c.redirect(`${web}/verified?code=${row.referral_code}`, 302);
 });
 
 // POST /api/waitlist/resend: "Send a new link" on the expired page. The token must be authentic

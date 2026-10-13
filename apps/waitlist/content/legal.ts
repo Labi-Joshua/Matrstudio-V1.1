@@ -190,7 +190,7 @@ export const PRIVACY: LegalDoc = {
         },
         {
           p: [
-            "If you’re in the EU, EEA, UK or Switzerland, analytics cookies are off by default; Google only receives anonymous, cookieless signals. Everyone can opt out at any time with Google’s browser add-on (tools.google.com/dlpage/gaoptout) or by blocking cookies in their browser. Your light or dark theme choice is saved only in your own browser and isn’t a cookie.",
+            "If you’re in the EU, EEA, UK or Switzerland, analytics cookies are off by default; Google only receives anonymous, cookieless signals. Everyone can opt out at any time with Google’s browser add-on (tools.google.com/dlpage/gaoptout) or by blocking cookies in their browser. Your light or dark theme choice, and the referral code from a referral link if you arrive through one, are saved only in your own browser and aren’t cookies.",
           ],
         },
       ],

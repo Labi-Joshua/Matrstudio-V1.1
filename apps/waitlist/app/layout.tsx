@@ -1,5 +1,6 @@
 import { Geist, Manrope } from "next/font/google";
 import type { ReactNode } from "react";
+import { ReferralCapture } from "../components/referral-capture";
 import { analyticsInitScript, GA_ID } from "../lib/analytics";
 import { SITE_URL } from "../lib/site";
 import { themeInitScript } from "../lib/theme";
@@ -32,7 +33,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: analyticsInitScript }} />
         <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <ReferralCapture />
+      </body>
     </html>
   );
 }

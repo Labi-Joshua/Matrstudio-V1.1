@@ -1,3 +1,4 @@
+import { ReferralShare } from "../../components/verify/referral-share";
 import { HomeAndMissionActions, VerifyState } from "../../components/verify/verify-state";
 
 // Landing page for confirmation-email links: keep it out of search results.
@@ -15,7 +16,12 @@ export default function VerifyAlreadyPage() {
       icon={{ name: "verify-circle-check.svg", tone: "success" }}
       badge={{ label: "Already confirmed", tone: "success" }}
       title="You’re already on the list"
-      actions={<HomeAndMissionActions />}
+      actions={
+        <>
+          <HomeAndMissionActions />
+          <ReferralShare />
+        </>
+      }
     >
       This email was confirmed earlier, so there’s nothing more to do. We’ll be in touch as soon as
       Matr Studio launches.

@@ -42,7 +42,7 @@ function CardTitle({
 }) {
   return (
     <div className="flex w-full items-center justify-between">
-      <h3 className="font-display font-semibold text-base text-text">{title}</h3>
+      <h2 className="font-display font-semibold text-base text-text">{title}</h2>
       <Icon name={icon} className={iconHover} />
     </div>
   );

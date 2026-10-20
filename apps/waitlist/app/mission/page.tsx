@@ -5,13 +5,14 @@ import { MissionHero } from "../../components/mission/mission-hero";
 import { MissionJoin } from "../../components/mission/mission-join";
 import { Yardstick } from "../../components/mission/yardstick";
 import { RevealObserver } from "../../components/reveal-observer";
+import { pageMeta } from "../../lib/site";
 
-export const metadata = {
+export const metadata = pageMeta({
   title: "Our Mission | Matr Studio",
   description:
     "Matrstudio replaces isolated learning with a peer-driven ecosystem, giving product designers the exact resources to master their craft.",
-  alternates: { canonical: "/mission" },
-};
+  path: "/mission",
+});
 
 // Figma: MatrStudio V 1.1 / Our Mission (134:1661 light, 164:518 dark).
 export default function MissionPage() {

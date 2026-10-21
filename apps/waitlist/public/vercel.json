@@ -22,25 +22,47 @@
   ],
   "redirects": [
     {
-      "source": "/:path*",
+      "source": "/",
       "has": [
         {
           "type": "host",
           "value": "www.matrstudio.com"
         }
       ],
-      "destination": "https://matrstudio.com/:path*",
+      "destination": "https://matrstudio.com/",
       "permanent": true
     },
     {
-      "source": "/:path*",
+      "source": "/:path+",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.matrstudio.com"
+        }
+      ],
+      "destination": "https://matrstudio.com/:path",
+      "permanent": true
+    },
+    {
+      "source": "/",
       "has": [
         {
           "type": "host",
           "value": "matr-studio-waitlist.vercel.app"
         }
       ],
-      "destination": "https://matrstudio.com/:path*",
+      "destination": "https://matrstudio.com/",
+      "permanent": true
+    },
+    {
+      "source": "/:path+",
+      "has": [
+        {
+          "type": "host",
+          "value": "matr-studio-waitlist.vercel.app"
+        }
+      ],
+      "destination": "https://matrstudio.com/:path",
       "permanent": true
     }
   ]

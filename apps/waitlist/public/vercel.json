@@ -3,7 +3,12 @@
   "headers": [
     {
       "source": "/_next/static/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     },
     {
       "source": "/images/(.*)",
@@ -13,6 +18,30 @@
           "value": "public, max-age=86400, stale-while-revalidate=604800"
         }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.matrstudio.com"
+        }
+      ],
+      "destination": "https://matrstudio.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "matr-studio-waitlist.vercel.app"
+        }
+      ],
+      "destination": "https://matrstudio.com/:path*",
+      "permanent": true
     }
   ]
 }

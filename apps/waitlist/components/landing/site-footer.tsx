@@ -153,7 +153,7 @@ function Wordmark({ className, style }: { className?: string; style?: CSSPropert
   return (
     <ThemedImg
       name="logo-wordmark.svg"
-      alt="matrstudio."
+      alt="Matr Studio"
       className={cn("block max-w-none", className)}
       style={style}
     />

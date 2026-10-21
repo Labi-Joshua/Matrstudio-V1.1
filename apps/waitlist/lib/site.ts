@@ -10,9 +10,9 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://matrstudio
 export const SITE_NAME = "Matr Studio";
 
 /** Homepage title and description: what the product is, in the words people search with. */
-export const HOME_TITLE = "Matr Studio | Learning Paths & Curated UI/UX Design Resources";
+export const HOME_TITLE = "Matr Studio | Design Community for Product Designers";
 export const HOME_DESCRIPTION =
-  "Level up your product design craft with self-paced learning paths, active chat rooms, and curated UI/UX resources. Join early access for Matr Studio.";
+  "Matr Studio is a design community and learning hub for product designers: learning paths, chat rooms and curated UI/UX resources. Join early access.";
 
 /**
  * Link-preview image (Figma: Social Preview, OG Image / Light 218:18), 1200 x 630. A shared link
@@ -23,7 +23,7 @@ const OG_IMAGE = {
   url: "/images/og/matr-studio-light.png",
   width: 1200,
   height: 630,
-  alt: "matrstudio. The collaborative learning hub and community for product designers",
+  alt: "Matr Studio: the collaborative learning hub and design community for product designers",
 };
 
 /**

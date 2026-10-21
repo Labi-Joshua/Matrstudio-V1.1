@@ -16,7 +16,7 @@ export function LogoHeader() {
       >
         <ThemedImg
           name="logo-nav.svg"
-          alt="matrstudio."
+          alt="Matr Studio"
           width={94.909}
           height={15}
           className="block h-[15px] w-[94.909px] transition-transform duration-500 ease-smooth group-hover:-rotate-3 group-hover:scale-105"
@@ -43,7 +43,7 @@ export function SiteHeader() {
             {/* Slightly smaller below sm so the logo, button and menu fit on one line, down to 320px. */}
             <ThemedImg
               name="logo-nav.svg"
-              alt="matrstudio."
+              alt="Matr Studio"
               width={94.909}
               height={15}
               className="block h-auto w-[68px] min-[360px]:w-[78px] sm:w-[94.909px]"

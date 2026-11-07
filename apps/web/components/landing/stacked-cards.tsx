@@ -4,12 +4,23 @@ import { type ReactNode, useEffect, useRef } from "react";
 
 /**
  * Drives the stacked-cards effect on the Features rows. The cards are CSS-sticky (see .stack-card
- * in globals.css), so each one slides up over the previous. This sets --t (0 to 1) on a card
- * while the next one covers it, and the CSS shrinks and dims it by that amount.
- * Only runs where the stacking CSS applies (wide and tall enough screens, no reduced motion);
- * everywhere else the rows are a plain list.
+ * in globals.css), so each one slides up over the previous. This sets two custom properties:
+ *
+ * --stick  where the card pins. Normally just under the nav, a little lower for each later card so
+ *          the earlier ones peek out. A card taller than the space under the nav (every row on a
+ *          phone, or on a short window) pins with its bottom edge at the bottom of the screen
+ *          instead, so its end is never hidden: its top has been read as it scrolled past, and the
+ *          next card slides up over it.
+ * --t      0 to 1, how far the next card has covered this one; the CSS shrinks and dims it by that.
+ *
+ * Off for reduced motion, where the rows are a plain list.
  */
-const STACKING = "(min-width: 1280px) and (prefers-reduced-motion: no-preference)";
+const STACKING = "(prefers-reduced-motion: no-preference)";
+/** Height of the sticky nav once the page has scrolled (see nav.tsx): desktop pill vs phone pill. */
+const NAV_STUCK = { desktop: 87, mobile: 79 };
+const GAP = 16;
+const PEEK = 10;
+const SHRINK = 0.05;
 
 export function StackedCards({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -23,19 +34,37 @@ export function StackedCards({ children }: { children: ReactNode }) {
 
     const update = () => {
       frame = 0;
+      if (!query.matches) {
+        for (const card of cards) {
+          card.style.removeProperty("--stick");
+          card.style.setProperty("--t", "0");
+        }
+        return;
+      }
+      const navHeight = innerWidth >= 1024 ? NAV_STUCK.desktop : NAV_STUCK.mobile;
+
+      // Pass 1: where each card pins. Its natural height is its rect divided by the current scale.
+      cards.forEach((card, index) => {
+        const scale = 1 - SHRINK * Number(card.style.getPropertyValue("--t") || 0);
+        const height = card.getBoundingClientRect().height / scale;
+        const stick = Math.min(navHeight + GAP + index * PEEK, innerHeight - height - GAP);
+        card.style.setProperty("--stick", `${stick.toFixed(1)}px`);
+      });
+
+      // Pass 2: how far the next card has covered each one. It starts covering when the next
+      // card's top meets this card's bottom, and has fully stacked at the next card's pin.
       cards.forEach((card, index) => {
         const next = cards[index + 1];
-        if (!query.matches || !next) {
+        if (!next) {
           card.style.setProperty("--t", "0");
           return;
         }
-        // The next card starts covering this one when its top meets this card's bottom, and has
-        // fully stacked when it reaches its own sticky offset (a little below this card's top).
         const rect = card.getBoundingClientRect();
+        const start = rect.bottom;
+        const end = Number.parseFloat(next.style.getPropertyValue("--stick"));
         const nextTop = next.getBoundingClientRect().top;
-        const start = rect.top + rect.height;
-        const end = rect.top + 14;
-        const t = Math.min(1, Math.max(0, (start - nextTop) / (start - end)));
+        const span = start - end;
+        const t = span > 1 ? Math.min(1, Math.max(0, (start - nextTop) / span)) : 0;
         card.style.setProperty("--t", t.toFixed(3));
       });
     };

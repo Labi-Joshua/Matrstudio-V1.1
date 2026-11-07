@@ -1,7 +1,7 @@
 #:schema node_modules/wrangler/config-schema.json
 # The marketing site: the static export in out/ served by a Cloudflare Worker with static assets.
-# The Worker (worker/index.ts) only redirects www to the apex; assets are served straight from
-# Cloudflare's network. The API is a separate Worker (packages/backend).
+# The Worker (worker/index.ts) redirects www to the apex and forwards /api/* to the API Worker;
+# assets are served straight from Cloudflare's network. The API is a separate Worker (packages/backend).
 name = "matr-studio-web"
 main = "worker/index.ts"
 compatibility_date = "2026-10-01"
@@ -12,12 +12,17 @@ routes = [
   { pattern = "www.matrstudio.com", custom_domain = true },
 ]
 
+# The API Worker (packages/backend), reached as matrstudio.com/api/* through the Worker above.
+[[services]]
+binding = "API"
+service = "matr-api"
+
 [assets]
 directory = "./out"
 binding = "ASSETS"
 # /paths serves paths.html and /paths/ui-ux serves paths/ui-ux.html, like the static host before.
 html_handling = "auto-trailing-slash"
 not_found_handling = "404-page"
-# Only page requests run the Worker (to redirect www); hashed JS/CSS and images skip it, so they
+# Only page and API requests run the Worker; hashed JS/CSS and images skip it, so they
 # are served directly and do not count as Worker requests.
 run_worker_first = ["/*", "!/_next/*", "!/images/*"]

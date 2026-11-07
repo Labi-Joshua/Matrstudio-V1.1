@@ -13,5 +13,12 @@ export const ROUTES = {
   help: "/help",
   terms: "/terms",
   privacy: "/privacy",
+  // Learner auth (not linked from the marketing site yet). The dashboard and onboarding are built later.
+  signIn: "/sign-in",
+  signUp: "/sign-up",
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
+  dashboard: "/dashboard",
+  onboarding: "/onboarding",
   topic: (slug: string) => `/paths/${slug}`,
 } as const;

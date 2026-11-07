@@ -21,7 +21,32 @@ export type AuditAction =
   | "turnstile.failed"
   | "pwned_check.unavailable"
   | "email.dropped"
-  | "account.deleted";
+  | "account.deleted"
+  // Admin portal (ADMIN-AUTH.md). Targets are admin ids or "email:<keyed hash>"; before/after in meta.
+  | "admin.signin.success"
+  | "admin.signin.failure"
+  | "admin.signin.access_mismatch"
+  | "admin.signin.paused"
+  | "admin.mfa.success"
+  | "admin.mfa.failure"
+  | "admin.backup_code.used"
+  | "admin.mfa.enrolled"
+  | "admin.mfa.reset"
+  | "admin.reauth.success"
+  | "admin.reauth.failure"
+  | "admin.signout"
+  | "admin.session.revoked"
+  | "admin.invite.created"
+  | "admin.invite.cancelled"
+  | "admin.invite.accepted"
+  | "admin.invite.invalid"
+  | "admin.password.set"
+  | "admin.role.created"
+  | "admin.role.assigned"
+  | "admin.suspended"
+  | "admin.unlocked"
+  | "admin.removed"
+  | "admin.bootstrap";
 
 export type AuditEntry = {
   actor?: string | null;

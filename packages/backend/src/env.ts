@@ -13,6 +13,7 @@ export type Bindings = {
   ALLOWED_ORIGINS: string; // comma-separated
   PUBLIC_WEB_URL: string;
   PUBLIC_API_URL: string;
+  PUBLIC_ADMIN_URL?: string; // admin app origin: the only base for emailed admin links (default https://admin.matrstudio.com)
   EMAIL_FROM: string;
   R2_BUCKET_NAME: string;
 
@@ -34,9 +35,15 @@ export type Bindings = {
   BETTER_AUTH_SECRET: string; // 32+ random bytes
   GOOGLE_CLIENT_ID?: string; // Google sign-in is enabled only when both are set
   GOOGLE_CLIENT_SECRET?: string;
+  // Admin auth (see ADMIN-AUTH.md)
+  CF_ACCESS_TEAM_DOMAIN?: string; // e.g. "matrstudio" or "matrstudio.cloudflareaccess.com"
+  CF_ACCESS_AUD?: string; // Access application AUD tag (secret)
+  ADMIN_TOTP_KEY?: string; // optional dedicated key for TOTP secrets at rest; falls back to BETTER_AUTH_SECRET
+  ADMIN_BOOTSTRAP_EMAIL?: string; // first super admin; consumed by the cron bootstrap, then delete it
   // Test/dev knobs, ignored when ENVIRONMENT is "production"
   PASSWORD_SCRYPT_N?: string; // lower scrypt cost for tests
   AUTH_MIN_RESPONSE_MS?: string; // floor for no-enumeration endpoints (default 400)
+  ADMIN_DEV_BYPASS_ACCESS?: string; // "true" skips the Access check, only when ENVIRONMENT is "development"
 };
 
 export type AppEnv = { Bindings: Bindings };

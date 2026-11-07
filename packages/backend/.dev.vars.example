@@ -17,3 +17,9 @@ BETTER_AUTH_SECRET=dev-only-replace-with-32-random-bytes
 # Lower the scrypt cost and the no-enumeration floor for quick local runs (ignored in production):
 # PASSWORD_SCRYPT_N=16384
 AUTH_MIN_RESPONSE_MS=100
+# Admin auth (see ADMIN-AUTH.md). Locally, skip Cloudflare Access with the dev bypass (needs ENVIRONMENT=development):
+# ADMIN_DEV_BYPASS_ACCESS=true      then send the header X-Dev-Access-Email: <admin email> on admin requests
+# CF_ACCESS_TEAM_DOMAIN=            your Access team, e.g. matrstudio
+# CF_ACCESS_AUD=                    the Access application AUD tag
+# ADMIN_BOOTSTRAP_EMAIL=you@example.com   first super admin invite (cron tick; wrangler dev --test-scheduled)
+PUBLIC_ADMIN_URL=http://localhost:3001

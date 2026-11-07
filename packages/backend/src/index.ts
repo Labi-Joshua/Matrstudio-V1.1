@@ -1,14 +1,22 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { getAuth } from "./auth";
+import { bootstrapSuperAdmin } from "./auth/admin-invites";
 import { purgeStaleLimits } from "./auth/limits";
 import { deleteStaleUnconfirmed, isCleanupTick } from "./cron/cleanup";
 import { checkUsage } from "./cron/usage-monitor";
 import type { AppEnv, Bindings } from "./env";
 import type { AuthEmailMessage } from "./lib/auth-email-templates";
 import { apiError } from "./lib/errors";
-import { allowedOrigins, originGuard, securityHeaders } from "./middleware/security";
+import {
+  adminOrigins,
+  allowedOrigins,
+  isAdminPath,
+  originGuard,
+  securityHeaders,
+} from "./middleware/security";
 import { handleAuthEmailBatch } from "./queue/auth-email";
+import { admin } from "./routes/admin";
 import { health } from "./routes/health";
 import { me } from "./routes/me";
 import { uploads } from "./routes/uploads";
@@ -19,7 +27,8 @@ const app = new Hono<AppEnv>();
 // CORS: exact-match allow-list from ALLOWED_ORIGINS. maxAge 7200 s is Chrome's ceiling; it lets one
 // preflight cover two hours, because every OPTIONS request is a billable Worker request.
 app.use("*", (c, next) => {
-  const allowed = allowedOrigins(c.env);
+  // The admin API has its own, separate allow-list (the admin origin only).
+  const allowed = isAdminPath(c.req.path) ? adminOrigins(c.env) : allowedOrigins(c.env);
   return cors({
     // Credentials (the session cookie) only for the explicit allow-list, never with "*".
     origin: (origin) => (allowed.has(origin) ? origin : null),
@@ -53,6 +62,7 @@ app.on(["GET", "POST"], "/api/auth/*", async (c) => {
   }
   return res;
 });
+app.route("/api/admin", admin);
 app.route("/api", me);
 
 app.route("/health", health);
@@ -69,6 +79,12 @@ export default {
   fetch: app.fetch,
   scheduled(controller, env, ctx) {
     ctx.waitUntil(checkUsage(env));
+    // First super admin: a no-op (one query, or none) unless ADMIN_BOOTSTRAP_EMAIL is set and no super admin exists.
+    ctx.waitUntil(
+      bootstrapSuperAdmin(env).catch((err) =>
+        console.error("admin bootstrap failed", err instanceof Error ? err.name : "error"),
+      ),
+    );
     if (isCleanupTick(controller.scheduledTime)) {
       ctx.waitUntil(deleteStaleUnconfirmed(env));
       ctx.waitUntil(purgeStaleLimits(env.DB));

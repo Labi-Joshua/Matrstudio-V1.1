@@ -67,3 +67,5 @@ Only a caller who holds a link we issued can learn its state: confirmation links
 or foreign token is always `link_invalid`), and reset/magic tokens are random, so `invalid` covers both
 "never existed" and "already used". Nothing here says whether an email address has an account.
 Expired single-use records are kept for a day (cron purge) so "expired" can be told from "unknown".
+
+Admin authentication (Cloudflare Access + admin session + TOTP) is documented in `ADMIN-AUTH.md`.

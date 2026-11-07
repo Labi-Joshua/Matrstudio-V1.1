@@ -250,6 +250,6 @@ Users can see their active sessions (device, location, last seen) and sign out o
 
 - [x] Confirm the auth library and version: Better Auth 1.7.x
 - [x] Passwords: supported, alongside magic link and passkeys
-- [ ] TOTP as an admin MFA fallback, or passkeys only?
+- [x] Admin MFA: authenticator-app TOTP plus 10 backup codes (the design); passkeys can be added later. See `packages/backend/ADMIN-AUTH.md`.
 - [ ] The email provider, which must support link tracking off for auth emails (currently Resend)
 - [ ] Final rate-limit numbers after beta traffic

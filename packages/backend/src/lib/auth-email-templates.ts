@@ -13,7 +13,10 @@ export type AuthEmailMessage =
   | { type: "reset-password"; to: string; link: string }
   | { type: "password-updated"; to: string; when: string; device: string }
   | { type: "too-many-attempts"; to: string; when: string; device: string }
-  | { type: "email-changed"; to: string; newEmailHint: string; when: string; device: string };
+  | { type: "email-changed"; to: string; newEmailHint: string; when: string; device: string }
+  // Admin portal. The link is built by the producer on PUBLIC_ADMIN_URL.
+  | { type: "admin-invite"; to: string; link: string; invitedBy: string | null; role: string }
+  | { type: "admin-signin-paused"; to: string; when: string; device: string };
 
 type Layout = {
   subject: string;
@@ -229,6 +232,33 @@ export function renderAuthEmail(webUrl: string, msg: AuthEmailMessage) {
         button: { label: "This wasn’t me", href: `${webUrl}/forgot-password` },
         note: "Wasn’t you? Reset your password right away and reply to this email so we can help. We’ve signed you out everywhere.",
         footerReason: ACCOUNT_REASON,
+      });
+    case "admin-invite":
+      return render(webUrl, {
+        subject: "You’ve been invited to the Matr Studio admin",
+        preview: "Set a password and a 2-step code to get started.",
+        tag: "Admin invite",
+        title: "You’re invited to the admin.",
+        body: `${msg.invitedBy ?? "A Super admin"} added you to the Matr Studio admin as ${msg.role}. Accept the invite to set a password and a 2-step code:`,
+        button: { label: "Accept invite", href: msg.link },
+        expires: "This invite expires in 72 hours and works once.",
+        note: "Sign in to Cloudflare Access with this same email when asked. Didn’t expect this? Ignore it and tell a Super admin.",
+        fallbackLink: msg.link,
+        footerReason: `You’re getting this because ${msg.to} was invited to the Matr Studio admin.`,
+      });
+    case "admin-signin-paused":
+      return render(webUrl, {
+        subject: "Sign-in paused on your Matr Studio admin account",
+        preview: "We paused admin sign-in for 15 minutes to keep your account safe.",
+        tag: "Sign-in paused",
+        title: "Sign-in paused.",
+        body: "We saw too many wrong attempts on your admin account, so we’ve paused sign-in for 15 minutes to keep it safe.",
+        details: [
+          ["When", msg.when],
+          ["Device", msg.device],
+        ],
+        note: "If this was you, wait 15 minutes and try again, or ask a Super admin to unlock it. If it wasn’t, tell a Super admin right away.",
+        footerReason: "You’re getting this because you have a Matr Studio admin account.",
       });
   }
 }

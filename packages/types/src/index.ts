@@ -111,3 +111,119 @@ export type SessionSummary = {
   createdAt: string;
   lastSeenAt: string;
 };
+
+// --- Admin auth (packages/backend/ADMIN-AUTH.md) ------------------------------------------------
+// Areas follow the admin side menu in the design (Overview, Content, Review, People, Admin).
+export const ADMIN_AREAS = [
+  "dashboard",
+  "metrics",
+  "resources",
+  "paths",
+  "review_queues",
+  "users_waitlist",
+  "support_inbox",
+  "admin_team",
+  "roles",
+  "audit_log",
+  "settings",
+] as const;
+export type AdminArea = (typeof ADMIN_AREAS)[number];
+export type AdminLevel = "none" | "view" | "manage";
+export type AdminPermissions = Record<AdminArea, AdminLevel>;
+
+/** Error body of every admin auth route: { code, message, ...extra }. */
+export type AdminErrorBody = {
+  code: string;
+  message: string;
+  retryAfterSeconds?: number;
+  invitedBy?: string | null;
+  invitedAt?: number;
+};
+
+export const adminSignInSchema = z
+  .object({ email: z.string().trim().toLowerCase().max(254), password: z.string().min(1).max(128) })
+  .strict();
+export type AdminSignInRequest = z.input<typeof adminSignInSchema>;
+
+/** A 6-digit authenticator code, or a backup code ("xxxxx-xxxxx"). */
+export const adminCodeSchema = z.string().trim().min(6).max(16);
+export const adminMfaSchema = z.object({ code: adminCodeSchema }).strict();
+export type AdminMfaRequest = z.input<typeof adminMfaSchema>;
+
+export const adminReauthSchema = z
+  .object({ password: z.string().min(1).max(128), code: adminCodeSchema })
+  .strict();
+export type AdminReauthRequest = z.input<typeof adminReauthSchema>;
+
+const inviteToken = z.string().min(20).max(300);
+export const adminInviteAcceptSchema = z
+  .object({
+    token: inviteToken,
+    password: z.string().max(256),
+    name: z.string().trim().min(1).max(80).optional(),
+  })
+  .strict();
+export type AdminInviteAcceptRequest = z.input<typeof adminInviteAcceptSchema>;
+export const adminInviteEnrolSchema = z
+  .object({ token: inviteToken, code: z.string().trim().length(6) })
+  .strict();
+export type AdminInviteEnrolRequest = z.input<typeof adminInviteEnrolSchema>;
+
+export const adminTeamInviteSchema = z
+  .object({
+    email: z.string().trim().toLowerCase().max(254).pipe(z.email()),
+    roleId: z.string().min(1).max(64),
+    name: z.string().trim().min(1).max(80).optional(),
+  })
+  .strict();
+export type AdminTeamInviteRequest = z.input<typeof adminTeamInviteSchema>;
+
+export type AdminMeResponse = {
+  id: string;
+  email: string;
+  name: string;
+  role: { id: string; name: string };
+  permissions: AdminPermissions;
+  /** Areas the admin may open (permission above none), in side-menu order. */
+  menu: AdminArea[];
+  mfaEnrolled: boolean;
+  /** Unix seconds of the last sign-in or step-up; null when none. */
+  lastReauthAt: number | null;
+  /** True while the last step-up is recent enough (5 minutes) for sensitive actions. */
+  fresh: boolean;
+  /** Unix seconds when the session ends if idle, and its hard cap. */
+  sessionExpiresAt: number;
+  sessionAbsoluteExpiresAt: number;
+};
+
+export type AdminSignInResponse = { status: "mfa_required" };
+export type AdminMfaResponse = { admin: AdminMeResponse; backupCodesRemaining: number };
+export type AdminReauthResponse = { lastReauthAt: number };
+export type AdminInviteCheckResponse = {
+  status: "ok";
+  emailHint: string;
+  role: string;
+  expiresAt: number;
+};
+export type AdminEnrolmentResponse = {
+  step: "mfa";
+  /** otpauth:// URI: render it as the QR code. Contains the secret, show it only on this screen. */
+  otpauthUri: string;
+  /** The same secret grouped for typing ("JBSW Y3DP EHPK 3PXP"). */
+  secretKey: string;
+};
+export type AdminInviteCompleteResponse = { admin: AdminMeResponse; backupCodes: string[] };
+export type AdminTeamMember = {
+  id: string;
+  email: string;
+  name: string;
+  roleId: string;
+  roleName: string;
+  status: "invited" | "active" | "suspended";
+  lastSignInAt: number | null;
+};
+
+export const adminChangePasswordSchema = z
+  .object({ currentPassword: z.string().min(1).max(128), newPassword: z.string().max(256) })
+  .strict();
+export type AdminChangePasswordRequest = z.input<typeof adminChangePasswordSchema>;

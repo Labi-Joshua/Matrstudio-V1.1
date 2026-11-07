@@ -14,6 +14,9 @@ ENVIRONMENT = "production"
 ALLOWED_ORIGINS = "https://matrstudio.com,https://www.matrstudio.com,https://matr-studio-waitlist.vercel.app"
 PUBLIC_WEB_URL = "https://matrstudio.com"
 PUBLIC_API_URL = "https://api.matrstudio.com"
+# Admin app origin: the only base for emailed admin links, and the only origin /api/admin/** accepts.
+# CF_ACCESS_TEAM_DOMAIN (var or secret) and CF_ACCESS_AUD (secret) are set by the owner, see ADMIN-AUTH.md.
+PUBLIC_ADMIN_URL = "https://admin.matrstudio.com"
 EMAIL_FROM = "Matr Studio <hello@matrstudio.com>"
 R2_BUCKET_NAME = "matr-assets"
 

@@ -124,7 +124,7 @@ function YourPaths() {
         Start a path, or star one to save it for later. It’ll show up here.
       </p>
       <Link
-        href={ROUTES.paths}
+        href={ROUTES.app.paths}
         className={`link-slide inline-flex items-center gap-1 self-start rounded-md font-semibold text-[14px] text-primary-text leading-5 tracking-[-0.14px] ${FOCUS}`}
       >
         Browse paths

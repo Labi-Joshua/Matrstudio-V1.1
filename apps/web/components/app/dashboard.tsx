@@ -131,7 +131,7 @@ function PathCard({ path }: { path: DashboardPath }) {
   return (
     <li className="w-[300px] shrink-0 snap-start md:w-auto">
       <Link
-        href={ROUTES.topic(path.topicSlug)}
+        href={ROUTES.app.pathTopic(path.topicSlug)}
         className={`card-lift flex h-full flex-col overflow-clip rounded-2xl border border-border-soft bg-bg-base ${FOCUS}`}
       >
         <PathCover topic={path.topicSlug} hue={TOPIC_LOOK[path.topicSlug].cover} />
@@ -240,7 +240,7 @@ export function Dashboard() {
               ? "Paths matched to the interests you chose when you signed up."
               : "A few paths to get you started. Tell us your interests to get better picks."
           }
-          action={{ label: "Browse all paths", href: ROUTES.paths }}
+          action={{ label: "Browse all paths", href: ROUTES.app.paths }}
         />
         {view.paths.length > 0 ? (
           <CardRow columns="md:grid-cols-3">
@@ -257,7 +257,7 @@ export function Dashboard() {
               Paths are on their way. Browse what’s available and start one to see it here.
             </p>
             <Link
-              href={ROUTES.paths}
+              href={ROUTES.app.paths}
               className={`link-slide inline-flex items-center gap-1 rounded-md font-semibold text-[14px] text-primary-text leading-5 tracking-[-0.14px] ${FOCUS}`}
             >
               Browse paths
@@ -306,7 +306,7 @@ export function Dashboard() {
                 ? "Free videos, articles and tools outside your paths, picked by curators for your topics."
                 : "Free videos, articles and tools from the library."
             }
-            action={{ label: "Open the library", href: ROUTES.library }}
+            action={{ label: "Open the library", href: ROUTES.app.library }}
           />
           <CardRow columns="md:grid-cols-2 xl:grid-cols-4">
             {view.library.map((resource) => (
@@ -334,7 +334,7 @@ export function Dashboard() {
               Share it with other learners. A curator reviews every submission.
             </p>
             <Link
-              href={ROUTES.submit}
+              href={ROUTES.app.submit}
               className={`link-slide mt-1 inline-flex items-center gap-1 self-start rounded-md font-medium text-[15px] text-primary-text leading-5 tracking-[-0.15px] ${FOCUS}`}
             >
               Submit a resource

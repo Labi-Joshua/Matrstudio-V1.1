@@ -5,9 +5,9 @@ import { ROUTES } from "../routes";
  * Support group). Pure data plus two helpers, so the sidebar, the rail and the phone drawer all
  * render the same items and the active rule is tested once.
  *
- * Paths, Library and Saved have no screens inside the app yet, so they link to the marketing
- * pages (the closest existing pages). Settings has no destination at all: it is `href: null` and
- * renders disabled with a "coming soon" title.
+ * Every item links to a page inside the app (ROUTES.app, under /learn), never to the public
+ * marketing pages. Settings has no destination yet: it is `href: null` and renders disabled with a
+ * "coming soon" title.
  */
 export type NavIcon = "home" | "paths" | "library" | "saved" | "help" | "settings";
 
@@ -21,13 +21,13 @@ export type NavItem = {
 
 export const LEARN_NAV: readonly NavItem[] = [
   { id: "home", label: "Home", icon: "home", href: ROUTES.dashboard },
-  { id: "paths", label: "Paths", icon: "paths", href: ROUTES.paths },
-  { id: "library", label: "Library", icon: "library", href: ROUTES.library },
-  { id: "saved", label: "Saved", icon: "saved", href: ROUTES.saved },
+  { id: "paths", label: "Paths", icon: "paths", href: ROUTES.app.paths },
+  { id: "library", label: "Library", icon: "library", href: ROUTES.app.library },
+  { id: "saved", label: "Saved", icon: "saved", href: ROUTES.app.saved },
 ];
 
 export const SUPPORT_NAV: readonly NavItem[] = [
-  { id: "help", label: "Help centre", icon: "help", href: ROUTES.help },
+  { id: "help", label: "Help centre", icon: "help", href: ROUTES.app.help },
   { id: "settings", label: "Settings", icon: "settings", href: null },
 ];
 
@@ -48,6 +48,15 @@ export function isNavActive(item: NavItem, pathname: string): boolean {
 }
 
 /** The breadcrumb's last crumb ("Learn / Home"). Falls back to Home for pages not in the model. */
+/** In-app pages that are not menu items but still need a breadcrumb. */
+const OTHER_PAGES: readonly { href: string; label: string }[] = [
+  { href: ROUTES.app.submit, label: "Submit a resource" },
+];
+
 export function currentLabel(pathname: string): string {
-  return LEARN_NAV.find((item) => isNavActive(item, pathname))?.label ?? "Home";
+  const here = normalisePath(pathname);
+  const item = [...LEARN_NAV, ...SUPPORT_NAV].find((entry) => isNavActive(entry, pathname));
+  if (item) return item.label;
+  const other = OTHER_PAGES.find((page) => here === page.href || here.startsWith(`${page.href}/`));
+  return other?.label ?? "Home";
 }

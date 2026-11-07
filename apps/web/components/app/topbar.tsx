@@ -54,7 +54,7 @@ function SearchField() {
   function submit(event: FormEvent) {
     event.preventDefault();
     const q = query.trim();
-    router.push(q ? `${ROUTES.library}?q=${encodeURIComponent(q)}` : ROUTES.library);
+    router.push(q ? `${ROUTES.app.library}?q=${encodeURIComponent(q)}` : ROUTES.app.library);
   }
 
   return (
@@ -88,7 +88,7 @@ const ICON_BUTTON = `flex size-10 items-center justify-center rounded-[10px] bor
 function SearchLink({ className = "" }: { className?: string }) {
   return (
     <Link
-      href={ROUTES.library}
+      href={ROUTES.app.library}
       aria-label="Search the library"
       className={`${ICON_BUTTON} ${className}`}
     >
@@ -106,7 +106,7 @@ export function DesktopTopBar() {
       <SearchField />
       <SearchLink className="xl:hidden" />
       <Link
-        href={ROUTES.submit}
+        href={ROUTES.app.submit}
         className={`btn-lift hidden h-10 items-center gap-1.5 rounded-lg border border-border bg-bg-base px-3 font-medium text-[14px] text-text leading-5 tracking-[-0.14px] shadow-e1 xl:flex ${FOCUS}`}
       >
         <UploadIcon size={20} />

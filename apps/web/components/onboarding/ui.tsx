@@ -176,7 +176,7 @@ function HelpFooter() {
   return (
     <div className="hidden h-[73px] shrink-0 items-center gap-2 border-border-soft border-t px-8 py-5 lg:flex">
       <Link
-        href={ROUTES.help}
+        href={ROUTES.app.help}
         target="_blank"
         rel="noopener"
         className={`flex items-center gap-1.5 rounded-lg bg-bg-fill1 px-2.5 py-1.5 text-[14px] text-text leading-5 tracking-[-0.14px] ${link}`}

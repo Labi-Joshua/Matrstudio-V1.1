@@ -31,6 +31,9 @@ export const SERVER_ERROR_CODES = [
   "forbidden",
   "invalid_request",
   "not_found",
+  "invalid_url",
+  "already_submitted",
+  "not_editable",
   "INVALID_EMAIL_OR_PASSWORD",
   "PASSWORD_TOO_SHORT",
   "PASSWORD_TOO_LONG",
@@ -53,6 +56,8 @@ export type ApiFailure = {
   /** Present on 429 answers: how long to wait before trying again. */
   retryAfterSeconds?: number;
   status?: number;
+  /** Present on some 400 invalid_request answers: field name -> message (plain strings only). */
+  fieldErrors?: Record<string, string>;
 };
 export type ApiResult<T> = ApiSuccess<T> | ApiFailure;
 
@@ -82,6 +87,16 @@ function positiveSeconds(value: unknown): number | undefined {
   return typeof n === "number" && Number.isFinite(n) && n > 0 ? Math.ceil(n) : undefined;
 }
 
+function readFieldErrors(value: unknown): Record<string, string> | undefined {
+  if (!isRecord(value)) return undefined;
+  const out: Record<string, string> = {};
+  for (const [key, v] of Object.entries(value)) {
+    const text = Array.isArray(v) ? v.find((x) => typeof x === "string") : v;
+    if (typeof text === "string") out[key] = text;
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
 /**
  * Turns a non-2xx response into an ApiFailure. Exported for tests. `body` is the parsed JSON (or
  * undefined when the body was empty or not JSON); `retryAfterHeader` is the Retry-After header.
@@ -102,6 +117,8 @@ export function normaliseFailure(
   const failure: ApiFailure = { ok: false, code, message, status };
   const retry = positiveSeconds(record.retryAfterSeconds) ?? positiveSeconds(retryAfterHeader);
   if (retry !== undefined) failure.retryAfterSeconds = retry;
+  const fieldErrors = readFieldErrors(record.fieldErrors);
+  if (fieldErrors) failure.fieldErrors = fieldErrors;
   return failure;
 }
 
@@ -130,7 +147,7 @@ type RequestOptions = {
  * when the body has the wrong shape (reported as invalid_response).
  */
 export async function request<T>(
-  method: "GET" | "POST",
+  method: "GET" | "POST" | "PATCH",
   path: string,
   options: RequestOptions,
   parse: (json: unknown) => T | undefined,

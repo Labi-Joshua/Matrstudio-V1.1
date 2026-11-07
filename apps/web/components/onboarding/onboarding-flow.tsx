@@ -477,7 +477,7 @@ function Flow({
                 <span className="hidden lg:inline">See other paths</span>
               </ObButton>
               <ObButtonLink
-                href={recommended ? ROUTES.topic(recommended.topicSlug) : EXIT_HREF}
+                href={recommended ? ROUTES.app.pathTopic(recommended.topicSlug) : EXIT_HREF}
                 grow
               >
                 Start this path
@@ -501,7 +501,7 @@ function Flow({
             <>
               {back}
               <ObButtonLink
-                href={selectedPath ? ROUTES.topic(selectedPath.topicSlug) : EXIT_HREF}
+                href={selectedPath ? ROUTES.app.pathTopic(selectedPath.topicSlug) : EXIT_HREF}
                 grow
               >
                 View path

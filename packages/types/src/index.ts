@@ -227,3 +227,77 @@ export const adminChangePasswordSchema = z
   .object({ currentPassword: z.string().min(1).max(128), newPassword: z.string().max(256) })
   .strict();
 export type AdminChangePasswordRequest = z.input<typeof adminChangePasswordSchema>;
+
+// --- Resource submissions (packages/backend/SUBMISSIONS.md) -------------------------------------
+/** The catalogue topic slugs (same list as ONBOARDING_TOPICS: one source of truth). */
+export const TOPICS = ONBOARDING_TOPICS;
+export type Topic = (typeof TOPICS)[number];
+
+export const SUBMISSION_STATUSES = ["in_review", "accepted", "declined", "needs_changes"] as const;
+export type SubmissionStatus = (typeof SUBMISSION_STATUSES)[number];
+export const SUBMISSION_LIMITS = { url: 2048, title: 200, note: 1000 } as const;
+
+// Plain text, trimmed; an empty string means "none" and is stored as null.
+const optionalText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .transform((v) => (v === "" ? null : v))
+    .nullish();
+
+export const createSubmissionSchema = z
+  .object({
+    url: z.string().trim().min(1).max(SUBMISSION_LIMITS.url),
+    title: optionalText(SUBMISSION_LIMITS.title),
+    note: optionalText(SUBMISSION_LIMITS.note),
+    topic: z.enum(TOPICS).nullish(),
+  })
+  .strict();
+export type CreateSubmissionBody = z.input<typeof createSubmissionSchema>;
+
+export const updateSubmissionSchema = z
+  .object({
+    title: optionalText(SUBMISSION_LIMITS.title),
+    note: optionalText(SUBMISSION_LIMITS.note),
+    topic: z.enum(TOPICS).nullish(),
+  })
+  .strict()
+  .refine((v) => v.title !== undefined || v.note !== undefined || v.topic !== undefined, {
+    message: "Send at least one of title, note, topic.",
+  });
+export type UpdateSubmissionBody = z.input<typeof updateSubmissionSchema>;
+
+export type Submission = {
+  id: string;
+  url: string;
+  title: string | null;
+  note: string | null;
+  topic: Topic | null;
+  status: SubmissionStatus;
+  /** Reviewer's message; null until a curator has decided. */
+  curatorNote: string | null;
+  createdAt: number; // unix seconds
+  updatedAt: number; // unix seconds
+};
+export type CreateSubmissionResponse = { submission: Submission };
+export type ListSubmissionsResponse = { submissions: Submission[] };
+export type UpdateSubmissionResponse = { submission: Submission };
+
+/** Error body: { code, message, ...extra } like every auth route. */
+export type SubmissionErrorBody = {
+  code:
+    | "invalid_request"
+    | "invalid_url"
+    | "already_submitted"
+    | "captcha_required"
+    | "captcha_failed"
+    | "captcha_unavailable"
+    | "rate_limited"
+    | "not_editable"
+    | "not_found"
+    | "unauthorized";
+  message: string;
+  fieldErrors?: Partial<Record<"url" | "title" | "note" | "topic", string>>;
+  retryAfterSeconds?: number;
+};

@@ -12,9 +12,11 @@ import { type AuthedEnv, authError, can, requireSession } from "../auth/guard";
 import { FRESH_AUTH_SECONDS, SESSION_COOKIE } from "../auth/index";
 import { verifyPassword } from "../auth/password";
 import { clientIp, describeDevice, emailRef, truncateIp } from "../auth/util";
+import { submissions } from "./submissions";
 
 export const me = new Hono<AuthedEnv>();
 me.use("*", requireSession);
+me.route("/me/submissions", submissions);
 
 // Validation failures use the same { code, message } body as every other auth error.
 const invalid = (

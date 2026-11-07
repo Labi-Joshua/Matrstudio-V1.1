@@ -22,6 +22,10 @@ export type AuditAction =
   | "pwned_check.unavailable"
   | "email.dropped"
   | "account.deleted"
+  // Resource submissions: target is the submission id, meta holds ids and status only.
+  | "submission.created"
+  | "submission.edited"
+  | "submission.reviewed"
   // Admin portal (ADMIN-AUTH.md). Targets are admin ids or "email:<keyed hash>"; before/after in meta.
   | "admin.signin.success"
   | "admin.signin.failure"

@@ -21,6 +21,7 @@
 
   --matr-text: #26282c;
   --matr-text-secondary: #5e636e;
+  --matr-text-tertiary: #9196a1;
 
   --matr-primary: #d65c1f;
   --matr-primary-text: #d65c1f;
@@ -46,6 +47,21 @@
   --matr-black: #090a0b;
   --matr-success: #1da54a;
   --matr-success-accent: #edfdf2;
+
+  /* Figma utility/<hue>/key (same in both themes, used for the collaborator cursors) and
+     static/black|white (do not flip with the theme). */
+  --matr-orange: #f36a25;
+  --matr-blue: #4755eb;
+  --matr-fuchsia: #eb47eb;
+  --matr-purple: #803df5;
+  --matr-emerald: #1da54a;
+  --matr-teal: #12a580;
+  --matr-violet-blue: #623df5;
+  --matr-green: #13ae13;
+  --matr-amber: #ffaa00;
+  --matr-warning: #ffaa00;
+  --matr-static-black: #090a0b;
+  --matr-static-white: #ffffff;
 }
 
 :root[data-theme="dark"] {
@@ -63,6 +79,7 @@
 
   --matr-text: #f7f7f8;
   --matr-text-secondary: #9ca1ab;
+  --matr-text-tertiary: #717784;
 
   --matr-primary: #d65c1f;
   --matr-primary-text: #f68851;
@@ -102,6 +119,7 @@
 
   --color-text: var(--matr-text);
   --color-text-secondary: var(--matr-text-secondary);
+  --color-text-tertiary: var(--matr-text-tertiary);
 
   --color-primary: var(--matr-primary);
   --color-primary-text: var(--matr-primary-text);
@@ -126,8 +144,22 @@
   --color-success: var(--matr-success);
   --color-success-accent: var(--matr-success-accent);
 
+  --color-utility-orange: var(--matr-orange);
+  --color-utility-blue: var(--matr-blue);
+  --color-utility-fuchsia: var(--matr-fuchsia);
+  --color-utility-purple: var(--matr-purple);
+  --color-utility-emerald: var(--matr-emerald);
+  --color-utility-teal: var(--matr-teal);
+  --color-utility-violet-blue: var(--matr-violet-blue);
+  --color-utility-green: var(--matr-green);
+  --color-utility-amber: var(--matr-amber);
+  --color-warning: var(--matr-warning);
+  --color-static-black: var(--matr-static-black);
+  --color-static-white: var(--matr-static-white);
+
   /* Body font: Geist. Display font: Manrope. Both are loaded by next/font in each app. */
   --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
   --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
 
   --shadow-e2: 0px 4px 8px 0px rgba(25, 24, 27, 0.08);

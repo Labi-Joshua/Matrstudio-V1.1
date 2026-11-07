@@ -7,12 +7,15 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* Anchor jumps land below the sticky nav. */
+    scroll-padding-top: 96px;
   }
 
   body {
     background-color: var(--color-bg-base);
     color: var(--color-text);
-    font-family: var(--font-sans);
+    /* The V3 landing uses Manrope for body text as well as display (Figma "Body Font Family"). */
+    font-family: var(--font-display);
     -webkit-font-smoothing: antialiased;
     /* clip, not hidden: overflow-x: hidden makes <body> a scroll container and breaks sticky nav. */
     overflow-x: clip;
@@ -22,5 +25,323 @@
     html {
       scroll-behavior: auto;
     }
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------
+   Motion. Everything here is decoration: content is fully visible without it, and none of it
+   runs for people who ask for reduced motion (the scroll reveal is not even attached then).
+   --------------------------------------------------------------------------------------------- */
+
+:root {
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Fade-and-rise on scroll. components/reveal.tsx adds data-reveal to the blocks of each section
+   (so no-JS visitors never get hidden content) and data-visible when they scroll into view. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.8s var(--ease-out) var(--reveal-delay, 0ms),
+    transform 0.8s var(--ease-out) var(--reveal-delay, 0ms);
+}
+
+[data-reveal][data-visible] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hover and press feedback, shared by buttons, cards and links. Hover effects only apply on
+   devices that can hover, so touch screens never get a stuck hover state. */
+a,
+button {
+  transition-property:
+    color, background-color, border-color, opacity, transform, box-shadow, filter;
+  transition-duration: 0.2s;
+  transition-timing-function: var(--ease-out);
+}
+
+.card-lift {
+  transition:
+    transform 0.35s var(--ease-out),
+    border-color 0.25s var(--ease-out),
+    box-shadow 0.35s var(--ease-out);
+}
+
+.link-slide svg {
+  transition: transform 0.25s var(--ease-out);
+}
+
+.btn-lift:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) {
+  .btn-lift:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+  }
+
+  .card-lift:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-border);
+    box-shadow: var(--shadow-card);
+  }
+
+  .link-slide:hover svg {
+    transform: translateX(4px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Hero entrance */
+  .hero-rise {
+    animation: hero-rise 0.9s var(--ease-out) backwards;
+    animation-delay: var(--d, 0ms);
+  }
+
+  /* Hero cursors: pop in, then wander a private path (--ax..--cy, --rd) like a collaborator
+     working in the file, "clicking" at each stop (the arrow dips and a ring pulses). */
+  .cursor-anim {
+    animation:
+      cursor-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) var(--d, 0ms) both,
+      cursor-roam var(--rd, 12s) ease-in-out var(--fd, 1.5s) infinite;
+  }
+
+  .cursor-arrow {
+    transform-origin: 0 0;
+    animation: cursor-click var(--rd, 12s) ease-in-out var(--fd, 1.5s) infinite;
+  }
+
+  .cursor-tag {
+    animation: cursor-tag-click var(--rd, 12s) ease-in-out var(--fd, 1.5s) infinite;
+  }
+
+  .cursor-ring {
+    animation: cursor-ring var(--rd, 12s) ease-out var(--fd, 1.5s) infinite;
+  }
+
+  .tile-in {
+    animation: tile-in 0.8s var(--ease-out) backwards;
+    animation-delay: calc(min(var(--i, 0), 30) * 28ms + 150ms);
+  }
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+}
+
+@keyframes cursor-in {
+  from {
+    opacity: 0;
+    transform: translate(-14px, 14px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cursor-roam {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(var(--ax, 0px), var(--ay, 0px));
+  }
+  50% {
+    transform: translate(var(--bx, 0px), var(--by, 0px));
+  }
+  75% {
+    transform: translate(var(--cx, 0px), var(--cy, 0px));
+  }
+}
+
+/* The three stops of the roam are at 25%, 50% and 75% (and the start); click at each. */
+@keyframes cursor-click {
+  0%,
+  22%,
+  28%,
+  47%,
+  53%,
+  72%,
+  78%,
+  97%,
+  100% {
+    transform: scale(1);
+  }
+  25%,
+  50%,
+  75%,
+  99% {
+    transform: scale(0.8);
+  }
+}
+
+@keyframes cursor-tag-click {
+  0%,
+  23%,
+  27%,
+  48%,
+  52%,
+  73%,
+  77%,
+  98%,
+  100% {
+    transform: scale(1);
+  }
+  25%,
+  50%,
+  75%,
+  99% {
+    transform: scale(0.96);
+  }
+}
+
+@keyframes cursor-ring {
+  0%,
+  24%,
+  41%,
+  49%,
+  66%,
+  74%,
+  91%,
+  98%,
+  100% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  25%,
+  50%,
+  75%,
+  99% {
+    opacity: 0.45;
+    transform: scale(0.2);
+  }
+  38%,
+  63%,
+  88%,
+  100% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+@keyframes tile-in {
+  from {
+    opacity: 0;
+    transform: translateY(70%);
+  }
+}
+
+/* Cursors drift a little toward the visitor pointer (components/landing/hero-pointer.tsx sets
+   --px/--py); this is a separate layer from the roam so the two motions add up. */
+.cursor-drift {
+  transform: translate(var(--px, 0px), var(--py, 0px));
+  transition: transform 0.9s var(--ease-out);
+}
+
+/* The tile strips (hero and footer) animate on their own, in the spirit of the waitlist hero
+   mosaic: every few seconds a wave rolls across. Orange tiles lift and swing their curve to the
+   opposite corner (squares round into circles), grey and pale tiles tint orange, black tiles stay
+   put. --r / --rh come from lib/tile-shape.ts, --ad (the tile's turn in the wave) from the strip.
+   Only the footer strip uses it (the hero strip just slides in once on load). The loop is paused unless the strip is on screen (components/landing/ambient-strip.tsx). */
+.tile-shape {
+  border-radius: var(--r);
+}
+
+.tile-anim[data-fill="fill"] {
+  --base: var(--color-bg-fill4);
+}
+
+.tile-anim[data-fill="accent"] {
+  --base: var(--color-primary-accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tile-anim[data-fill="key"] {
+    animation: tile-wave-key 6s ease-in-out calc(var(--ad, 0) * 1s) infinite paused;
+  }
+
+  .tile-anim[data-fill="fill"],
+  .tile-anim[data-fill="accent"] {
+    animation: tile-wave-tint 6s ease-in-out calc(var(--ad, 0) * 1s) infinite paused;
+  }
+
+  [data-live] .tile-anim[data-fill="key"],
+  [data-live] .tile-anim[data-fill="fill"],
+  [data-live] .tile-anim[data-fill="accent"] {
+    animation-play-state: running;
+  }
+}
+
+@keyframes tile-wave-key {
+  0%,
+  45%,
+  100% {
+    border-radius: var(--r);
+    transform: none;
+  }
+  65%,
+  75% {
+    border-radius: var(--rh, var(--r));
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes tile-wave-tint {
+  0%,
+  45%,
+  100% {
+    background-color: var(--base);
+  }
+  65%,
+  75% {
+    background-color: var(--color-primary-focus);
+  }
+}
+
+/* Stacked cards (Features rows): on wide screens each row sticks just below the nav and the next
+   slides over it. --t (0 to 1, set by components/landing/stacked-cards.tsx) is how far the next
+   card has covered this one: it shrinks and dims as it goes under. A row is 657px tall, so on
+   shorter windows the rows are scaled down (zoom) to fit under the nav; otherwise the stuck card
+   would hide its own bottom. */
+@media (min-width: 1280px) and (prefers-reduced-motion: no-preference) {
+  .stack-card {
+    position: sticky;
+    top: calc(100px + var(--i, 0) * 14px);
+    background-color: var(--color-bg-base);
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -16px 32px -16px rgb(0 0 0 / 0.22);
+    transform-origin: 50% 0;
+    transform: scale(calc(1 - var(--t, 0) * 0.05));
+    will-change: transform;
+  }
+
+  .stack-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: var(--color-bg-base);
+    opacity: calc(var(--t, 0) * 0.55);
+    pointer-events: none;
+  }
+}
+
+@media (min-width: 1280px) and (max-height: 819px) and (prefers-reduced-motion: no-preference) {
+  .stack-card {
+    zoom: 0.84;
+  }
+}
+
+@media (min-width: 1280px) and (max-height: 699px) and (prefers-reduced-motion: no-preference) {
+  .stack-card {
+    zoom: 0.7;
   }
 }

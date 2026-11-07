@@ -8,6 +8,7 @@ import { checkUsage } from "./cron/usage-monitor";
 import type { AppEnv, Bindings } from "./env";
 import type { AuthEmailMessage } from "./lib/auth-email-templates";
 import { apiError } from "./lib/errors";
+import { requireAuthSecret } from "./middleware/auth-config";
 import {
   adminOrigins,
   allowedOrigins,
@@ -40,6 +41,9 @@ app.use("*", (c, next) => {
 });
 app.use("*", securityHeaders);
 app.use("/api/*", originGuard);
+// Auth, account and admin routes refuse to run without a proper BETTER_AUTH_SECRET.
+for (const path of ["/api/auth/*", "/api/admin/*", "/api/me", "/api/me/*"])
+  app.use(path, requireAuthSecret);
 
 // Responses on these paths take at least AUTH_MIN_RESPONSE_MS, so a known and an unknown address
 // cannot be told apart by timing.

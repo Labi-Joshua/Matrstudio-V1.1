@@ -23,7 +23,7 @@ import { AuthLink, Button } from "./button";
 import { Checkbox, PasswordField, TextField } from "./field";
 import { PasswordRules } from "./reset-password-form";
 import { AuthHeader, AuthScreen, Divider, GoogleButton } from "./shell";
-import { Turnstile, type TurnstileHandle } from "./turnstile";
+import { TURNSTILE_CONFIGURED, Turnstile, type TurnstileHandle } from "./turnstile";
 
 /**
  * Create account (Figma 1) and its variants: from a waitlist invite (2, `inviteToken` given: no
@@ -58,7 +58,9 @@ export function CreateAccountForm({
   }>({ name: null, email: null, password: null, terms: null });
   const [notice, setNotice] = useState<SignUpNotice | null>(null);
   const [pending, setPending] = useState(false);
-  const [needsCaptcha, setNeedsCaptcha] = useState(false);
+  // These forms always need the human check, so show it from the start when it is configured
+  // (the API still refuses a missing token with captcha_required, which keeps it on screen).
+  const [needsCaptcha, setNeedsCaptcha] = useState(TURNSTILE_CONFIGURED);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const captcha = useRef<TurnstileHandle>(null);
   const nameInput = useRef<HTMLInputElement>(null);

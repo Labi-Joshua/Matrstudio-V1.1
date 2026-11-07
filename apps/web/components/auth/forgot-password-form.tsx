@@ -11,7 +11,7 @@ import { BackLink, Button, buttonClasses, TextButton } from "./button";
 import { TextField } from "./field";
 import { MailIcon } from "./icons";
 import { AuthHeader, AuthScreen, IconTile } from "./shell";
-import { Turnstile, type TurnstileHandle } from "./turnstile";
+import { TURNSTILE_CONFIGURED, Turnstile, type TurnstileHandle } from "./turnstile";
 
 /** How long "Resend link" stays disabled after a send, so it cannot be hammered. */
 const RESEND_COOLDOWN_SECONDS = 30;
@@ -28,7 +28,9 @@ export function ForgotPasswordForm() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [failure, setFailure] = useState<ApiFailure | null>(null);
-  const [needsCaptcha, setNeedsCaptcha] = useState(false);
+  // These forms always need the human check, so show it from the start when it is configured
+  // (the API still refuses a missing token with captcha_required, which keeps it on screen).
+  const [needsCaptcha, setNeedsCaptcha] = useState(TURNSTILE_CONFIGURED);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [resendNote, setResendNote] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState<number | null>(null);

@@ -72,3 +72,42 @@ export function describeDevice(ua: string | null | undefined): string {
 
 export const clientIp = (headers: Headers): string =>
   headers.get("cf-connecting-ip") ?? headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "";
+
+/** SHA-256 as unpadded base64url: the format Better Auth uses for hashed verification identifiers. */
+export async function sha256Base64Url(input: string): Promise<string> {
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", enc.encode(input)));
+  return btoa(String.fromCharCode(...digest))
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replaceAll("=", "");
+}
+
+export type JwtCheck = { payload: Record<string, unknown>; expired: boolean };
+
+/**
+ * Checks an HS256 JWT signature (the format Better Auth uses for email-verification links) and
+ * reads its expiry. Null means bad signature or malformed: forged and unknown tokens look the same.
+ */
+export async function checkHs256Jwt(token: string, secret: string): Promise<JwtCheck | null> {
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  const [h, p, s] = parts as [string, string, string];
+  try {
+    const fromB64u = (v: string) =>
+      Uint8Array.from(atob(v.replaceAll("-", "+").replaceAll("_", "/")), (c) => c.charCodeAt(0));
+    const key = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["verify"],
+    );
+    if (!(await crypto.subtle.verify("HMAC", key, fromB64u(s), enc.encode(`${h}.${p}`))))
+      return null;
+    const payload = JSON.parse(new TextDecoder().decode(fromB64u(p))) as Record<string, unknown>;
+    const exp = typeof payload.exp === "number" ? payload.exp : 0;
+    return { payload, expired: exp <= Math.floor(Date.now() / 1000) };
+  } catch {
+    return null;
+  }
+}

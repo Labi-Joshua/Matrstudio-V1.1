@@ -53,3 +53,17 @@ never from a dev machine.
 
 Issue a waitlist invite (no UI yet): call `issueInvite(env, { email, createdBy })` from a script or a
 future admin handler; send the returned `link` (`/invite?token=...`) to the person.
+
+## Link failure codes (for the screens)
+
+| Link | Where the failure shows up | Codes |
+|---|---|---|
+| Email confirmation `GET /api/auth/verify-email?token&callbackURL` | Redirect to `callbackURL` (`/email-confirmed`) with `?error=` (without a `callbackURL`: 400 JSON `{code}`) | `link_expired` (signature valid, past expiry), `already_confirmed` (signature valid and the token was already used, or the user is already verified), `link_invalid` (bad signature, unknown, anything else) |
+| Magic link `GET /api/auth/magic-link/verify` | Redirect to `errorCallbackURL` (default `/sign-in`) with `?error=` | `link_expired` (the record exists and is past its 15 minutes), otherwise `INVALID_TOKEN` (unknown, used, tampered) |
+| Password reset `POST /api/auth/reset-password {newPassword, token}` | 400 JSON `{code}` | `link_expired` (valid token, past 15 minutes), `link_invalid` (unknown, used, tampered); password errors keep their `PASSWORD_*` codes |
+| Reset page load `GET /api/auth/reset-password/check?token=` | 200 `{status:"ok"\|"expired"\|"invalid"}` | Read-only, never consumes the token. 429 `rate_limited` after 30 per 15 minutes per IP |
+
+Only a caller who holds a link we issued can learn its state: confirmation links are signed (a forged
+or foreign token is always `link_invalid`), and reset/magic tokens are random, so `invalid` covers both
+"never existed" and "already used". Nothing here says whether an email address has an account.
+Expired single-use records are kept for a day (cron purge) so "expired" can be told from "unknown".

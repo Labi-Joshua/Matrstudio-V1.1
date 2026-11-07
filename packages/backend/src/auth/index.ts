@@ -23,7 +23,15 @@ import { CAPTCHA_AFTER_FAILURES, clear, hit, LIMITS, type Limit, peek } from "./
 import { hashPassword, SCRYPT_DEFAULTS, verifyPassword } from "./password";
 import { hashSessionToken, withHashedSessionTokens } from "./session-hash";
 import { verifyTurnstile } from "./turnstile";
-import { clientIp, describeDevice, emailRef, sha256Hex, truncateIp } from "./util";
+import {
+  checkHs256Jwt,
+  clientIp,
+  describeDevice,
+  emailRef,
+  sha256Base64Url,
+  sha256Hex,
+  truncateIp,
+} from "./util";
 
 export const SESSION_COOKIE = "__Host-ms_session";
 const DAY = 86400;
@@ -168,6 +176,43 @@ function build(env: Bindings, deps: AuthDeps = {}) {
     });
   }
 
+  type LinkState = "ok" | "expired" | "invalid";
+  /** State of a stored single-use record, read without consuming or cleaning anything. */
+  async function recordState(identifier: string): Promise<LinkState> {
+    const row = await env.DB.prepare(
+      "SELECT expiresAt FROM verification WHERE identifier = ? ORDER BY createdAt DESC LIMIT 1",
+    )
+      .bind(await sha256Base64Url(identifier))
+      .first<{ expiresAt: string }>();
+    if (!row) return "invalid";
+    return new Date(row.expiresAt).getTime() <= now().getTime() ? "expired" : "ok";
+  }
+  const withError = (path: string, code: string) => {
+    const u = new URL(path, "https://x.invalid");
+    u.searchParams.set("error", code);
+    return u.pathname + u.search;
+  };
+  const linkError = (code: string) =>
+    new APIError("BAD_REQUEST", {
+      code,
+      message: "This link is invalid, expired or already used.",
+    });
+
+  const linkCheckPlugin = {
+    id: "link-check",
+    endpoints: {
+      resetLinkCheck: createAuthEndpoint(
+        "/reset-password/check",
+        { method: "GET", query: z.object({ token: z.string().min(1).max(256) }) },
+        async (ctx) => {
+          // Reports only the state of the token the caller already holds.
+          const state = await recordState(`reset-password:${ctx.query.token}`);
+          return ctx.json({ status: state });
+        },
+      ),
+    },
+  };
+
   const passwordPolicyPlugin = {
     id: "pwned-fail-open",
     init(ctx: { password: { hash: (p: string) => Promise<string>; verify: unknown } }) {
@@ -304,7 +349,8 @@ function build(env: Bindings, deps: AuthDeps = {}) {
     // These return raw session rows (token column). /api/me/sessions replaces them; sign-out and
     // revoke-other-sessions stay.
     disabledPaths: ["/list-sessions", "/revoke-session"],
-    verification: { storeIdentifier: "hashed" },
+    // disableCleanup keeps expired rows until the daily cron, so "expired" can be told from "unknown".
+    verification: { storeIdentifier: "hashed", disableCleanup: true },
     session: {
       expiresIn: LEARNER_IDLE_SECONDS, // idle timeout, slid forward on use
       updateAge: DAY, // slide at most once a day; the absolute 30-day cap is in session-hash.ts
@@ -553,23 +599,59 @@ function build(env: Bindings, deps: AuthDeps = {}) {
             return;
           case "/verify-email": {
             const token = String(ctx.query?.token ?? "");
-            const used = token
-              ? await (await context()).internalAdapter.consumeVerificationValue(
-                  `email-verify:${token}`,
-                )
-              : null;
+            const cb = safePath(String(ctx.query?.callbackURL ?? ""), "");
+            const fail = (code: string) => {
+              if (cb) throw ctx.redirect(withError(cb, code));
+              throw linkError(code);
+            };
+            // The token is a signed JWT, so a valid signature proves the caller holds a link we
+            // issued; only then do we say whether it expired or was already used.
+            const checked = token ? await checkHs256Jwt(token, secret) : null;
+            if (!checked) return fail("link_invalid");
+            if (checked.expired) return fail("link_expired");
+            const internal = (await context()).internalAdapter;
+            const owner = await internal.findUserByEmail(String(checked.payload.email ?? ""));
+            const used = await internal.consumeVerificationValue(`email-verify:${token}`);
             if (!used) {
-              const cb = safePath(String(ctx.query?.callbackURL ?? ""), "");
-              if (cb) {
-                throw ctx.redirect(`${cb}${cb.includes("?") ? "&" : "?"}error=INVALID_TOKEN`);
-              }
-              throw new APIError("BAD_REQUEST", {
-                code: "INVALID_TOKEN",
-                message: "This link is invalid, expired or already used.",
-              });
+              if (checked.payload.updateTo) return fail("already_confirmed"); // email-change link, used
+              return fail(owner?.user?.emailVerified ? "already_confirmed" : "link_invalid");
+            }
+            if (!checked.payload.updateTo && owner?.user?.emailVerified)
+              return fail("already_confirmed");
+            return;
+          }
+          case "/magic-link/verify": {
+            const token = String(ctx.query?.token ?? "");
+            if (
+              token &&
+              (await recordState(`magic-link:${await sha256Base64Url(token)}`)) === "expired"
+            ) {
+              const target = safePath(
+                String(ctx.query?.errorCallbackURL || ctx.query?.callbackURL || ""),
+                "/",
+              );
+              throw ctx.redirect(withError(target, "link_expired"));
             }
             return;
           }
+          case "/reset-password": {
+            const b = (ctx.body ?? {}) as { token?: unknown };
+            const token = String(b.token ?? ctx.query?.token ?? "");
+            const state = token ? await recordState(`reset-password:${token}`) : "invalid";
+            if (state === "expired") throw linkError("link_expired");
+            if (state === "invalid") throw linkError("link_invalid");
+            return;
+          }
+          case "/reset-password/check":
+            await limit(
+              h,
+              `linkcheck:ip:${iref}`,
+              LIMITS.linkCheckIp,
+              AUTH_ERROR.rateLimited,
+              "Too many attempts. Try again later.",
+              "link_check_ip",
+            );
+            return;
           case "/change-password":
             // Every other session is revoked on a password change.
             return { context: { body: { ...(ctx.body as object), revokeOtherSessions: true } } };
@@ -699,12 +781,13 @@ function build(env: Bindings, deps: AuthDeps = {}) {
             link: safeLink(env, url, {
               callbackURL: "/dashboard",
               newUserCallbackURL: "/onboarding",
-              errorCallbackURL: "/sign-in?error=link",
+              errorCallbackURL: "/sign-in",
             }),
           });
         },
       }),
       passkey({ rpID, rpName: "Matr Studio", origin: web }),
+      linkCheckPlugin,
       passwordPolicyPlugin as unknown as BetterAuthPlugin,
       inviteAcceptPlugin,
     ],

@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { sha256Hex } from "../src/auth/util";
 import { createApp, GOOD_PASSWORD, stubFetch } from "./helpers";
@@ -162,7 +163,7 @@ describe("email confirmation links", () => {
     const link = app.last("confirm-email")?.link ?? "";
     const token = new URL(link).searchParams.get("token") ?? "";
     const bad = await app.call(pathOf(link.replace(token, `${token}x`)), { origin: null });
-    expect(bad.headers.get("location") ?? bad.text).toMatch(/INVALID_TOKEN/);
+    expect(bad.headers.get("location")).toMatch(/error=link_invalid/);
     const rows = app.sqlite.prepare("SELECT identifier FROM verification").all() as {
       identifier: string;
     }[];
@@ -171,23 +172,57 @@ describe("email confirmation links", () => {
     const ok = await app.call(pathOf(link), { origin: null });
     expect(ok.cookie).toBeTruthy();
     const again = await app.call(pathOf(link), { origin: null });
-    expect(again.headers.get("location") ?? again.text).toMatch(/INVALID_TOKEN/);
+    expect(again.headers.get("location")).toMatch(/error=already_confirmed/);
     expect(again.cookie).toBeUndefined();
   });
 
-  it("rejects an expired confirmation record", async () => {
+  it("tells expired, unrecognised and already-confirmed links apart (signed token only)", async () => {
     stubFetch();
     const app = createApp();
     await app.call("/api/auth/sign-up/email", {
       body: { email: "ada@example.com", password: GOOD_PASSWORD, name: "Ada" },
     });
-    app.sqlite
-      .prepare("UPDATE verification SET expiresAt = ?")
-      .run(new Date(Date.now() - 1000).toISOString());
-    const link = app.last("confirm-email")?.link ?? "";
-    const res = await app.call(pathOf(link), { origin: null });
-    expect(res.headers.get("location") ?? res.text).toMatch(/INVALID_TOKEN/);
-    expect(res.cookie).toBeUndefined();
+    const real = new URL(app.last("confirm-email")?.link ?? "");
+    const path = (token: string) =>
+      `/api/auth/verify-email?token=${token}&callbackURL=${encodeURIComponent("/email-confirmed")}`;
+    const forged = (payload: object, secret = app.env.BETTER_AUTH_SECRET) => {
+      const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString("base64url");
+      const head = b64({ alg: "HS256", typ: "JWT" });
+      const body = b64(payload);
+      const sig = createHmac("sha256", secret).update(`${head}.${body}`).digest("base64url");
+      return `${head}.${body}.${sig}`;
+    };
+    const past = Math.floor(Date.now() / 1000) - 60;
+    // Signature valid, past expiry: link_expired.
+    const expired = await app.call(path(forged({ email: "ada@example.com", exp: past })), {
+      origin: null,
+    });
+    expect(expired.headers.get("location")).toBe("/email-confirmed?error=link_expired");
+    // Wrong signature, garbage, or an unknown token: link_invalid, whatever the claims say.
+    for (const token of [
+      forged({ email: "ada@example.com", exp: past }, "some-other-secret-some-other-secret"),
+      "garbage",
+      `${real.searchParams.get("token")}x`,
+    ]) {
+      const res = await app.call(path(token), { origin: null });
+      expect(res.headers.get("location")).toBe("/email-confirmed?error=link_invalid");
+    }
+    // Signed and unexpired but never issued/registered for an unconfirmed user: link_invalid.
+    const unregistered = forged({ email: "ada@example.com", exp: past + 3600, userId: "x" });
+    expect((await app.call(path(unregistered), { origin: null })).headers.get("location")).toBe(
+      "/email-confirmed?error=link_invalid",
+    );
+    // Valid once, then already_confirmed; a fresh signed token for a verified user also says so.
+    expect(
+      (await app.call(path(real.searchParams.get("token") ?? ""), { origin: null })).cookie,
+    ).toBeTruthy();
+    expect((await app.call(path(unregistered), { origin: null })).headers.get("location")).toBe(
+      "/email-confirmed?error=already_confirmed",
+    );
+    // Without a callbackURL the same codes come back as JSON.
+    const json = await app.call("/api/auth/verify-email?token=garbage", { origin: null });
+    expect(json.status).toBe(400);
+    expect(json.json.code).toBe("link_invalid");
   });
 
   it("builds links on PUBLIC_WEB_URL with relative callbacks only", async () => {
@@ -248,7 +283,7 @@ describe("magic link", () => {
       .run(new Date(Date.now() - 1000).toISOString());
     const expired = await app.call(pathOf(link), { origin: null });
     expect(expired.cookie).toBeUndefined();
-    expect(expired.headers.get("location")).toMatch(/INVALID_TOKEN/);
+    expect(expired.headers.get("location")).toMatch(/error=link_expired/);
   });
 
   it("expires after 15 minutes", async () => {
@@ -295,12 +330,27 @@ describe("password reset tokens", () => {
       body: { newPassword, token: `${token}x` },
     });
     expect(tampered.status).toBe(400);
+    expect(tampered.json.code).toBe("link_invalid");
+    expect((await app.call(`/api/auth/reset-password/check?token=${token}`)).json).toEqual({
+      status: "ok",
+    });
+    expect((await app.call(`/api/auth/reset-password/check?token=${token}x`)).json).toEqual({
+      status: "invalid",
+    });
     app.sqlite
       .prepare("UPDATE verification SET expiresAt = ?")
       .run(new Date(Date.now() - 1000).toISOString());
-    expect(
-      (await app.call("/api/auth/reset-password", { body: { newPassword, token } })).status,
-    ).toBe(400);
+    const expiredReset = await app.call("/api/auth/reset-password", {
+      body: { newPassword, token },
+    });
+    expect(expiredReset.status).toBe(400);
+    expect(expiredReset.json.code).toBe("link_expired");
+    // The read-only check reports it without consuming anything, and keeps saying so.
+    for (let i = 0; i < 2; i++) {
+      expect((await app.call(`/api/auth/reset-password/check?token=${token}`)).json).toEqual({
+        status: "expired",
+      });
+    }
     const fresh = await ask();
     expect(
       (await app.call("/api/auth/reset-password", { body: { newPassword, token: fresh } })).status,

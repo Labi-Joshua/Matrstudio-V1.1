@@ -10,6 +10,8 @@ export const LIMITS = {
   magicIp: { limit: 20, windowSec: 900 },
   resetEmail: { limit: 3, windowSec: 3600 },
   signupIp: { limit: 10, windowSec: 3600 },
+  /** Read-only link state checks (GET /reset-password/check). */
+  linkCheckIp: { limit: 30, windowSec: 900 },
   resendEmail: { limit: 3, windowSec: 3600 },
   /** Wrong-password counter: captcha is required from the 3rd failure. */
   signinFailures: { limit: 3, windowSec: 900 },
@@ -73,7 +75,9 @@ export async function purgeStaleLimits(
   await db.batch([
     db.prepare("DELETE FROM rate_limits WHERE window_start < ?").bind(now - 86400),
     db.prepare("DELETE FROM session WHERE expiresAt < ?").bind(iso),
-    db.prepare("DELETE FROM verification WHERE expiresAt < ?").bind(iso),
+    db
+      .prepare("DELETE FROM verification WHERE expiresAt < ?")
+      .bind(new Date((now - 86400) * 1000).toISOString()), // kept a day so expired links differ from unknown ones
     db.prepare("DELETE FROM invites WHERE expires_at < ?").bind(now - 30 * 86400),
   ]);
 }

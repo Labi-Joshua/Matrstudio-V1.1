@@ -85,8 +85,8 @@ export function StatusRegion({
 }
 
 /**
- * Where toasts appear: pinned to the top of the screen, centred over the form column on desktop
- * (Figma places the toast at the top of the page), full width with a 16px gutter on phones.
+ * Where toasts appear: pinned to the top of the screen, centred on the page on desktop, full width
+ * with a 16px gutter on phones.
  */
 export function ToastRegion({
   children,
@@ -96,7 +96,7 @@ export function ToastRegion({
   politeness?: "polite" | "assertive";
 }) {
   return (
-    <div className="pointer-events-none fixed inset-x-4 top-4 z-50 flex justify-center lg:inset-x-auto lg:top-6 lg:left-1/4 lg:w-[440px] lg:-translate-x-1/2">
+    <div className="pointer-events-none fixed inset-x-4 top-4 z-50 flex justify-center lg:inset-x-auto lg:top-6 lg:left-1/2 lg:w-[440px] lg:-translate-x-1/2">
       <StatusRegion politeness={politeness} className="pointer-events-auto w-full">
         {children}
       </StatusRegion>

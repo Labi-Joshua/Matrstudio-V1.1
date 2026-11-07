@@ -32,7 +32,7 @@ export default function PathsPage() {
         intro="Every path strings the best free videos, articles and docs into an order that makes sense. Pick one, mark each lesson done, and finish it."
       >
         {/* TODO: point at the real sign-up once auth exists. */}
-        <a href="#get-started" className={BUTTON_PRIMARY}>
+        <a href={ROUTES.signUp} className={BUTTON_PRIMARY}>
           <span className="px-0.5">Get started free</span>
         </a>
         <Link href={ROUTES.library} className={BUTTON_SECONDARY}>

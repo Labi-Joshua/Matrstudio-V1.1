@@ -119,7 +119,7 @@ export function UseCases() {
             Explore paths
           </Link>
           <a
-            href="#get-started"
+            href={ROUTES.signUp}
             className="btn-lift inline-flex h-12 items-center justify-center rounded-lg bg-primary px-3.5 py-3 font-medium text-[16px] text-static-white leading-6 tracking-[-0.16px]"
           >
             Get started free

@@ -207,7 +207,7 @@ export function Hero() {
           className="hero-rise flex items-center gap-3"
         >
           <a
-            href="#get-started"
+            href={ROUTES.signUp}
             className="btn-lift flex items-center justify-center rounded-lg border border-transparent bg-text px-3 py-2.5 font-medium text-[16px] text-bg-base leading-6 tracking-[-0.16px] xl:h-12 xl:px-3.5 xl:py-3"
           >
             <span className="px-0.5">Get started free</span>

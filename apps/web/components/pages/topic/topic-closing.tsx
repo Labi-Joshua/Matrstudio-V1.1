@@ -60,7 +60,7 @@ export function TopicCta({ view }: { view: TopicPageView }) {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
-              href={ROUTES.paths}
+              href={ROUTES.signUp}
               className="btn-lift flex h-12 items-center justify-center rounded-lg bg-primary px-3.5 py-3 font-medium text-[16px] text-static-white leading-6 tracking-[-0.16px]"
             >
               <span className="px-0.5">Create a free account</span>

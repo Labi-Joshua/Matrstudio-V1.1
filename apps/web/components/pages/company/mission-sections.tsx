@@ -17,7 +17,7 @@ import { TileStrip } from "./tile-strip";
  * 778:8270, desktop dark 780:24338, mobile dark 780:25495). Sections: Hero, Yardstick, Principles,
  * Showcase, CTA. Mobile < md, one tablet layout between, the pixel-exact desktop from xl.
  */
-const START = `${ROUTES.home}#get-started`;
+const START = ROUTES.signUp;
 
 const EYEBROW = "font-mono text-[12px] text-primary uppercase leading-[normal] tracking-[0.72px]";
 const RAIL =

@@ -27,7 +27,7 @@ export default function LibraryPage() {
         text="Create a free account to bookmark resources and build your own reading list."
       >
         {/* TODO: point at the real sign-up once auth exists. */}
-        <a href="#get-started" className={BUTTON_PRIMARY}>
+        <a href={ROUTES.signUp} className={BUTTON_PRIMARY}>
           <span className="px-0.5">Create a free account</span>
         </a>
         <Link href={ROUTES.submit} className={BUTTON_SECONDARY}>

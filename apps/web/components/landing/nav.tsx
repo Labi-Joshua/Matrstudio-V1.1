@@ -48,9 +48,17 @@ export function Nav() {
                 </Link>
               </li>
             ))}
+            <li>
+              <Link
+                href={ROUTES.signIn}
+                className="font-medium text-[14px] text-text leading-5 tracking-[-0.14px] hover:text-primary-text"
+              >
+                Sign in
+              </Link>
+            </li>
           </ul>
           <Link
-            href={`${ROUTES.home}#get-started`}
+            href={ROUTES.signUp}
             className="btn-lift rounded-full bg-ink px-3 py-2.5 font-medium text-[14px] text-bg-base leading-5 tracking-[-0.14px]"
           >
             <span className="px-0.5">Get started</span>

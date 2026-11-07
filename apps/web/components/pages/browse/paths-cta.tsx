@@ -1,3 +1,4 @@
+import { ROUTES } from "../../../lib/routes";
 import { BrowseCta } from "./browse-cta";
 import { BUTTON_PRIMARY, BUTTON_SECONDARY } from "./page-hero";
 
@@ -10,10 +11,10 @@ export function PathsCta() {
       text="Create a free account to mark lessons done, save paths for later and pick up where you stopped."
     >
       {/* TODO: point at the real sign-up / sign-in once auth exists. */}
-      <a href="#get-started" className={BUTTON_PRIMARY}>
+      <a href={ROUTES.signUp} className={BUTTON_PRIMARY}>
         <span className="px-0.5">Create a free account</span>
       </a>
-      <a href="#sign-in" className={BUTTON_SECONDARY}>
+      <a href={ROUTES.signIn} className={BUTTON_SECONDARY}>
         <span className="px-0.5">Sign in</span>
       </a>
     </BrowseCta>

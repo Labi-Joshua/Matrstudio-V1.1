@@ -70,8 +70,13 @@ export function CreateAccountForm({
   // with ?error=. Read once on load (no Suspense needed) and clear it from the address bar.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (!isInvite && isGoogleRegisteredParam(params.get("error"))) {
-      setNotice({ kind: "google_registered" });
+    if (isInvite) return;
+    // The marketing closing section hands over an email with ?email=. Prefill it, then take it
+    // out of the address bar so it is not left in history or shared links.
+    const prefill = params.get("email")?.trim();
+    if (prefill && prefill.length <= 254) setEmail(prefill);
+    if (isGoogleRegisteredParam(params.get("error"))) setNotice({ kind: "google_registered" });
+    if (prefill || params.has("error")) {
       window.history.replaceState(window.history.state, "", window.location.pathname);
     }
   }, [isInvite]);

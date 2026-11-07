@@ -29,10 +29,10 @@ export default function SavedPage() {
         intro="Star a path or bookmark a single lesson, then pick up exactly where you stopped, on any device."
       >
         {/* TODO: point both at the real sign-in / sign-up once auth exists. */}
-        <a href="#sign-in" className={BUTTON_PRIMARY}>
+        <a href={ROUTES.signIn} className={BUTTON_PRIMARY}>
           <span className="px-0.5">Sign in to see your saved items</span>
         </a>
-        <a href="#get-started" className={BUTTON_SECONDARY}>
+        <a href={ROUTES.signUp} className={BUTTON_SECONDARY}>
           <span className="px-0.5">Create a free account</span>
         </a>
       </PageHero>
@@ -48,10 +48,10 @@ export default function SavedPage() {
         title="Your saved list is one sign-in away"
         text="It’s free, and it keeps your paths and lessons in one place."
       >
-        <a href="#sign-in" className={BUTTON_PRIMARY}>
+        <a href={ROUTES.signIn} className={BUTTON_PRIMARY}>
           <span className="px-0.5">Sign in</span>
         </a>
-        <a href="#get-started" className={BUTTON_SECONDARY}>
+        <a href={ROUTES.signUp} className={BUTTON_SECONDARY}>
           <span className="px-0.5">Create a free account</span>
         </a>
       </BrowseCta>

@@ -1,7 +1,7 @@
+import { ROUTES } from "../../lib/routes";
 import { CtaArc, Icon, type IconName } from "./closing-cta-art";
 
 // Placeholder target for links whose page does not exist yet (see the hand-off notes).
-const TODO_HREF = "#";
 
 /**
  * Figma "Product landing page · V3": Closing CTA 740:38075 (desktop, dark) and 741:41212 (mobile).
@@ -35,20 +35,33 @@ export function ClosingCta() {
           </div>
 
           <div className="absolute inset-x-0 bottom-[69px] flex flex-col items-center gap-6 md:bottom-[60px] md:gap-9 xl:bottom-[49px]">
-            <div className="flex w-full flex-col gap-2.5 rounded-full p-0.5 md:w-auto md:flex-row md:items-center md:gap-2">
-              <div
-                aria-hidden="true"
-                className="flex h-10 w-full items-center rounded-full border border-border-soft bg-bg-base px-4 font-medium text-[14px] text-text-secondary leading-5 tracking-[-0.14px] md:w-[280px]"
-              >
-                Enter your email address
-              </div>
-              <a
-                href={TODO_HREF}
-                className="btn-lift flex items-center justify-center rounded-full bg-primary px-3 py-2.5 font-medium text-[14px] text-static-white leading-5 tracking-[-0.14px]"
+            {/* A plain GET form: the email is handed to the sign-up page, which prefills it and
+                removes it from the address bar. No JavaScript needed. */}
+            <form
+              action={ROUTES.signUp}
+              method="get"
+              className="flex w-full flex-col gap-2.5 rounded-full p-0.5 md:w-auto md:flex-row md:items-center md:gap-2"
+            >
+              <label htmlFor="closing-cta-email" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="closing-cta-email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                inputMode="email"
+                maxLength={254}
+                placeholder="Enter your email address"
+                className="h-10 w-full rounded-full border border-border-soft bg-bg-base px-4 font-medium text-[14px] text-text leading-5 tracking-[-0.14px] placeholder:text-text-secondary focus-visible:border-primary-border focus-visible:outline-none md:w-[280px]"
+              />
+              <button
+                type="submit"
+                className="btn-lift flex cursor-pointer items-center justify-center rounded-full bg-primary px-3 py-2.5 font-medium text-[14px] text-static-white leading-5 tracking-[-0.14px]"
               >
                 <span className="px-0.5">Get started free</span>
-              </a>
-            </div>
+              </button>
+            </form>
 
             <h2
               id="closing-cta-heading"

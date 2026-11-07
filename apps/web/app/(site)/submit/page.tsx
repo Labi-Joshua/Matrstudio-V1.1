@@ -30,7 +30,7 @@ export default function SubmitPage() {
         intro="Found a video, article or tool that made something click? Send it in. A reviewer checks every link before it goes into the library."
       >
         {/* TODO: point at the submit flow (behind sign-in) once auth exists. */}
-        <a href="#sign-in" className={BUTTON_PRIMARY}>
+        <a href={ROUTES.signIn} className={BUTTON_PRIMARY}>
           <span className="px-0.5">Submit a resource</span>
         </a>
         <a href="#what-we-accept" className={BUTTON_SECONDARY}>
@@ -50,10 +50,10 @@ export default function SubmitPage() {
         title="Know a great free resource?"
         text="Sign in and send it our way. It could end up in the next path."
       >
-        <a href="#sign-in" className={BUTTON_PRIMARY}>
+        <a href={ROUTES.signIn} className={BUTTON_PRIMARY}>
           <span className="px-0.5">Submit a resource</span>
         </a>
-        <a href="#get-started" className={BUTTON_SECONDARY}>
+        <a href={ROUTES.signUp} className={BUTTON_SECONDARY}>
           <span className="px-0.5">Create a free account</span>
         </a>
       </BrowseCta>

@@ -98,7 +98,7 @@ export function Pricing() {
             </p>
 
             <a
-              href="#get-started"
+              href={ROUTES.signUp}
               className="btn-lift flex h-12 items-center justify-center rounded-lg bg-primary px-3.5 py-3 font-medium text-[16px] text-static-white leading-6 tracking-[-0.16px]"
             >
               <span className="px-0.5">Get started free</span>

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  acceptInvite,
   checkResetToken,
   getMe,
   getSession,
@@ -7,6 +8,7 @@ import {
   parseMe,
   requestPasswordReset,
   signInWithEmail,
+  signUpWithEmail,
 } from "./api";
 
 function mockFetch(response: Response | Error) {
@@ -160,5 +162,81 @@ describe("parseMe", () => {
     expect(parseMe({ id: "u1", email: "a@b.co" })?.onboarding.completed).toBe(false);
     expect(parseMe({ email: "a@b.co" })).toBeUndefined();
     expect(parseMe(null)).toBeUndefined();
+  });
+});
+
+describe("signUpWithEmail", () => {
+  it("posts name, email and password, and sends the captcha token as a header", async () => {
+    const fetchMock = mockFetch(json({ token: null, user: { id: "u1" } }));
+    const result = await signUpWithEmail({
+      name: "Ada",
+      email: "ada@example.com",
+      password: "correct horse battery",
+      captchaToken: "cap-token",
+    });
+    expect(result).toEqual({ ok: true, data: null });
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe("/api/auth/sign-up/email");
+    expect(JSON.parse(init.body as string)).toEqual({
+      name: "Ada",
+      email: "ada@example.com",
+      password: "correct horse battery",
+    });
+    expect((init.headers as Record<string, string>)["x-captcha-response"]).toBe("cap-token");
+  });
+
+  it("maps the failure codes the screen switches on", async () => {
+    const input = { name: "A", email: "a@b.co", password: "x" };
+    mockFetch(json({ code: "email_already_registered", message: "x" }, { status: 422 }));
+    expect(await signUpWithEmail(input)).toMatchObject({
+      ok: false,
+      code: "email_already_registered",
+      status: 422,
+    });
+    mockFetch(json({ code: "PASSWORD_COMPROMISED" }, { status: 400 }));
+    expect(await signUpWithEmail(input)).toMatchObject({ code: "PASSWORD_COMPROMISED" });
+    mockFetch(json({ code: "rate_limited", retryAfterSeconds: 90 }, { status: 429 }));
+    expect(await signUpWithEmail(input)).toMatchObject({
+      code: "rate_limited",
+      retryAfterSeconds: 90,
+    });
+  });
+
+  it("reports a network failure instead of throwing", async () => {
+    mockFetch(new Error("offline"));
+    expect(await signUpWithEmail({ name: "A", email: "a@b.co", password: "x" })).toMatchObject({
+      ok: false,
+      code: "network_error",
+    });
+  });
+});
+
+describe("acceptInvite", () => {
+  it("posts the token, name and password only (the invite carries the email)", async () => {
+    const fetchMock = mockFetch(json({ token: "t", user: { id: "u1" } }));
+    const result = await acceptInvite({
+      token: "inv",
+      name: "Ada",
+      password: "correct horse battery",
+    });
+    expect(result).toEqual({ ok: true, data: null });
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe("/api/auth/invite/accept");
+    expect(JSON.parse(init.body as string)).toEqual({
+      token: "inv",
+      name: "Ada",
+      password: "correct horse battery",
+    });
+  });
+
+  it("maps invite_invalid and email_already_registered", async () => {
+    mockFetch(json({ code: "invite_invalid" }, { status: 400 }));
+    expect(await acceptInvite({ token: "x", name: "A", password: "p" })).toMatchObject({
+      code: "invite_invalid",
+    });
+    mockFetch(json({ code: "email_already_registered" }, { status: 422 }));
+    expect(await acceptInvite({ token: "x", name: "A", password: "p" })).toMatchObject({
+      code: "email_already_registered",
+    });
   });
 });

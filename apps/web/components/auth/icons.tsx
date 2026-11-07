@@ -85,6 +85,13 @@ export const ClockAlertIcon = (p: IconProps) => (
   </Icon>
 );
 
+/** A link with a strike through it, for "this link isn't working". */
+export const LinkOffIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M8.3 11.7a3.2 3.2 0 0 0 4 .4M11.7 8.3a3.2 3.2 0 0 0-1.4-.4M11.5 5.8l1.1-1.1a3.2 3.2 0 0 1 4.6 4.6l-1.1 1.1M8.5 14.2l-1.1 1.1a3.2 3.2 0 0 1-4.6-4.6l1.1-1.1M3 3l14 14" />
+  </Icon>
+);
+
 export const ArrowLeftIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M16 10H4M9 5l-5 5 5 5" />

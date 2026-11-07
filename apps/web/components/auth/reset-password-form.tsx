@@ -24,7 +24,7 @@ import { AuthHeader, AuthScreen, IconTile } from "./shell";
  * stay in the history entry, a bookmark or a shared screenshot (docs/SECURITY-AUTH.md section 4).
  * Returns undefined until the URL has been read, null when there was no token.
  */
-function useResetToken(): string | null | undefined {
+export function useResetToken(): string | null | undefined {
   const params = useSearchParams();
   const pathname = usePathname();
   const [token, setToken] = useState<string | null | undefined>(undefined);

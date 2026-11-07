@@ -64,7 +64,7 @@ const FALLBACK_MESSAGES: Partial<Record<ApiErrorCode, string>> = {
   rate_limited: "Too many requests.",
 };
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
@@ -129,7 +129,7 @@ type RequestOptions = {
  * One request. `parse` turns the JSON body into the data the caller wants, or returns undefined
  * when the body has the wrong shape (reported as invalid_response).
  */
-async function request<T>(
+export async function request<T>(
   method: "GET" | "POST",
   path: string,
   options: RequestOptions,
@@ -188,8 +188,8 @@ export type Me = {
   passkeyCount: number;
 };
 
-const orNull = (v: unknown): string | null => (typeof v === "string" ? v : null);
-const stringArray = (v: unknown): string[] =>
+export const orNull = (v: unknown): string | null => (typeof v === "string" ? v : null);
+export const stringArray = (v: unknown): string[] =>
   Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
 
 /** Exported for tests. Returns undefined when the payload is not a usable /api/me answer. */
@@ -295,6 +295,63 @@ export async function startGoogleSignIn(callbackURL: string): Promise<ApiResult<
   if (target.protocol !== "https:") return invalidResponse();
   window.location.assign(target.toString());
   return { ok: true, data: null };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Create account
+// ---------------------------------------------------------------------------------------------
+
+export type SignUpInput = {
+  name: string;
+  email: string;
+  password: string;
+  /** Required after the API answers captcha_required. */
+  captchaToken?: string | null;
+};
+
+/**
+ * Creates an account with email and password. Success (200) means a confirmation email was
+ * queued: there is no session yet, so show the "check your inbox" state. Failures to expect:
+ * email_already_registered (422), PASSWORD_TOO_SHORT / PASSWORD_TOO_LONG / PASSWORD_COMPROMISED,
+ * captcha_required / captcha_failed / captcha_unavailable, rate_limited (with retryAfterSeconds).
+ */
+export function signUpWithEmail(input: SignUpInput, signal?: AbortSignal) {
+  return request(
+    "POST",
+    "/api/auth/sign-up/email",
+    {
+      body: { name: input.name, email: input.email, password: input.password },
+      captchaToken: input.captchaToken,
+      signal,
+    },
+    ignoreBody,
+  );
+}
+
+export type AcceptInviteInput = {
+  token: string;
+  name: string;
+  password: string;
+  captchaToken?: string | null;
+};
+
+/**
+ * Creates an account from a waitlist invite. The invite is bound to its email, so none is sent.
+ * Success (200) signs the learner in (session cookie) with the email already confirmed. Failures
+ * to expect: invite_invalid (expired, used or unknown), email_already_registered, PASSWORD_*,
+ * captcha_*, rate_limited.
+ */
+export function acceptInvite(input: AcceptInviteInput, signal?: AbortSignal) {
+  return request(
+    "POST",
+    "/api/auth/invite/accept",
+    {
+      body: { token: input.token, name: input.name, password: input.password },
+      captchaToken: input.captchaToken,
+      signal,
+    },
+    ignoreBody,
+  );
 }
 
 // ---------------------------------------------------------------------------------------------

@@ -16,6 +16,8 @@ export const ROUTES = {
   // Learner auth (not linked from the marketing site yet). The dashboard and onboarding are built later.
   signIn: "/sign-in",
   signUp: "/sign-up",
+  invite: "/invite",
+  emailConfirmed: "/email-confirmed",
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
   dashboard: "/dashboard",

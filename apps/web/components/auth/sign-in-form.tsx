@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, useReducer, useRef, useState } from "react";
+import { type FormEvent, useEffect, useReducer, useRef, useState } from "react";
 import { requestMagicLink, sendVerificationEmail, signInWithEmail } from "../../lib/auth/api";
 import { authErrorCopy, formatWait } from "../../lib/auth/messages";
 import { initialSignInState, type SignInNotice, signInReducer } from "../../lib/auth/sign-in-state";
+import { signInLinkErrorFromParam } from "../../lib/auth/sign-up-state";
 import { formatCountdown, useCountdown } from "../../lib/auth/use-countdown";
 import { useGoAfterSignIn, useRedirectIfAuthenticated } from "../../lib/auth/use-me";
 import { normaliseEmail, validateCurrentPassword, validateEmail } from "../../lib/auth/validation";
@@ -32,6 +33,15 @@ export function SignInForm() {
   const captcha = useRef<TurnstileHandle>(null);
   const emailInput = useRef<HTMLInputElement>(null);
   const passwordInput = useRef<HTMLInputElement>(null);
+
+  // An expired or used magic link lands here with ?error= (AUTH.md "Link failure codes"). Read
+  // once on load and clear it from the address bar.
+  useEffect(() => {
+    const code = signInLinkErrorFromParam(new URLSearchParams(window.location.search).get("error"));
+    if (!code) return;
+    dispatch({ type: "failed", failure: { ok: false, code, message: "" }, email: "" });
+    window.history.replaceState(window.history.state, "", window.location.pathname);
+  }, []);
 
   const { notice, phase, needsCaptcha } = state;
   const busy = phase !== "idle";

@@ -9,7 +9,7 @@
     "build": {
       "dependsOn": ["^build"],
       "env": ["NEXT_PUBLIC_*"],
-      "outputs": ["out/**", ".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": ["out/**", ".next/**", "!.next/cache/**", "dist/**", "worker/csp-hashes.json"]
     },
     "typecheck": {
       "dependsOn": ["^typecheck"]

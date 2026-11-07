@@ -1,6 +1,6 @@
-// Copy for the legal pages, carried over verbatim from the waitlist app (apps/waitlist/content/legal.ts,
-// lawyer review still pending). The V3 Figma frames show older template wording with bracketed
-// placeholders; the differences are listed in the hand-off notes and were NOT applied here.
+// Copy for the legal pages. The Privacy Policy is carried over from the waitlist app (lawyer review
+// still pending). The Terms were rewritten on 7 November 2026 for the product site (no waitlist
+// or pre-launch wording); also pending lawyer review.
 // Layout: components/pages/company/legal-page.tsx (Figma "Marketing pages (V3)").
 //
 // Inline pieces: a plain string, { b } for an emphasised term, or { todo } for a detail still
@@ -227,15 +227,17 @@ export const PRIVACY: LegalDoc = {
 export const TERMS: LegalDoc = {
   slug: "terms",
   title: "Terms of Service",
-  description: "The terms for using matrstudio.com and the Matr Studio waitlist during pre-launch.",
+  description:
+    "The terms for using matrstudio.com: Matr Studio’s free learning paths, resource library and the resources you suggest.",
   intro:
-    "These terms cover your use of matrstudio.com and the Matr Studio waitlist while we’re in pre-launch. Please read them before you sign up.",
-  updated: "9 October 2026",
-  effective: "9 October 2026",
+    "These terms cover your use of matrstudio.com and Matr Studio’s learning paths and resource library. Please read them before you use the site or send us anything.",
+  updated: "7 November 2026",
+  effective: "7 November 2026",
   summary: [
-    "Joining the waitlist is free and doesn’t guarantee access or a launch date.",
-    "Share your referral link with real people. No spam, bots or fake accounts.",
-    "You can leave the waitlist whenever you like.",
+    "Matr Studio is free. We organise free resources from across the web into learning paths, and we link to the original creators.",
+    "We don’t host or control third-party resources, so each one stays under its own creator’s terms.",
+    "No spam, abuse or scraping, and only suggest resources you’re allowed to share.",
+    "You can stop using Matr Studio, or unsubscribe from our emails, at any time.",
   ],
   sections: [
     {
@@ -244,37 +246,83 @@ export const TERMS: LegalDoc = {
       blocks: [
         {
           p: [
-            "These terms are an agreement between you and Matr Studio (“Matr Studio”, “we”, “us”). By joining the waitlist or using matrstudio.com, you agree to them. If you don’t agree, please don’t use the service.",
+            "These terms are an agreement between you and Matr Studio (“Matr Studio”, “we”, “us”). By using matrstudio.com or any Matr Studio service, you agree to them. If you don’t agree, please don’t use the service.",
           ],
         },
       ],
     },
     {
-      id: "joining-the-waitlist",
-      title: "Joining the waitlist",
+      id: "what-matr-studio-is",
+      title: "What Matr Studio is",
+      blocks: [
+        {
+          p: [
+            "Matr Studio is a free website that brings together free learning resources (videos, articles, documentation and tools) from around the web and arranges them into step-by-step learning paths for designers and developers. Using the site doesn’t cost anything.",
+          ],
+        },
+        {
+          p: [
+            "We link to the original sources. We don’t host, copy or own the resources themselves, and we’re not affiliated with their creators unless we say so.",
+          ],
+        },
+      ],
+    },
+    {
+      id: "third-party-resources",
+      title: "Third-party resources",
       blocks: [
         {
           ul: [
-            ["Use an email address you own, and confirm it using the link we send you."],
-            ["One sign-up per person. We may remove duplicate, fake or automated sign-ups."],
             [
-              "A place on the waitlist doesn’t guarantee access, a launch date or any particular features.",
+              "Every resource belongs to its creator and is covered by the creator’s own terms and privacy practices, not ours.",
+            ],
+            [
+              "We choose and order resources with care, but we don’t guarantee that any resource is accurate, complete, up to date or still available. Links may move or disappear.",
+            ],
+            [
+              "Including a resource in a path isn’t an endorsement of its creator or anything else they publish.",
             ],
           ],
         },
       ],
     },
     {
-      id: "referrals",
-      title: "Referrals",
+      id: "accounts",
+      title: "Accounts",
       blocks: [
-        { p: ["After you confirm your email, you’ll get a personal referral link."] },
+        {
+          p: [
+            "Some features, such as saving paths or tracking your progress, will need an account. When we offer them:",
+          ],
+        },
         {
           ul: [
-            ["Share it with people who might genuinely be interested."],
-            ["Don’t post it in spam, buy sign-ups, or use bots or disposable email addresses."],
+            ["Use an email address you own, and keep your sign-in details to yourself."],
+            ["One account per person. You’re responsible for what happens under your account."],
             [
-              "We may cancel referrals or remove sign-ups that break these rules. Any referral rewards will be explained separately when we announce them.",
+              "We may suspend or remove accounts that are duplicate, fake, automated or that break these terms.",
+            ],
+          ],
+        },
+      ],
+    },
+    {
+      id: "suggesting-resources",
+      title: "Suggesting resources",
+      blocks: [
+        {
+          p: [
+            "You can suggest a resource for Matr Studio to consider. When you do, you confirm that it’s publicly available or that you have the right to share it, and you give us permission to link to it, describe it and list it on Matr Studio, with credit to its creator.",
+          ],
+        },
+        {
+          ul: [
+            [
+              "We review suggestions and may decline, edit the description of, or remove any resource.",
+            ],
+            ["Suggesting a resource doesn’t entitle you to payment or to a place in a path."],
+            [
+              "Don’t suggest anything unlawful, misleading, infringing or harmful, or anything that’s mainly promotional.",
             ],
           ],
         },
@@ -284,12 +332,12 @@ export const TERMS: LegalDoc = {
       id: "acceptable-use",
       title: "Acceptable use",
       blocks: [
-        { p: ["When using matrstudio.com, you agree not to:"] },
+        { p: ["When using Matr Studio, you agree not to:"] },
         {
           ul: [
             ["Disrupt, overload or try to gain unauthorised access to the service."],
             ["Get around our security measures, rate limits or bot checks."],
-            ["Scrape or collect other people’s information."],
+            ["Scrape or collect other people’s information, or copy the site in bulk."],
             ["Impersonate anyone or misrepresent your connection to Matr Studio."],
           ],
         },
@@ -301,7 +349,18 @@ export const TERMS: LegalDoc = {
       blocks: [
         {
           p: [
-            "We’ll send you the emails needed to run the waitlist, such as your confirmation link, plus updates about the launch. You can unsubscribe from updates at any time using the link in each update email.",
+            "We’ll email you when it’s needed to run the service, for example to reply to a message you sent us or to help you sign in. We’ll send news and updates if you’ve asked for them. You can unsubscribe from updates at any time using the link in each email.",
+          ],
+        },
+      ],
+    },
+    {
+      id: "earlier-sign-ups",
+      title: "If you joined before launch",
+      blocks: [
+        {
+          p: [
+            "If you signed up to the Matr Studio waitlist before launch, we’ll keep emailing you about Matr Studio until you unsubscribe. Joining the waitlist didn’t guarantee access to any particular feature, and anything we offer in return for referrals will be explained to you in writing.",
           ],
         },
       ],
@@ -312,7 +371,7 @@ export const TERMS: LegalDoc = {
       blocks: [
         {
           p: [
-            "The Matr Studio name, logo, website and its content belong to Matr Studio or our licensors. You may not copy or reuse them without our permission, except where the law allows.",
+            "The Matr Studio name, logo, website, design, and the way we select and arrange resources into paths belong to Matr Studio or our licensors. You may not copy or reuse them without our permission, except where the law allows. Resources we link to stay the property of their creators.",
           ],
         },
       ],
@@ -329,12 +388,12 @@ export const TERMS: LegalDoc = {
       ],
     },
     {
-      id: "pre-launch-service",
-      title: "Pre-launch service",
+      id: "availability",
+      title: "Availability of the service",
       blocks: [
         {
           p: [
-            "matrstudio.com is a pre-launch service provided “as is”. We may change, pause or stop the waitlist or the website at any time, and features described before launch may change.",
+            "Matr Studio is free and provided “as is”. We’re still building it, so we may change, pause or stop any part of the service, and features and paths may be added, changed or removed at any time. We don’t promise that it will always be available or error-free.",
           ],
         },
       ],
@@ -345,18 +404,18 @@ export const TERMS: LegalDoc = {
       blocks: [
         {
           p: [
-            "To the extent permitted by law, Matr Studio isn’t liable for indirect or consequential losses arising from your use of the waitlist or website. Nothing in these terms limits liability that can’t be limited by law.",
+            "To the extent permitted by law, Matr Studio isn’t liable for indirect or consequential losses arising from your use of the service, or from any third-party resource we link to. Nothing in these terms limits liability that can’t be limited by law.",
           ],
         },
       ],
     },
     {
-      id: "leaving-the-waitlist",
-      title: "Leaving the waitlist",
+      id: "ending-your-use",
+      title: "Ending your use",
       blocks: [
         {
           p: [
-            "You can leave the waitlist at any time by emailing hello@matrstudio.com or using the unsubscribe link in our update emails. We may remove you from the waitlist if you break these terms.",
+            "You can stop using Matr Studio at any time. To close an account or stop our emails, write to hello@matrstudio.com or use the unsubscribe link in our emails. We may suspend or end your access, or remove something you sent us, if you break these terms.",
           ],
         },
       ],
@@ -367,7 +426,7 @@ export const TERMS: LegalDoc = {
       blocks: [
         {
           p: [
-            "We may update these terms as Matr Studio grows. If the changes are significant, we’ll update the date at the top of this page and let you know by email before they take effect.",
+            "We may update these terms as Matr Studio grows. If the changes are significant, we’ll update the date at the top of this page and let you know before they take effect.",
           ],
         },
       ],

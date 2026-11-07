@@ -109,7 +109,7 @@ function Frame({ children }: { children: ReactNode }) {
           <main
             id="main"
             tabIndex={-1}
-            className="flex-1 px-5 pt-6 pb-16 outline-none md:pt-8 md:pr-8 md:pl-12"
+            className="flex-1 px-5 pt-6 pb-16 outline-none md:px-10 md:pt-8"
           >
             {children}
           </main>
@@ -217,7 +217,7 @@ function ShellSkeleton({ message }: { message: string }) {
           <p role="status" aria-live="polite" className="sr-only">
             {message}
           </p>
-          <div aria-hidden="true" className="flex max-w-[1240px] flex-col gap-4">
+          <div aria-hidden="true" className="mx-auto flex w-full max-w-[1240px] flex-col gap-4">
             <div className={`${bar} h-10 w-2/3 max-w-[480px]`} />
             <div className={`${bar} h-5 w-1/2 max-w-[360px]`} />
             <div className="mt-8 grid gap-4 md:grid-cols-3">

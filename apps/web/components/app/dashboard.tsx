@@ -192,7 +192,7 @@ export function Dashboard() {
   const libraryHeading = view.personalised ? "Library picks for you" : "From the library";
 
   return (
-    <div className="mx-auto flex max-w-[1240px] flex-col gap-10 md:mx-0">
+    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-10">
       <header className="flex flex-col gap-1.5">
         <h1 className="font-medium text-[30px] text-text leading-9 tracking-[-0.6px] md:text-[34px] md:leading-10 md:tracking-[-0.68px]">
           {welcomeTitle(me.name)}

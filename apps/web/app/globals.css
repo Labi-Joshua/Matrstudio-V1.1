@@ -332,3 +332,12 @@ button {
     pointer-events: none;
   }
 }
+
+/* Scrollable areas that should not show a scrollbar (the app side menu): they still scroll. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

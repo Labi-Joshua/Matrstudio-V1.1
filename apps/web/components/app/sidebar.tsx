@@ -220,7 +220,7 @@ export function Sidebar({
   const drawer = variant === "drawer";
   return (
     <div
-      className={`relative flex h-full w-full flex-col overflow-y-auto overflow-x-hidden px-6 pb-6 ${
+      className={`relative no-scrollbar flex h-full w-full flex-col overflow-y-auto overflow-x-hidden px-6 pb-6 ${
         drawer ? "pt-5" : "pt-[35px]"
       }`}
     >

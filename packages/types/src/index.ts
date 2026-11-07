@@ -48,7 +48,7 @@ export type ApiErrorBody = {
 };
 
 // --- Learner onboarding (POST /api/me/onboarding) ---------------------------------------------
-// Placeholder catalogue-like enums until the real catalogue ships; the ids are stable slugs.
+// Goals and levels follow the onboarding design; topics are the catalogue topic slugs.
 export const ONBOARDING_GOALS = [
   "get_first_job",
   "switch_careers",
@@ -57,13 +57,15 @@ export const ONBOARDING_GOALS = [
   "just_exploring",
 ] as const;
 export const ONBOARDING_LEVELS = ["beginner", "intermediate", "advanced"] as const;
+/** Same slugs as the topics in apps/web/lib/catalogue (the /paths/{topic} pages). */
 export const ONBOARDING_TOPICS = [
-  "ui_ux",
+  "ui-ux",
   "brand",
   "product",
-  "research",
-  "motion",
-  "design_systems",
+  "seo",
+  "social-media",
+  "design-systems",
+  "dev-handoff",
 ] as const;
 
 export const onboardingSchema = z

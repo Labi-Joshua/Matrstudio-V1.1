@@ -123,11 +123,11 @@ describe("/api/me", () => {
     });
     expect(partial.status).toBe(200);
     expect((partial.json.onboarding as { completed: boolean }).completed).toBe(false);
-    const full = { goal: "get_first_job", level: "beginner", topics: ["ui_ux", "brand", "ui_ux"] };
+    const full = { goal: "get_first_job", level: "beginner", topics: ["ui-ux", "brand", "ui-ux"] };
     const a = await app.call("/api/me/onboarding", { body: full, cookie });
     const done = a.json.onboarding as { completed: boolean; completedAt: number; topics: string[] };
     expect(done.completed).toBe(true);
-    expect(done.topics).toEqual(["ui_ux", "brand"]);
+    expect(done.topics).toEqual(["ui-ux", "brand"]);
     const b = await app.call("/api/me/onboarding", { body: full, cookie });
     expect(b.json).toEqual(a.json);
     expect(app.sqlite.prepare("SELECT COUNT(*) n FROM onboarding").get()).toEqual({ n: 1 });

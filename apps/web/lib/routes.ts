@@ -23,4 +23,16 @@ export const ROUTES = {
   dashboard: "/dashboard",
   onboarding: "/onboarding",
   topic: (slug: string) => `/paths/${slug}`,
+  /**
+   * Pages inside the signed-in app (the shell with the side menu). They live under /learn so they
+   * never clash with the public marketing pages of the same name (/paths, /library, ...).
+   */
+  app: {
+    paths: "/learn/paths",
+    pathTopic: (slug: string) => `/learn/paths/${slug}`,
+    library: "/learn/library",
+    saved: "/learn/saved",
+    help: "/learn/help",
+    submit: "/learn/submit",
+  },
 } as const;

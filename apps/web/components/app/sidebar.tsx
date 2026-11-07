@@ -219,55 +219,57 @@ export function Sidebar({
 
   const drawer = variant === "drawer";
   return (
-    <div
-      className={`relative no-scrollbar flex h-full w-full flex-col overflow-y-auto overflow-x-hidden px-6 pb-6 ${
-        drawer ? "pt-5" : "pt-[35px]"
-      }`}
-    >
+    // The glow lives on a clipped background layer, not inside the scrolling area, so it never makes
+    // the menu scroll; the menu content sits on top (and only scrolls on very short screens).
+    <div className="relative h-full w-full overflow-hidden">
       <Glow />
-      {drawer ? null : (
-        <Link
-          href={ROUTES.dashboard}
-          aria-label="Matr Studio home"
-          className={`relative flex h-10 items-center rounded-md pl-3.5 ${FOCUS}`}
-        >
-          <Wordmark />
-        </Link>
-      )}
-      <div className={`relative flex flex-col ${drawer ? "gap-5 pt-[60px]" : "gap-5 pt-6"}`}>
-        {drawer ? <ProfileCard /> : null}
-        <nav aria-label="Learn">
-          <Group label="Learn">
-            {LEARN_NAV.map((item) => (
-              <NavRow key={item.id} item={item} variant={variant} onNavigate={onNavigate} />
-            ))}
-          </Group>
-        </nav>
-        <section aria-label="Your paths">
-          <Group label="Your paths">
-            <YourPaths />
-          </Group>
-        </section>
-      </div>
-      <div className="min-h-6 flex-1" />
-      <div className="relative flex flex-col gap-1">
-        <Group label="Support">
-          <div className="flex flex-col gap-0.5 rounded-2xl border border-border-soft bg-bg-base p-2">
-            <nav aria-label="Support" className="flex flex-col gap-0.5">
-              {SUPPORT_NAV.map((item) => (
+      <div
+        className={`no-scrollbar relative flex h-full w-full flex-col overflow-y-auto overflow-x-hidden px-6 pb-6 ${drawer ? "pt-5" : "pt-[35px]"}`}
+      >
+        {drawer ? null : (
+          <Link
+            href={ROUTES.dashboard}
+            aria-label="Matr Studio home"
+            className={`relative flex h-10 items-center rounded-md pl-3.5 ${FOCUS}`}
+          >
+            <Wordmark />
+          </Link>
+        )}
+        <div className={`relative flex flex-col ${drawer ? "gap-5 pt-[60px]" : "gap-5 pt-6"}`}>
+          {drawer ? <ProfileCard /> : null}
+          <nav aria-label="Learn">
+            <Group label="Learn">
+              {LEARN_NAV.map((item) => (
                 <NavRow key={item.id} item={item} variant={variant} onNavigate={onNavigate} />
               ))}
-            </nav>
-            <div className="px-1.5 pt-1.5 pb-2.5">
-              <ThemeSwitch name={drawer ? "Menu" : "Sidebar"} />
+            </Group>
+          </nav>
+          <section aria-label="Your paths">
+            <Group label="Your paths">
+              <YourPaths />
+            </Group>
+          </section>
+        </div>
+        <div className="min-h-6 flex-1" />
+        <div className="relative flex flex-col gap-1">
+          <Group label="Support">
+            <div className="flex flex-col gap-0.5 rounded-2xl border border-border-soft bg-bg-base p-2">
+              <nav aria-label="Support" className="flex flex-col gap-0.5">
+                {SUPPORT_NAV.map((item) => (
+                  <NavRow key={item.id} item={item} variant={variant} onNavigate={onNavigate} />
+                ))}
+              </nav>
+              <div className="px-1.5 pt-1.5 pb-2.5">
+                <ThemeSwitch name={drawer ? "Menu" : "Sidebar"} />
+              </div>
+              <div aria-hidden="true" className="h-px bg-border-soft" />
+              <SignOutButton rail={false} />
+              <p role="alert" className="px-3 pb-1 text-[12px] text-error-text leading-4">
+                {signOutError}
+              </p>
             </div>
-            <div aria-hidden="true" className="h-px bg-border-soft" />
-            <SignOutButton rail={false} />
-            <p role="alert" className="px-3 pb-1 text-[12px] text-error-text leading-4">
-              {signOutError}
-            </p>
-          </div>
-        </Group>
+          </Group>
+        </div>
       </div>
     </div>
   );

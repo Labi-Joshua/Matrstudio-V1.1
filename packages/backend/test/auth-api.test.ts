@@ -118,12 +118,16 @@ describe("/api/me", () => {
     const app = createApp();
     const { cookie } = await app.signUpConfirmed("ada@example.com");
     const partial = await app.call("/api/me/onboarding", {
-      body: { goal: "get_first_job" },
+      body: { goal: "learn_new_skill" },
       cookie,
     });
     expect(partial.status).toBe(200);
     expect((partial.json.onboarding as { completed: boolean }).completed).toBe(false);
-    const full = { goal: "get_first_job", level: "beginner", topics: ["ui-ux", "brand", "ui-ux"] };
+    const full = {
+      goal: "learn_new_skill",
+      level: "beginner",
+      topics: ["ui-ux", "brand", "ui-ux"],
+    };
     const a = await app.call("/api/me/onboarding", { body: full, cookie });
     const done = a.json.onboarding as { completed: boolean; completedAt: number; topics: string[] };
     expect(done.completed).toBe(true);
@@ -237,7 +241,7 @@ describe("/api/me", () => {
     });
     expect(wrong.status).toBe(401);
     expect((await app.call("/api/me", { cookie })).status).toBe(200);
-    await app.call("/api/me/onboarding", { body: { goal: "level_up" }, cookie });
+    await app.call("/api/me/onboarding", { body: { goal: "grow_in_role" }, cookie });
     const done = await app.call("/api/me", {
       method: "DELETE",
       body: { password: GOOD_PASSWORD },

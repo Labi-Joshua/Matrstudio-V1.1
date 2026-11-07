@@ -50,11 +50,10 @@ export type ApiErrorBody = {
 // --- Learner onboarding (POST /api/me/onboarding) ---------------------------------------------
 // Goals and levels follow the onboarding design; topics are the catalogue topic slugs.
 export const ONBOARDING_GOALS = [
-  "get_first_job",
+  "learn_new_skill",
+  "grow_in_role",
   "switch_careers",
-  "level_up",
-  "freelance",
-  "just_exploring",
+  "build_projects",
 ] as const;
 export const ONBOARDING_LEVELS = ["beginner", "intermediate", "advanced"] as const;
 /** Same slugs as the topics in apps/web/lib/catalogue (the /paths/{topic} pages). */

@@ -13,14 +13,21 @@
     "db:migrate:remote": "wrangler d1 migrations apply matr-d1 --remote"
   },
   "dependencies": {
+    "@better-auth/core": "1.7.18",
+    "@better-auth/kysely-adapter": "1.7.18",
+    "@better-auth/passkey": "1.7.18",
     "@hono/zod-validator": "^0.9.1",
     "@matr/types": "workspace:*",
     "aws4fetch": "^1.0.20",
+    "better-auth": "^1.7.18",
     "hono": "^4.13.13",
+    "kysely": "^0.29.8",
+    "kysely-d1": "^0.4.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261007.1",
+    "@types/node": "^24.19.2",
     "vitest": "^5.0.3",
     "wrangler": "^4.148.0"
   }

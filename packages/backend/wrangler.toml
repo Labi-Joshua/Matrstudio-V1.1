@@ -2,6 +2,7 @@
 name = "matr-api"
 main = "src/index.ts"
 compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"] # node:crypto scrypt for password hashing
 
 workers_dev = false # production traffic must use api.matrstudio.com, where the WAF rule and Cache API apply
 routes = [{ pattern = "api.matrstudio.com", custom_domain = true }]
@@ -41,6 +42,19 @@ simple = { limit = 5, period = 60 }
 name = "API_LIMITER"
 namespace_id = "1002"
 simple = { limit = 60, period = 60 }
+
+# Auth emails are sent only by the consumer in this Worker (src/queue/auth-email.ts). The queue
+# already exists on the account. No dead-letter queue: after the last retry the consumer records
+# email.dropped in the audit log instead (a missing DLQ would fail the deploy).
+[[queues.producers]]
+binding = "AUTH_EMAIL_QUEUE"
+queue = "matr-auth-email"
+
+[[queues.consumers]]
+queue = "matr-auth-email"
+max_batch_size = 10
+max_batch_timeout = 2
+max_retries = 3
 
 [triggers]
 crons = ["*/30 * * * *"]

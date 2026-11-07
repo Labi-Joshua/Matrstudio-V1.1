@@ -1,9 +1,12 @@
+import type { AuthEmailMessage } from "./lib/auth-email-templates";
+
 export type Bindings = {
   // Resource bindings
   DB: D1Database;
   BUCKET?: R2Bucket; // optional until R2 is enabled on the account (see wrangler.toml)
   SIGNUP_LIMITER: RateLimit;
   API_LIMITER: RateLimit;
+  AUTH_EMAIL_QUEUE: Queue<AuthEmailMessage>;
 
   // Plain vars (wrangler.toml [vars], overridden locally by .dev.vars)
   ENVIRONMENT: "development" | "production";
@@ -27,6 +30,13 @@ export type Bindings = {
   ALERT_EMAIL?: string; // sent through Resend; a secret so the address stays out of the repo
   RESEND_API_KEY?: string;
   TURNSTILE_SECRET?: string;
+  // Learner auth (see AUTH.md)
+  BETTER_AUTH_SECRET: string; // 32+ random bytes
+  GOOGLE_CLIENT_ID?: string; // Google sign-in is enabled only when both are set
+  GOOGLE_CLIENT_SECRET?: string;
+  // Test/dev knobs, ignored when ENVIRONMENT is "production"
+  PASSWORD_SCRYPT_N?: string; // lower scrypt cost for tests
+  AUTH_MIN_RESPONSE_MS?: string; // floor for no-enumeration endpoints (default 400)
 };
 
 export type AppEnv = { Bindings: Bindings };

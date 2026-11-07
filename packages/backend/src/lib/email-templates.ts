@@ -9,15 +9,15 @@
 // prefers-color-scheme for the clients that support it (Apple Mail, Outlook for Mac, iOS).
 // Gmail ignores it and applies its own dark adjustments to the light version.
 
-const esc = (s: string) => s.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
+export const esc = (s: string) => s.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
 
-const FONT_BODY =
+export const FONT_BODY =
   "'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
-const FONT_HEAD =
+export const FONT_HEAD =
   "'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
 
 // Light values inline; the dark ones (Figma Email · Dark) are applied by the media query below.
-const C = {
+export const C = {
   page: "#f7f7f8", // background/bg-fill1
   card: "#ffffff", // background/bg-base
   border: "#e9eaec", // border/border-soft
@@ -31,7 +31,7 @@ const C = {
   note: "#f7f7f8", // security note background
 };
 
-const DARK_CSS = `
+export const DARK_CSS = `
   :root { color-scheme: light dark; supported-color-schemes: light dark; }
   @media (max-width: 480px) {
     .m-pad { padding: 32px 20px 24px !important; }
@@ -55,7 +55,14 @@ const DARK_CSS = `
 `;
 
 /** An image with a dark-mode twin: the twin is hidden inline and shown only by the media query. */
-function themedImg(base: string, name: string, w: number, h: number, alt: string, extra = "") {
+export function themedImg(
+  base: string,
+  name: string,
+  w: number,
+  h: number,
+  alt: string,
+  extra = "",
+) {
   const common = `width="${w}" height="${h}" alt="${esc(alt)}" style="display:block;border:0;outline:none;width:${w}px;height:${h}px;${extra}"`;
   return (
     `<img class="m-light" src="${base}/${name}.png" ${common}>` +

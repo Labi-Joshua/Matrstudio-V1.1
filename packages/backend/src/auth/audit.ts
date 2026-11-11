@@ -29,6 +29,13 @@ export type AuditAction =
   // Saved resources: target is the catalogue id, no meta.
   | "saved.added"
   | "saved.removed"
+  // Path progress: target is "<path slug>" or "<path slug>/<lesson id>", no meta.
+  | "path.started"
+  | "path.lesson_done"
+  | "path.lesson_undone"
+  | "path.completed"
+  | "path.starred"
+  | "path.unstarred"
   // Admin portal (ADMIN-AUTH.md). Targets are admin ids or "email:<keyed hash>"; before/after in meta.
   | "admin.signin.success"
   | "admin.signin.failure"

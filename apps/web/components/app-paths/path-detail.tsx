@@ -13,44 +13,40 @@ import {
   type PathDetailView,
   sourceCountLabel,
 } from "../../lib/app/paths-detail";
+import { lessonHref } from "../../lib/app/paths-lessons";
+import { isCompleted, isLessonDone, isStarted, resumeTarget } from "../../lib/app/progress-logic";
 import { getCatalogue } from "../../lib/catalogue/data";
 import type { TopicSlug } from "../../lib/catalogue/types";
 import { ROUTES } from "../../lib/routes";
-import { FileTextIcon } from "../app/icons";
+import { CircleCheckIcon, FileTextIcon } from "../app/icons";
 import { FOCUS } from "../app/ui";
+import { usePaths } from "../app-progress/progress-provider";
 import { BookIcon } from "../landing/at-work-art";
 import {
   ArrowLeftIcon,
   BadgeDollarIcon,
   CheckIcon,
   CirclePlayIcon,
-  ExternalLinkIcon,
   SignalIcon,
   WrenchIcon,
 } from "./icons";
+import { LessonBadge } from "./lesson-outline";
 import { BUTTON_INVERSE, ErrorState, LargeCover, LevelBadge, SampleTag } from "./parts";
-import { StarControls } from "./star-action";
+import { PathActions } from "./path-actions";
 
 /**
  * /learn/paths/{topic} (Figma "5. Path detail", "New account"): back link, header with facts and
  * Start path, what you'll learn, lessons, sources and who it's for.
  *
- * Not built because they need APIs that do not exist yet: Star path, lesson done/current states,
- * progress, and opening lessons inside the app. "Start path" links to the first lesson's original
- * source only when the catalogue provides one; otherwise it is disabled with a "Coming soon" title.
+ * Progress is real (usePaths()): Start path, Start lesson 1 / Continue lesson N, Star path, Share once
+ * finished, per-lesson done marks and the current lesson. Lessons open inside the app
+ * (/learn/paths/{topic}/{path}/lessons/{lesson}); their media links out to the free source.
  * The mobile frame shows five lessons and a "Show all N lessons" button; from md up all show.
  */
 
 const PREVIEW_LESSONS = 5;
 
-export function PathDetail({
-  topic,
-  starring,
-}: {
-  topic: TopicSlug;
-  /** Only passed once starring has a real handler; without it there is no Star path button. */
-  starring?: { starred: boolean; onToggle: () => void };
-}) {
+export function PathDetail({ topic }: { topic: TopicSlug }) {
   const requested = useSearchParams().get("path");
   const view = useMemo(() => buildPathDetail(getCatalogue(), topic, requested), [topic, requested]);
 
@@ -68,20 +64,16 @@ export function PathDetail({
       </div>
     );
   }
-  return <DetailBody view={view} starring={starring} />;
+  return <DetailBody view={view} />;
 }
 
 const H2 = "font-semibold text-[20px] text-text leading-7 tracking-[-0.2px]";
 const CARD = "flex flex-col gap-3.5 rounded-2xl border border-border-soft bg-bg-base p-5";
 
-function DetailBody({
-  view,
-  starring,
-}: {
-  view: PathDetailView;
-  starring?: { starred: boolean; onToggle: () => void };
-}) {
+function DetailBody({ view }: { view: PathDetailView }) {
   const { path } = view;
+  const paths = usePaths();
+  const completed = isCompleted(paths.get(path.slug));
   return (
     <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-8">
       <Link
@@ -95,6 +87,7 @@ function DetailBody({
       <section className="flex flex-col gap-6 xl:flex-row xl:items-center xl:gap-14">
         <div className="order-2 flex min-w-0 flex-1 flex-col gap-5 xl:order-1">
           <div className="flex flex-wrap items-center gap-2">
+            {completed ? <CompletedBadge /> : null}
             <LevelBadge level={path.level} large />
             <span className="rounded-md bg-bg-fill1 px-1.5 py-1 font-medium text-[14px] text-text-secondary leading-5 tracking-[-0.14px]">
               <span className="block px-0.5">{view.topicName}</span>
@@ -123,7 +116,7 @@ function DetailBody({
             <Fact icon={<SignalIcon size={18} />} label="Level" value={LEVEL_LABEL[path.level]} />
             <Fact icon={<BadgeDollarIcon size={18} />} label="Cost" value="Free" />
           </dl>
-          <StartPath url={view.startUrl} title={path.title} starring={starring} />
+          <PathActions view={view} />
         </div>
         <div className="order-1 w-full md:order-3 xl:order-2 xl:w-[560px] xl:shrink-0">
           <LargeCover topic={path.topicSlug} />
@@ -190,47 +183,12 @@ function Fact({ icon, label, value }: { icon: ReactNode; label: string; value: s
   );
 }
 
-/** A real first-lesson URL opens the original source; otherwise the button is disabled (no fake progress). */
-function StartPath({
-  url,
-  title,
-  starring,
-}: {
-  url: string | null;
-  title: string;
-  starring?: { starred: boolean; onToggle: () => void };
-}) {
-  const size = "h-11 px-3 text-[16px] leading-6 tracking-[-0.16px]";
+function CompletedBadge() {
   return (
-    <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
-      {url ? (
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`btn-lift inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary font-medium text-static-white sm:w-auto ${size} ${FOCUS}`}
-        >
-          Start path
-          <span className="sr-only"> (opens the first lesson in a new tab)</span>
-        </a>
-      ) : (
-        <button
-          type="button"
-          disabled
-          title="Coming soon"
-          className={`inline-flex w-full cursor-not-allowed items-center justify-center rounded-lg bg-primary font-medium text-static-white opacity-50 sm:w-auto ${size}`}
-        >
-          Start path
-        </button>
-      )}
-      {starring ? (
-        <StarControls title={title} starred={starring.starred} onToggle={starring.onToggle} />
-      ) : url ? null : (
-        <p className="text-[14px] text-text-tertiary leading-5 tracking-[-0.14px]">
-          Coming soon: opening lessons here and tracking progress.
-        </p>
-      )}
-    </div>
+    <span className="inline-flex items-center gap-1 rounded-md bg-success-focus px-1.5 py-1 font-medium text-[14px] text-success-text leading-5 tracking-[-0.14px]">
+      <CircleCheckIcon size={14} />
+      Completed
+    </span>
   );
 }
 
@@ -265,6 +223,9 @@ function LessonIcon({ kind }: { kind: DetailLesson["kind"] }) {
 
 function Lessons({ view }: { view: PathDetailView }) {
   const [all, setAll] = useState(false);
+  const entry = usePaths().get(view.path.slug);
+  const current =
+    isStarted(entry) && !isCompleted(entry) ? resumeTarget(view.lessons, entry) : null;
   const { lessons, path } = view;
   const hours = aboutHours(path.hours);
   const hidden = lessons.length - PREVIEW_LESSONS;
@@ -285,10 +246,16 @@ function Lessons({ view }: { view: PathDetailView }) {
             .map((lesson, index) => ({ lesson, number: index + 1 }))
             .map(({ lesson, number }) => (
               <li
-                key={number}
+                key={lesson.id}
                 className={!all && number > PREVIEW_LESSONS ? "hidden md:block" : undefined}
               >
-                <LessonRow lesson={lesson} number={number} />
+                <LessonRow
+                  view={view}
+                  lesson={lesson}
+                  number={number}
+                  done={isLessonDone(entry, lesson.id)}
+                  current={current?.lesson.id === lesson.id}
+                />
               </li>
             ))}
         </ol>
@@ -317,40 +284,39 @@ function Lessons({ view }: { view: PathDetailView }) {
   );
 }
 
-function LessonRow({ lesson, number }: { lesson: DetailLesson; number: number }) {
-  const body = (
-    <>
-      <span
-        aria-hidden="true"
-        className="flex size-8 shrink-0 items-center justify-center rounded-full bg-bg-fill2 font-semibold text-[14px] text-text-secondary leading-5 tracking-[-0.14px]"
-      >
-        {number}
-      </span>
+function LessonRow({
+  view,
+  lesson,
+  number,
+  done,
+  current,
+}: {
+  view: PathDetailView;
+  lesson: DetailLesson;
+  number: number;
+  done: boolean;
+  current: boolean;
+}) {
+  return (
+    <Link
+      href={lessonHref(view.path.topicSlug, view.path.slug, lesson.id)}
+      aria-current={current ? "step" : undefined}
+      className={`flex items-center gap-4 rounded-xl border py-3.5 pr-4 pl-3.5 ${FOCUS} ${
+        current ? "border-primary bg-primary-focus" : "border-transparent hover:bg-bg-fill1"
+      }`}
+    >
+      <LessonBadge number={number} done={done} current={current} />
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="font-medium text-[16px] text-text leading-6 tracking-[-0.16px]">
           {lesson.title}
+          {done ? <span className="sr-only"> (done)</span> : null}
         </span>
         <span className="flex items-center gap-1.5 text-[12px] text-text-tertiary leading-4 tracking-[-0.12px]">
           <LessonIcon kind={lesson.kind} />
           {lessonMeta(lesson)}
         </span>
       </span>
-    </>
-  );
-  const box = "flex items-center gap-4 rounded-xl py-3.5 pr-4 pl-3.5";
-  return lesson.url ? (
-    <a
-      href={lesson.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`${box} hover:bg-bg-fill1 ${FOCUS}`}
-    >
-      {body}
-      <ExternalLinkIcon size={18} className="shrink-0 text-primary-text" />
-      <span className="sr-only"> (opens the original source in a new tab)</span>
-    </a>
-  ) : (
-    <div className={box}>{body}</div>
+    </Link>
   );
 }
 

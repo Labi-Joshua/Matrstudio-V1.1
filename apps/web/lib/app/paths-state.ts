@@ -5,9 +5,7 @@ import { plural } from "./paths-catalogue";
  * State of the Paths screens that does not depend on React: when a loading skeleton may show,
  * what "My paths" lists and says in each tab, and the starred toast copy.
  *
- * There is no progress or starring API yet, so nothing produces `MyPath` items today: My paths is
- * always the honest empty state. The types and filters exist so the designed tabs work the moment
- * a real source is wired in.
+ * Items come from the learner’s path progress (lib/app/progress-logic.ts buildMine).
  */
 
 // ---------------------------------------------------------------------------------------------
@@ -66,6 +64,8 @@ export type MyPath = {
   starred: boolean;
   /** Lessons finished; null when the path has not been started. */
   done: number | null;
+  /** The server marked the path complete. Absent: derived from done and the lesson count. */
+  completed?: boolean;
 };
 
 export type MineState =
@@ -74,7 +74,7 @@ export type MineState =
   | { status: "ready"; items: MyPath[] };
 
 export const isCompleted = (item: MyPath) =>
-  item.done !== null && item.path.lessons > 0 && item.done >= item.path.lessons;
+  item.completed ?? (item.done !== null && item.path.lessons > 0 && item.done >= item.path.lessons);
 export const isInProgress = (item: MyPath) => item.done !== null && !isCompleted(item);
 
 export function filterMine(items: readonly MyPath[], filter: MineFilter): MyPath[] {
@@ -131,7 +131,7 @@ export function mineEmptyCopy(filter: MineFilter): MineEmpty {
     default:
       return {
         title: "Your paths will live here",
-        body: "Paths you start or star will appear here with your progress. Starting and starring are coming soon.",
+        body: "Paths you start or star will appear here with your progress.",
         action: { label: "Explore paths", to: "explore" },
       };
   }

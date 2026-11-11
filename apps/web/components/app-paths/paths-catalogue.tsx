@@ -17,9 +17,11 @@ import {
   pickedBanner,
   type TopicFilter,
 } from "../../lib/app/paths-catalogue";
+import { buildMine } from "../../lib/app/progress-logic";
 import { getCatalogue } from "../../lib/catalogue/data";
 import { SparklesIcon } from "../app/icons";
 import { useSession } from "../app/session";
+import { usePaths } from "../app-progress/progress-provider";
 import { LevelPopover, LevelSheet, TopicChips } from "./filters";
 import { MyPaths } from "./my-paths";
 import {
@@ -41,8 +43,7 @@ import { SearchResults } from "./search-results";
  * The catalogue is static data read at build time (lib/catalogue), so it renders in one pass; the
  * only async part is reading ?q=, which useSearchParams does behind the Suspense boundary the page
  * provides (that boundary's fallback is the loading skeleton). Filters are plain React state: they
- * are not stored anywhere. Starring and progress need APIs that do not exist, so the star buttons
- * are left out and My paths is the honest empty state (see my-paths.tsx).
+ * are not stored anywhere. My paths shows the learner’s real progress (see my-paths.tsx).
  */
 
 const HEADING = "font-semibold text-[24px] text-text leading-8 tracking-[-0.24px] outline-none";
@@ -61,6 +62,12 @@ export function PathsCatalogue() {
 /** The page with its Explore and My paths tabs. */
 function Landing() {
   const [tab, setTab] = useState<PathsTab>("explore");
+  const { entries, status } = usePaths();
+  const mineCount = useMemo(
+    () =>
+      status === "ready" ? buildMine(entries, getCatalogueData(getCatalogue()).paths).length : 0,
+    [entries, status],
+  );
   return (
     <>
       <header className="flex flex-col gap-2">
@@ -76,7 +83,7 @@ function Landing() {
         </p>
       </header>
 
-      <PathsTabs value={tab} onChange={setTab} />
+      <PathsTabs value={tab} onChange={setTab} mineCount={mineCount} />
 
       <div
         role="tabpanel"

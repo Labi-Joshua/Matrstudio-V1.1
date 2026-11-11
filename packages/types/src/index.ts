@@ -321,3 +321,28 @@ export type SavedErrorBody = {
   message: string;
   retryAfterSeconds?: number;
 };
+
+// --- Path progress (packages/backend/PROGRESS.md) -----------------------------------------------
+export const PATH_LIMIT = 200;
+/** A catalogue path slug or lesson id. */
+export const pathIdSchema = z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/);
+/** Body of PUT /api/me/paths/:slug/lessons/:lessonId. The catalogue lives in the client. */
+export const lessonDoneSchema = z.object({ total: z.number().int().min(1).max(200) });
+
+/** All times are ISO 8601 strings. */
+export type PathProgress = {
+  slug: string;
+  startedAt: string | null;
+  lastActivityAt: string | null;
+  completedAt: string | null;
+  starredAt: string | null;
+  completedLessonIds: string[];
+};
+export type ListPathsResponse = { paths: PathProgress[] };
+export type PathResponse = { path: PathProgress };
+
+export type PathErrorBody = {
+  code: "invalid_request" | "path_limit" | "rate_limited" | "unauthorized";
+  message: string;
+  retryAfterSeconds?: number;
+};

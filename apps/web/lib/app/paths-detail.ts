@@ -19,11 +19,14 @@ import { getCatalogueData, plural } from "./paths-catalogue";
 export type LessonKind = "video" | "article" | "tool";
 
 export type DetailLesson = {
+  /** Stable id inside the path (the API stores it): the resource id, or a slug of the sample title. */
+  id: string;
   title: string;
   kind: LessonKind;
   minutes: number | null;
   /** "YouTube"; null when the frame does not show it. */
   sourceName: string | null;
+  sourceSlug: string | null;
   /** Original source URL (lessons link out to the free source). Null on design samples. */
   url: string | null;
 };
@@ -56,12 +59,29 @@ type SampleDetail = {
   lessons: DetailLesson[];
 };
 
+/** "Framing the problem" -> "framing-the-problem" (fits the id pattern the API checks). */
+const slugOf = (text: string | null) =>
+  text
+    ?.toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 64) || null;
+const sampleLessonId = (title: string) => slugOf(title) ?? "lesson";
+
 const lesson = (
   title: string,
   kind: LessonKind,
   minutes: number,
   sourceName: string,
-): DetailLesson => ({ title, kind, minutes, sourceName, url: null });
+): DetailLesson => ({
+  id: sampleLessonId(title),
+  title,
+  kind,
+  minutes,
+  sourceName,
+  sourceSlug: slugOf(sourceName),
+  url: null,
+});
 
 /** Figma frame "Path detail (new account)": the Product Design Essentials page, as shown. */
 const SAMPLE_DETAILS: Record<string, SampleDetail> = {
@@ -101,10 +121,12 @@ function fromOnboardingMeta(title: string, meta: string): DetailLesson {
   const kind: LessonKind = origin === "Article" ? "article" : origin === "Tool" ? "tool" : "video";
   const named = origin !== "Article" && origin !== "Docs" && origin !== "Tool";
   return {
+    id: sampleLessonId(title),
     title,
     kind,
     minutes: Number.isFinite(minutes) ? minutes : null,
     sourceName: named ? origin : null,
+    sourceSlug: named ? slugOf(origin) : null,
     url: null,
   };
 }
@@ -215,15 +237,17 @@ export function buildPathDetail(
   const lessons = catalogue.pathLessons
     .filter((l) => l.pathSlug === path.slug)
     .sort((a, b) => a.position - b.position)
-    .flatMap((l): DetailLesson[] => {
+    .flatMap((l, index): DetailLesson[] => {
       const resource = resources.get(l.resourceId);
       if (resource?.status !== "live") return [];
       return [
         {
+          id: /^[a-z0-9][a-z0-9-]{0,63}$/.test(resource.id) ? resource.id : `lesson-${index + 1}`,
           title: resource.title,
           kind: kindOf(resource.format),
           minutes: resource.lengthMinutes,
           sourceName: sourceNames.get(resource.sourceSlug) ?? resource.sourceSlug,
+          sourceSlug: resource.sourceSlug,
           url: resource.url || null,
         },
       ];

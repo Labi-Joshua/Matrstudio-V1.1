@@ -2,6 +2,7 @@ import Link from "next/link";
 import { type LibraryItem, safeResourceUrl } from "../../lib/app/library-data";
 import { LEVEL_TEXT } from "../../lib/pages/browse-library";
 import { ROUTES } from "../../lib/routes";
+import { BookmarkButton } from "../app-saved/bookmark-button";
 import { ExternalIcon, ThumbArt, TypeBadge } from "./art";
 
 const SOURCE_LOGO: Record<string, { src: string; mono: boolean }> = {
@@ -33,8 +34,7 @@ export function SourcePill({ slug, name }: { slug: string; name: string }) {
  * "Topic · Level", type badge). The whole card opens the in-app resource page (stretched title
  * link); the small arrow opens the original source in a new tab when there is a real URL.
  *
- * There is no bookmark button: saving needs an API that does not exist yet, and a button that
- * pretends to save would be dishonest (the Save button on the resource page is shown disabled).
+ * The bookmark beside the arrow saves the resource to the learner's Saved list (app-saved/).
  */
 export function LibraryCard({ item }: { item: LibraryItem }) {
   const url = safeResourceUrl(item.url);
@@ -68,17 +68,20 @@ export function LibraryCard({ item }: { item: LibraryItem }) {
         ) : null}
         <div className="mt-auto flex w-full items-center justify-between pt-1.5">
           <TypeBadge kind={item.kind} />
-          {url ? (
-            <a
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Open ${item.title} on ${item.sourceName} (new tab)`}
-              className="relative z-10 flex items-center justify-center rounded-md p-[7px] text-text-secondary hover:bg-bg-fill1 hover:text-text focus-visible:outline-2 focus-visible:outline-primary-border"
-            >
-              <ExternalIcon size={18} />
-            </a>
-          ) : null}
+          <div className="flex items-center">
+            <BookmarkButton id={item.id} title={item.title} />
+            {url ? (
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Open ${item.title} on ${item.sourceName} (new tab)`}
+                className="relative z-10 flex items-center justify-center rounded-md p-[7px] text-text-secondary hover:bg-bg-fill1 hover:text-text focus-visible:outline-2 focus-visible:outline-primary-border"
+              >
+                <ExternalIcon size={18} />
+              </a>
+            ) : null}
+          </div>
         </div>
       </div>
     </article>

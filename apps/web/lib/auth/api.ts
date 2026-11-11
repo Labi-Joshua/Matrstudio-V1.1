@@ -34,6 +34,7 @@ export const SERVER_ERROR_CODES = [
   "invalid_url",
   "already_submitted",
   "not_editable",
+  "saved_limit",
   "INVALID_EMAIL_OR_PASSWORD",
   "PASSWORD_TOO_SHORT",
   "PASSWORD_TOO_LONG",
@@ -147,7 +148,7 @@ type RequestOptions = {
  * when the body has the wrong shape (reported as invalid_response).
  */
 export async function request<T>(
-  method: "GET" | "POST" | "PATCH",
+  method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
   path: string,
   options: RequestOptions,
   parse: (json: unknown) => T | undefined,

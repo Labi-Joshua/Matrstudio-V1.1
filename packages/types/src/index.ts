@@ -301,3 +301,23 @@ export type SubmissionErrorBody = {
   fieldErrors?: Partial<Record<"url" | "title" | "note" | "topic", string>>;
   retryAfterSeconds?: number;
 };
+
+// --- Saved resources (packages/backend/SAVED.md) ------------------------------------------------
+export const SAVED_LIMIT = 500;
+/** A catalogue slug. */
+export const savedResourceIdSchema = z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/);
+
+export type SavedResource = {
+  resourceId: string;
+  savedAt: number; // unix seconds
+};
+export type ListSavedResponse = { saved: SavedResource[] };
+export type SaveResourceResponse = { saved: SavedResource };
+export type UnsaveResourceResponse = { removed: true };
+
+/** Error body: { code, message, ...extra } like every auth route. */
+export type SavedErrorBody = {
+  code: "invalid_request" | "saved_limit" | "rate_limited" | "unauthorized";
+  message: string;
+  retryAfterSeconds?: number;
+};

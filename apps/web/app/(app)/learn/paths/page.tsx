@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PathsCatalogue } from "../../../../components/app-paths/paths-catalogue";
+import { DelayedFallback } from "../../../../components/app-paths/skeleton-gate";
 import { CatalogueSkeleton } from "../../../../components/app-paths/skeletons";
 import { ROUTES } from "../../../../lib/routes";
 import { pageMeta } from "../../../../lib/site";
@@ -17,7 +18,13 @@ export const metadata: Metadata = {
 /** useSearchParams (the ?q= search) must sit inside Suspense on a static export; the fallback is the loading state. */
 export default function PathsPage() {
   return (
-    <Suspense fallback={<CatalogueSkeleton />}>
+    <Suspense
+      fallback={
+        <DelayedFallback>
+          <CatalogueSkeleton />
+        </DelayedFallback>
+      }
+    >
       <PathsCatalogue />
     </Suspense>
   );

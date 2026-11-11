@@ -3,10 +3,10 @@ import type { CSSProperties, ReactNode } from "react";
 import { LEVEL_LABEL, plural } from "../../lib/app/paths-catalogue";
 import type { Level, TopicSlug } from "../../lib/catalogue/types";
 import type { BrowsePath } from "../../lib/pages/browse-paths";
-import { RouteIcon } from "../app/icons";
+import { CircleCheckIcon, CloseIcon, RouteIcon } from "../app/icons";
 import { FOCUS } from "../app/ui";
 import { BookIcon, ClockIcon, PathCover, TOPIC_LOOK, TopicIcon } from "../landing/at-work-art";
-import { FunnelXIcon } from "./icons";
+import { CheckIcon, FunnelXIcon, StarIcon } from "./icons";
 
 /** Small building blocks shared by the Paths catalogue, search results and path detail. */
 
@@ -40,17 +40,45 @@ export function SampleTag() {
   );
 }
 
-/** Path Card (Figma "Path Card"), without the star: starring needs the saved-items API. */
-export function PathCard({ path, href }: { path: BrowsePath; href: string }) {
+/**
+ * Path Card (Figma "Path Card"). The star and the progress strip with its "Lesson 5 of 10" pill
+ * only render when given: both need APIs that do not exist, so the catalogue passes neither.
+ */
+export function PathCard({
+  path,
+  href,
+  star,
+  progress,
+}: {
+  path: BrowsePath;
+  href: string;
+  star?: { starred: boolean; onToggle: () => void };
+  progress?: { label: string; percent: number } | null;
+}) {
   return (
-    <li className="min-w-0">
+    <li className="relative min-w-0">
       <Link
         href={href}
         className={`card-lift flex h-full flex-col overflow-clip rounded-2xl border border-border-soft bg-bg-base ${FOCUS}`}
       >
-        <PathCover topic={path.topicSlug} hue={TOPIC_LOOK[path.topicSlug].cover} />
+        <span className="relative block">
+          <PathCover topic={path.topicSlug} hue={TOPIC_LOOK[path.topicSlug].cover} />
+          {progress ? (
+            <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1 bg-bg-fill2">
+              <span className="block h-full bg-primary" style={{ width: `${progress.percent}%` }} />
+            </span>
+          ) : null}
+        </span>
         <span className="flex flex-col items-start gap-2 px-4 pt-4 pb-[18px]">
-          <LevelBadge level={path.level} />
+          <span className="flex flex-wrap items-center gap-1.5">
+            <LevelBadge level={path.level} />
+            {progress ? (
+              <span className="inline-flex items-center gap-1 rounded-md bg-primary-accent px-1.5 py-[3px] font-medium text-[13px] text-primary-text leading-[18px] tracking-[-0.13px]">
+                <span aria-hidden="true" className="size-1.5 rounded-full bg-primary" />
+                {progress.label}
+              </span>
+            ) : null}
+          </span>
           <span className="font-semibold text-[16px] text-text leading-6 tracking-[-0.16px]">
             {path.title}
           </span>
@@ -69,16 +97,25 @@ export function PathCard({ path, href }: { path: BrowsePath; href: string }) {
           </span>
         </span>
       </Link>
+      {star ? (
+        <button
+          type="button"
+          aria-pressed={star.starred}
+          aria-label={`Star ${path.title}`}
+          onClick={star.onToggle}
+          className={`absolute top-3 right-3 flex size-9 items-center justify-center rounded-lg border bg-bg-base ${FOCUS} ${
+            star.starred ? "border-primary text-primary" : "border-border-soft text-text-secondary"
+          }`}
+        >
+          <StarIcon size={18} fill={star.starred ? "currentColor" : "none"} />
+        </button>
+      ) : null}
     </li>
   );
 }
 
 export function PathGrid({ children }: { children: ReactNode }) {
-  return (
-    <ul className="m-0 grid list-none grid-cols-1 gap-6 p-0 md:grid-cols-2 xl:grid-cols-3">
-      {children}
-    </ul>
-  );
+  return <ul className="m-0 grid list-none grid-cols-1 gap-6 p-0 md:grid-cols-3">{children}</ul>;
 }
 
 /** The large cover of the path detail (Figma 560 x 315, radius 20), same art as the card cover. */
@@ -109,29 +146,16 @@ export function EmptyState({
   title,
   body,
   children,
+  art = "filter",
 }: {
   title: string;
   body: string;
   children?: ReactNode;
+  art?: "filter" | "paths" | "done";
 }) {
   return (
     <div className="mx-auto flex w-full max-w-[360px] flex-col items-center gap-6 px-5 py-12 text-center md:pt-20">
-      <div aria-hidden="true" className="flex w-[119px] flex-col gap-2">
-        <div className="flex items-center gap-1.5 rounded-lg border border-primary-border bg-bg-base px-2 py-1.5">
-          <FunnelXIcon size={16} className="shrink-0 text-primary-text" />
-          <div className="flex w-full flex-col gap-1">
-            <div className="h-[5px] w-full rounded-[1px] bg-primary-accent" />
-            <div className="h-[5px] w-[52px] rounded-[1px] bg-primary-accent" />
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5 rounded-lg border border-primary-border border-dashed bg-bg-base px-2 py-1.5">
-          <div className="size-4 shrink-0 rounded-full border border-primary-border bg-primary-accent" />
-          <div className="flex w-full flex-col gap-1">
-            <div className="h-[5px] w-full rounded-[1px] bg-primary-accent" />
-            <div className="h-[5px] w-[52px] rounded-[1px] bg-primary-accent" />
-          </div>
-        </div>
-      </div>
+      {art === "filter" ? <FilterArt /> : <ListArt done={art === "done"} />}
       <div className="flex flex-col gap-1.5">
         <h2 className="font-medium text-[16px] text-text leading-6 tracking-[-0.16px]">{title}</h2>
         <p className="text-[14px] text-text-secondary leading-5 tracking-[-0.14px]">{body}</p>
@@ -141,16 +165,67 @@ export function EmptyState({
   );
 }
 
+function FilterArt() {
+  return (
+    <div aria-hidden="true" className="flex w-[119px] flex-col gap-2">
+      <div className="flex items-center gap-1.5 rounded-lg border border-primary-border bg-bg-base px-2 py-1.5">
+        <FunnelXIcon size={16} className="shrink-0 text-primary-text" />
+        <div className="flex w-full flex-col gap-1">
+          <div className="h-[5px] w-full rounded-[1px] bg-primary-accent" />
+          <div className="h-[5px] w-[52px] rounded-[1px] bg-primary-accent" />
+        </div>
+      </div>
+      <div className="flex items-center gap-1.5 rounded-lg border border-primary-border border-dashed bg-bg-base px-2 py-1.5">
+        <div className="size-4 shrink-0 rounded-full border border-primary-border bg-primary-accent" />
+        <div className="flex w-full flex-col gap-1">
+          <div className="h-[5px] w-full rounded-[1px] bg-primary-accent" />
+          <div className="h-[5px] w-[52px] rounded-[1px] bg-primary-accent" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** My paths empty art: stacked rows, with check marks for "Completed". */
+function ListArt({ done }: { done: boolean }) {
+  return (
+    <div aria-hidden="true" className="flex w-[104px] flex-col gap-2">
+      {[0, 1].map((row) => (
+        <div
+          key={row}
+          className={`flex items-center gap-1.5 rounded-lg border bg-bg-base px-2 py-1.5 ${
+            row === 0 ? "border-primary-border" : "border-primary-border border-dashed"
+          }`}
+        >
+          <div
+            className={`flex size-4 shrink-0 items-center justify-center rounded-full border border-primary-border bg-primary-accent ${done ? "text-primary-text" : ""}`}
+          >
+            {done ? <CheckIcon size={10} /> : null}
+          </div>
+          <div className="flex w-full flex-col gap-1">
+            <div className="h-[5px] w-full rounded-[1px] bg-primary-accent" />
+            <div className="h-[5px] w-[40px] rounded-[1px] bg-primary-accent" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /** "We couldn't load paths" / "This path isn't available" (Figma states: icon badge, title, copy, button). */
 export function ErrorState({
   title,
   body,
   children,
+  level = 1,
 }: {
   title: string;
   body: string;
   children: ReactNode;
+  /** The title is the page h1 unless the screen already has one (My paths keeps its header). */
+  level?: 1 | 2;
 }) {
+  const Title = level === 1 ? "h1" : "h2";
   return (
     <div
       role="alert"
@@ -162,7 +237,9 @@ export function ErrorState({
       >
         <RouteIcon size={28} />
       </span>
-      <h1 className="font-semibold text-[24px] text-text leading-8 tracking-[-0.24px]">{title}</h1>
+      <Title className="font-semibold text-[24px] text-text leading-8 tracking-[-0.24px]">
+        {title}
+      </Title>
       <p className="text-[14px] text-text-secondary leading-5 tracking-[-0.14px]">{body}</p>
       <div className="pt-1.5">{children}</div>
     </div>
@@ -173,3 +250,41 @@ export function ErrorState({
 export const BUTTON_INVERSE = `btn-lift inline-flex items-center justify-center gap-1.5 rounded-lg bg-text px-3 py-2.5 font-medium text-[14px] text-bg-base leading-5 tracking-[-0.14px] ${FOCUS}`;
 
 export const SKELETON = "rounded-md bg-bg-fill2 motion-safe:animate-pulse";
+
+/**
+ * Toast (Figma "Toast": green check, title, copy, close), centred at the top of the page like the
+ * auth toasts. Presentational: the path detail only mounts it when a real star handler exists.
+ */
+export function Toast({
+  title,
+  body,
+  onClose,
+}: {
+  title: string;
+  body: string;
+  onClose: () => void;
+}) {
+  return (
+    <div className="pointer-events-none fixed inset-x-0 top-4 z-40 flex justify-center px-4 md:top-5">
+      <div
+        role="status"
+        aria-live="polite"
+        className="pointer-events-auto flex w-full max-w-[440px] items-start gap-3 rounded-xl border border-border-soft bg-bg-base p-3.5 shadow-e2"
+      >
+        <CircleCheckIcon size={20} className="mt-0.5 shrink-0 text-success-text" />
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <p className="font-medium text-[14px] text-text leading-5 tracking-[-0.14px]">{title}</p>
+          <p className="text-[14px] text-text-secondary leading-5 tracking-[-0.14px]">{body}</p>
+        </div>
+        <button
+          type="button"
+          aria-label="Dismiss"
+          onClick={onClose}
+          className={`-m-1 flex size-7 shrink-0 items-center justify-center rounded-md text-text-tertiary hover:text-text ${FOCUS}`}
+        >
+          <CloseIcon size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}

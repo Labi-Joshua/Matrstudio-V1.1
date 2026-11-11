@@ -43,7 +43,7 @@ function Surface({
   useModalSurface(panel, onClose);
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center md:p-6">
-      <div aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-static-black/50" />
+      <div aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-static-black/50 backdrop-blur-sm" />
       <div
         ref={panel}
         role="dialog"

@@ -74,7 +74,7 @@ export function Modal({
         onClick={() => {
           if (!busy) onClose();
         }}
-        className="absolute inset-0 bg-static-black/60"
+        className="absolute inset-0 bg-static-black/60 backdrop-blur-sm"
       />
       <div
         ref={panelRef}

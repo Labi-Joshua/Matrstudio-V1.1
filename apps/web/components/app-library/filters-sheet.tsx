@@ -98,7 +98,7 @@ function SheetDialog({
       ref={ref}
       aria-labelledby="filters-title"
       onClose={onClose}
-      className="m-0 h-dvh max-h-none w-full max-w-none overflow-hidden border-0 bg-bg-base p-0 text-text backdrop:bg-static-black/50"
+      className="m-0 h-dvh max-h-none w-full max-w-none overflow-hidden border-0 bg-bg-base p-0 text-text backdrop:bg-static-black/50 backdrop:backdrop-blur-sm"
     >
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-3 border-border-soft border-b px-4 py-3">

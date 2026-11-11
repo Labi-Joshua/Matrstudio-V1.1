@@ -166,7 +166,7 @@ function PhoneDrawer({ id, onClose }: { id: string; onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50">
-      <div aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-static-black/60" />
+      <div aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-static-black/60 backdrop-blur-sm" />
       <div
         id={id}
         ref={panelRef}

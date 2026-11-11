@@ -67,7 +67,7 @@ export function BottomSheet({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end">
-      <div aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-static-black/60" />
+      <div aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-static-black/60 backdrop-blur-sm" />
       <div
         ref={panelRef}
         role="dialog"

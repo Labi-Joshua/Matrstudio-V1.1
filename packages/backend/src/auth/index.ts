@@ -348,7 +348,9 @@ function build(env: Bindings, deps: AuthDeps = {}) {
     rateLimit: { enabled: false },
     // These return raw session rows (token column). /api/me/sessions replaces them; sign-out and
     // revoke-other-sessions stay.
-    disabledPaths: ["/list-sessions", "/revoke-session"],
+    // /change-email is reached only through POST /api/me/account/email (routes/account.ts), which
+    // asks for re-authentication, rate-limits and records the pending change first.
+    disabledPaths: ["/list-sessions", "/revoke-session", "/change-email"],
     // disableCleanup keeps expired rows until the daily cron, so "expired" can be told from "unknown".
     verification: { storeIdentifier: "hashed", disableCleanup: true },
     session: {
@@ -457,6 +459,9 @@ function build(env: Bindings, deps: AuthDeps = {}) {
             const change = emailChanges.get(user.id);
             if (!change) return;
             emailChanges.delete(user.id);
+            await env.DB.prepare("DELETE FROM pending_email_changes WHERE user_id = ?")
+              .bind(user.id)
+              .run();
             const ctx = await context();
             await ctx.internalAdapter.deleteUserSessions(user.id); // revoke all sessions
             await audit(change.headers, {
@@ -615,6 +620,17 @@ function build(env: Bindings, deps: AuthDeps = {}) {
             if (!used) {
               if (checked.payload.updateTo) return fail("already_confirmed"); // email-change link, used
               return fail(owner?.user?.emailVerified ? "already_confirmed" : "link_invalid");
+            }
+            if (checked.payload.updateTo) {
+              // An email-change link only works while the change is still pending for that address
+              // (cancelling it, or asking for another address, kills the link).
+              const pending = await env.DB.prepare(
+                "SELECT new_email FROM pending_email_changes WHERE user_id = ?",
+              )
+                .bind(String(checked.payload.userId ?? ""))
+                .first<{ new_email: string }>();
+              if (pending?.new_email !== String(checked.payload.updateTo).toLowerCase())
+                return fail("link_invalid");
             }
             if (!checked.payload.updateTo && owner?.user?.emailVerified)
               return fail("already_confirmed");

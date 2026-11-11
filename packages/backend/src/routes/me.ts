@@ -9,12 +9,13 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { writeAudit } from "../auth/audit";
 import { type AuthedEnv, authError, can, requireSession } from "../auth/guard";
-import { FRESH_AUTH_SECONDS, SESSION_COOKIE } from "../auth/index";
-import { verifyPassword } from "../auth/password";
-import { clientIp, describeDevice, emailRef, truncateIp } from "../auth/util";
+import { SESSION_COOKIE } from "../auth/index";
+import { clientIp, describeDevice, truncateIp } from "../auth/util";
+import { account, deleteAccount } from "./account";
 import { notifications } from "./notifications";
-import { profile } from "./profile";
 import { paths } from "./paths";
+import { prefs } from "./prefs";
+import { profile } from "./profile";
 import { saved } from "./saved";
 import { submissions } from "./submissions";
 import { support } from "./support";
@@ -27,6 +28,10 @@ me.route("/me/notifications", notifications);
 me.route("/me/support", support);
 me.route("/me/profile", profile);
 me.route("/me/paths", paths);
+me.route("/me/account", account);
+me.route("/me/prefs", prefs);
+// Same handler as DELETE /api/me/account (kept at this path for existing callers).
+me.delete("/me", deleteAccount);
 
 // Validation failures use the same { code, message } body as every other auth error.
 const invalid = (
@@ -183,49 +188,3 @@ me.post(
     return c.json({ revoked: 1 });
   },
 );
-
-// Account deletion: removes personal data, revokes sessions, anonymises audit rows. Needs recent
-// re-authentication: a session created in the last 5 minutes, or the account password in the body.
-me.delete("/me", async (c) => {
-  const user = c.get("user");
-  const db = c.env.DB;
-  const parsed = z
-    .object({ password: z.string().max(128).optional() })
-    .strict()
-    .safeParse(await c.req.json().catch(() => ({})));
-  if (!parsed.success)
-    return c.json(authError("invalid_request", "Check the details you entered."), 400);
-  const fresh = Date.now() - c.get("session").createdAt.getTime() < FRESH_AUTH_SECONDS * 1000;
-  if (!fresh) {
-    const password = parsed.data.password;
-    const account = password
-      ? await db
-          .prepare("SELECT password FROM account WHERE userId = ? AND providerId = 'credential'")
-          .bind(user.id)
-          .first<{ password: string | null }>()
-      : null;
-    if (!password || !account?.password || !(await verifyPassword(account.password, password))) {
-      return c.json(authError("reauth_required", "Confirm it is you to delete your account."), 401);
-    }
-  }
-  const eref = await emailRef(c.env.BETTER_AUTH_SECRET, user.email);
-  await db.batch([
-    db.prepare("DELETE FROM session WHERE userId = ?").bind(user.id),
-    db.prepare("DELETE FROM account WHERE userId = ?").bind(user.id),
-    db.prepare("DELETE FROM passkey WHERE userId = ?").bind(user.id),
-    db.prepare("DELETE FROM onboarding WHERE userId = ?").bind(user.id),
-    db
-      .prepare("DELETE FROM verification WHERE value = ?1 OR value LIKE ?2")
-      .bind(user.id, `%"email":"${user.email.toLowerCase()}"%`), // magic-link records carry the address
-    db.prepare("DELETE FROM invites WHERE email = ?").bind(user.email.toLowerCase()),
-    db
-      .prepare(
-        "UPDATE audit_log SET actor = NULL, target = NULL, ip = NULL, ua = NULL WHERE actor = ?1 OR target = ?1 OR target = ?2",
-      )
-      .bind(user.id, `email:${eref}`),
-    db.prepare("DELETE FROM user WHERE id = ?").bind(user.id),
-  ]);
-  await writeAudit(db, { action: "account.deleted", meta: {} });
-  c.header("Set-Cookie", expiredSessionCookie());
-  return c.json({ deleted: true });
-});

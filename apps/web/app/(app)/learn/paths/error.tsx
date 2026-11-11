@@ -5,7 +5,7 @@ import { BUTTON_INVERSE, ErrorState } from "../../../../components/app-paths/par
 /** "Catalogue: couldn't load (error)": the page header stays, the body says so and offers a retry. */
 export default function PathsError({ reset }: { error: Error; reset: () => void }) {
   return (
-    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-2">
+    <div className="mx-auto flex w-full flex-col gap-2">
       <h1 className="font-semibold text-[24px] text-text leading-8 tracking-[-0.24px]">
         Learning paths
       </h1>

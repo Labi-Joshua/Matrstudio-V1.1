@@ -6,7 +6,7 @@ import { ROUTES } from "../../../../../lib/routes";
 
 export default function ResourceError({ reset }: { error: Error; reset: () => void }) {
   return (
-    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-6">
+    <div className="mx-auto flex w-full flex-col gap-6">
       <StateBlock
         role="alert"
         glyph="alert"

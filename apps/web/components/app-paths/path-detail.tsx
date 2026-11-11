@@ -52,7 +52,7 @@ export function PathDetail({ topic }: { topic: TopicSlug }) {
 
   if (!view) {
     return (
-      <div className="mx-auto w-full max-w-[1240px]">
+      <div className="mx-auto w-full">
         <ErrorState
           title="This path isn’t available"
           body="It may have been unpublished, or the link is wrong."
@@ -75,7 +75,7 @@ function DetailBody({ view }: { view: PathDetailView }) {
   const paths = usePaths();
   const completed = isCompleted(paths.get(path.slug));
   return (
-    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-8">
+    <div className="mx-auto flex w-full flex-col gap-8">
       <Link
         href={ROUTES.app.paths}
         className={`-ml-2.5 inline-flex items-center gap-1 self-start rounded-md px-2.5 py-1.5 font-medium text-[14px] text-text leading-5 tracking-[-0.14px] hover:bg-bg-fill1 ${FOCUS}`}

@@ -41,7 +41,7 @@ export function ResourceDetail({ item, all }: { item: LibraryItem; all: LibraryI
   const isVideo = item.kind === "video";
 
   return (
-    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-6">
+    <div className="mx-auto flex w-full flex-col gap-6">
       <BackLink href={ROUTES.app.library}>Library</BackLink>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">

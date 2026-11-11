@@ -61,7 +61,7 @@ function Option({
 
 export function HelpHub() {
   return (
-    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-8">
+    <div className="mx-auto flex w-full flex-col gap-8">
       <TicketRedirect />
       <SentToast />
       <OfflineNotice />

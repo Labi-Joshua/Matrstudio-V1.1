@@ -211,7 +211,7 @@ export function Dashboard() {
   const libraryHeading = view.personalised ? "Library picks for you" : "From the library";
 
   return (
-    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-10">
+    <div className="mx-auto flex w-full flex-col gap-10">
       <OfflineBanner />
       {variant !== "new-account" && progress ? (
         <ProgressHome

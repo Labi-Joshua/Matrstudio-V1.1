@@ -38,7 +38,7 @@ export function HomeSkeletonBlocks() {
 
 export function HomeSkeleton() {
   return (
-    <div aria-busy="true" className="mx-auto w-full max-w-[1240px]">
+    <div aria-busy="true" className="mx-auto w-full">
       <p role="status" className="sr-only">
         Loading your home page
       </p>

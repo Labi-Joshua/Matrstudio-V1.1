@@ -70,74 +70,76 @@ function Frame({ children }: { children: ReactNode }) {
   }, [phone]);
 
   return (
-    <div className="flex min-h-dvh bg-bg-fill1 text-text">
-      <a
-        href="#main"
-        className={`sr-only z-[60] rounded-lg bg-bg-base px-4 py-2 font-medium text-[14px] text-text focus:not-sr-only focus:fixed focus:top-3 focus:left-3 ${FOCUS}`}
-      >
-        Skip to main content
-      </a>
-
-      {phone ? null : (
-        <aside
-          id={sidebarId}
-          aria-label="Sidebar"
-          className={`sticky top-0 z-30 h-dvh shrink-0 ${rail ? "w-[88px]" : "w-[320px]"}`}
+    <div className="bg-bg-fill1 text-text">
+      <div className="mx-auto flex min-h-dvh w-full max-w-[1920px]">
+        <a
+          href="#main"
+          className={`sr-only z-[60] rounded-lg bg-bg-base px-4 py-2 font-medium text-[14px] text-text focus:not-sr-only focus:fixed focus:top-3 focus:left-3 ${FOCUS}`}
         >
-          <Sidebar variant={rail ? "rail" : "full"} />
-        </aside>
-      )}
+          Skip to main content
+        </a>
 
-      <div className="relative flex min-w-0 flex-1 flex-col md:pt-4">
-        {phone ? (
-          <PhoneBar
-            onOpenMenu={() => setMenuOpen(true)}
-            menuOpen={menuOpen}
-            menuButtonRef={menuButtonRef}
-            menuId={menuId}
-          />
-        ) : (
-          <button
-            type="button"
-            aria-label={rail ? "Expand sidebar" : "Collapse sidebar"}
-            aria-expanded={!rail}
-            aria-controls={sidebarId}
-            onClick={() => setCollapsed(!rail)}
-            className={`absolute top-[30px] z-30 flex items-center justify-center rounded-full border border-border-soft bg-bg-base text-text-secondary hover:text-text ${FOCUS} ${
-              rail ? "-left-4 size-8" : "-left-5 size-10"
-            }`}
+        {phone ? null : (
+          <aside
+            id={sidebarId}
+            aria-label="Sidebar"
+            className={`sticky top-0 z-30 h-dvh shrink-0 ${rail ? "w-[88px]" : "w-[320px]"}`}
           >
-            {rail ? <ChevronRightIcon size={18} /> : <ChevronLeftIcon size={18} />}
-          </button>
+            <Sidebar variant={rail ? "rail" : "full"} />
+          </aside>
         )}
 
-        <div className="flex min-w-0 flex-1 flex-col rounded-t-3xl border-border-soft border-t bg-bg-base md:rounded-tr-none md:border-l">
+        <div className="relative flex min-w-0 flex-1 flex-col md:pt-4">
           {phone ? (
-            <div className="px-5 pt-6">
-              <Breadcrumb />
-            </div>
+            <PhoneBar
+              onOpenMenu={() => setMenuOpen(true)}
+              menuOpen={menuOpen}
+              menuButtonRef={menuButtonRef}
+              menuId={menuId}
+            />
           ) : (
-            <DesktopTopBar />
+            <button
+              type="button"
+              aria-label={rail ? "Expand sidebar" : "Collapse sidebar"}
+              aria-expanded={!rail}
+              aria-controls={sidebarId}
+              onClick={() => setCollapsed(!rail)}
+              className={`absolute top-[30px] z-30 flex items-center justify-center rounded-full border border-border-soft bg-bg-base text-text-secondary hover:text-text ${FOCUS} ${
+                rail ? "-left-4 size-8" : "-left-5 size-10"
+              }`}
+            >
+              {rail ? <ChevronRightIcon size={18} /> : <ChevronLeftIcon size={18} />}
+            </button>
           )}
-          <main
-            id="main"
-            tabIndex={-1}
-            className="flex-1 px-5 pt-6 pb-16 outline-none md:px-10 md:pt-8"
-          >
-            {children}
-          </main>
-        </div>
-      </div>
 
-      {phone && menuOpen ? (
-        <PhoneDrawer
-          id={menuId}
-          onClose={() => {
-            setMenuOpen(false);
-            menuButtonRef.current?.focus();
-          }}
-        />
-      ) : null}
+          <div className="flex min-w-0 flex-1 flex-col rounded-t-3xl border-border-soft border-t bg-bg-base md:rounded-tr-none md:border-l">
+            {phone ? (
+              <div className="px-5 pt-6">
+                <Breadcrumb />
+              </div>
+            ) : (
+              <DesktopTopBar />
+            )}
+            <main
+              id="main"
+              tabIndex={-1}
+              className="flex-1 px-5 pt-6 pb-16 outline-none md:px-10 md:pt-8"
+            >
+              {children}
+            </main>
+          </div>
+        </div>
+
+        {phone && menuOpen ? (
+          <PhoneDrawer
+            id={menuId}
+            onClose={() => {
+              setMenuOpen(false);
+              menuButtonRef.current?.focus();
+            }}
+          />
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -257,7 +259,7 @@ function ShellSkeleton({ message }: { message: string }) {
           <p role="status" aria-live="polite" className="sr-only">
             {message}
           </p>
-          <div className="mx-auto w-full max-w-[1240px]">
+          <div className="mx-auto w-full">
             <HomeSkeletonBlocks />
           </div>
         </main>

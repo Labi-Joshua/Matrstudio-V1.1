@@ -68,7 +68,7 @@ export function ProfileScreen() {
 
   if (loading || gate) {
     return (
-      <div className="mx-auto w-full max-w-[1240px]">
+      <div className="mx-auto w-full">
         <h1 className="sr-only">Profile</h1>
         <ProfileSkeleton visible={gate} />
         {toasts}
@@ -78,7 +78,7 @@ export function ProfileScreen() {
 
   if (state.status === "error") {
     return (
-      <div className="mx-auto w-full max-w-[1240px]">
+      <div className="mx-auto w-full">
         <h1 className="sr-only">Profile</h1>
         <StateBlock
           role="alert"
@@ -100,7 +100,7 @@ export function ProfileScreen() {
   const level = me.onboarding.level;
 
   return (
-    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-6">
+    <div className="mx-auto flex w-full flex-col gap-6">
       <ProfileCard
         displayName={profile.displayName || me.name || "Your profile"}
         username={profile.username}

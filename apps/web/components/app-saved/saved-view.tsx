@@ -51,7 +51,7 @@ export function SavedView() {
   const sample = items.some((item) => item.sample);
 
   return (
-    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-6">
+    <div className="mx-auto flex w-full flex-col gap-6">
       <PageHeader
         title="Saved"
         headingRef={headingRef}

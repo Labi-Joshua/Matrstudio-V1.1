@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { RefObject } from "react";
-import { currentLabel } from "../../lib/app/nav";
+import { breadcrumbs } from "../../lib/app/nav";
 import { ROUTES } from "../../lib/routes";
 import { MenuIcon, SearchIcon, UploadIcon } from "./icons";
 import { NotificationsBell } from "./notifications";
@@ -19,17 +19,37 @@ import { UserMenu } from "./user-menu";
  * an icon button, as in the tablet frames.
  */
 export function Breadcrumb() {
-  const pathname = usePathname();
+  const crumbs = breadcrumbs(usePathname());
   return (
     <nav aria-label="Breadcrumb">
-      <ol className="m-0 flex list-none items-center gap-1 p-0 text-[14px] leading-5 tracking-[-0.14px]">
-        <li className="text-text-secondary">Learn</li>
-        <li aria-hidden="true" className="px-1 text-text-tertiary">
-          /
-        </li>
-        <li aria-current="page" className="text-text">
-          {currentLabel(pathname)}
-        </li>
+      <ol className="m-0 flex list-none flex-wrap items-center gap-1 p-0 text-[14px] leading-5 tracking-[-0.14px]">
+        {crumbs.map((crumb, index) => {
+          const last = index === crumbs.length - 1;
+          return (
+            <li key={`${crumb.label}-${index}`} className="flex items-center gap-1">
+              {index > 0 ? (
+                <span aria-hidden="true" className="px-1 text-text-tertiary">
+                  /
+                </span>
+              ) : null}
+              {crumb.href ? (
+                <Link
+                  href={crumb.href}
+                  className={`rounded text-text-secondary hover:text-text hover:underline ${FOCUS}`}
+                >
+                  {crumb.label}
+                </Link>
+              ) : (
+                <span
+                  aria-current={last ? "page" : undefined}
+                  className={last ? "text-text" : "text-text-secondary"}
+                >
+                  {crumb.label}
+                </span>
+              )}
+            </li>
+          );
+        })}
       </ol>
     </nav>
   );

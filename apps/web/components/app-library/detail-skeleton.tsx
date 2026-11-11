@@ -22,7 +22,7 @@ export function ResourceDetailSkeleton() {
     <div
       role="status"
       aria-busy="true"
-      className="mx-auto flex w-full max-w-[1240px] flex-col gap-6"
+      className="mx-auto flex w-full flex-col gap-6"
     >
       <p className="sr-only">Loading the resource</p>
       {visible ? (

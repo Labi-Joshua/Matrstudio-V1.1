@@ -55,7 +55,7 @@ export function SubmitScreen() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-6">
+    <div className="mx-auto flex w-full flex-col gap-6">
       <PageHeader
         title="Submit a resource"
         description="Share a free video, article or tool. A curator reviews every submission."

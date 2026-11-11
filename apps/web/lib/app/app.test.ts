@@ -6,7 +6,14 @@ import { SAMPLE_RESOURCES } from "../pages/browse-library";
 import { SAMPLE_PATHS } from "../pages/onboarding-content";
 import { ROUTES } from "../routes";
 import { answersFromMe, buildDashboard, libraryPicks, pickForYou } from "./dashboard";
-import { currentLabel, isNavActive, LEARN_NAV, normalisePath, SUPPORT_NAV } from "./nav";
+import {
+  breadcrumbs,
+  currentLabel,
+  isNavActive,
+  LEARN_NAV,
+  normalisePath,
+  SUPPORT_NAV,
+} from "./nav";
 import { displayName, firstName, initials, joinWithAnd, welcomeTitle } from "./profile";
 
 const onboarding = (over: Partial<Me["onboarding"]> = {}): Me["onboarding"] => ({
@@ -174,5 +181,49 @@ describe("dashboard recommendations", () => {
       lessons: 1,
     });
     expect(view.library.map((r) => r.id)).toEqual(["r1"]);
+  });
+});
+
+describe("breadcrumbs", () => {
+  const trail = (path: string) =>
+    breadcrumbs(path).map((c) => `${c.label}${c.href ? `>${c.href}` : ""}`);
+
+  it("links every crumb except the current page", () => {
+    expect(trail("/dashboard")).toEqual(["Learn", "Home"]);
+    expect(trail("/learn/paths")).toEqual(["Learn>/dashboard", "Paths"]);
+    expect(trail("/learn/paths/ui-ux")).toEqual([
+      "Learn>/dashboard",
+      "Paths>/learn/paths",
+      "UI/UX",
+    ]);
+    expect(trail("/learn/paths/ui-ux/p/lessons/l1")).toEqual([
+      "Learn>/dashboard",
+      "Paths>/learn/paths",
+      "UI/UX>/learn/paths/ui-ux",
+      "Lesson",
+    ]);
+  });
+
+  it("covers sub pages of help, library, profile and settings", () => {
+    expect(trail("/learn/help/contact")).toEqual([
+      "Learn>/dashboard",
+      "Help centre>/learn/help",
+      "Contact support",
+    ]);
+    expect(trail("/learn/library/r1")).toEqual([
+      "Learn>/dashboard",
+      "Library>/learn/library",
+      "Resource",
+    ]);
+    expect(trail("/profile/edit")).toEqual([
+      "Learn>/dashboard",
+      "Profile>/profile",
+      "Edit profile",
+    ]);
+    expect(trail("/settings/notifications")).toEqual([
+      "Learn>/dashboard",
+      "Settings>/settings/account",
+      "Notifications",
+    ]);
   });
 });

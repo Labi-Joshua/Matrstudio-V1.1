@@ -1,3 +1,4 @@
+import { getCatalogue } from "../catalogue/data";
 import { ROUTES } from "../routes";
 
 /**
@@ -71,4 +72,81 @@ export function currentLabel(pathname: string): string {
   if (other) return other.label;
   const item = [...LEARN_NAV, ...SUPPORT_NAV].find((entry) => isNavActive(entry, pathname));
   return item?.label ?? "Home";
+}
+
+export type Crumb = {
+  label: string /** null = the current page (not a link). */;
+  href: string | null;
+};
+
+const SETTINGS_SECTIONS: Record<string, string> = {
+  account: "Account",
+  notifications: "Notifications",
+  learning: "Learning",
+  appearance: "Appearance",
+  "confirm-email": "Confirm email",
+};
+
+const HELP_PAGES: Record<string, string> = {
+  contact: "Contact support",
+  report: "Report a problem",
+  request: "Your request",
+};
+
+/**
+ * The full breadcrumb trail for a page: every crumb except the last links to its page, so the
+ * trail navigates up through the sub pages, not just the side menu. The trail is built from the
+ * URL; the only names looked up are topics (a topic slug is a readable name already known here).
+ */
+export function breadcrumbs(pathname: string): Crumb[] {
+  const here = normalisePath(pathname);
+  const parts = here.split("/").filter(Boolean);
+  const learn = (href: string | null): Crumb => ({ label: "Learn", href });
+  const trail = (...crumbs: Crumb[]): Crumb[] =>
+    crumbs.map((crumb, index) => (index === crumbs.length - 1 ? { ...crumb, href: null } : crumb));
+  const home = ROUTES.dashboard;
+
+  if (parts[0] === "learn") {
+    const [, area, second, third] = parts;
+    if (area === "paths") {
+      const paths = { label: "Paths", href: ROUTES.app.paths };
+      if (!second) return trail(learn(home), paths);
+      const topic = { label: topicName(second), href: ROUTES.app.pathTopic(second) };
+      if (!third) return trail(learn(home), paths, topic);
+      return trail(learn(home), paths, topic, { label: "Lesson", href: null });
+    }
+    if (area === "library") {
+      const library = { label: "Library", href: ROUTES.app.library };
+      return second
+        ? trail(learn(home), library, { label: "Resource", href: null })
+        : trail(learn(home), library);
+    }
+    if (area === "saved") return trail(learn(home), { label: "Saved", href: null });
+    if (area === "submit") return trail(learn(home), { label: "Submit a resource", href: null });
+    if (area === "help") {
+      const help = { label: "Help centre", href: ROUTES.app.help };
+      const page = second ? HELP_PAGES[second] : undefined;
+      return page
+        ? trail(learn(home), help, { label: page, href: null })
+        : trail(learn(home), help);
+    }
+  }
+  if (parts[0] === "profile") {
+    const profile = { label: "Profile", href: ROUTES.profile };
+    return parts[1] === "edit"
+      ? trail(learn(home), profile, { label: "Edit profile", href: null })
+      : trail(learn(home), profile);
+  }
+  if (parts[0] === "settings") {
+    const settings = { label: "Settings", href: ROUTES.settingsAccount };
+    const section = parts[1] ? SETTINGS_SECTIONS[parts[1]] : undefined;
+    return section
+      ? trail(learn(home), settings, { label: section, href: null })
+      : trail(learn(home), settings);
+  }
+  return trail(learn(null), { label: "Home", href: null });
+}
+
+function topicName(slug: string): string {
+  return getCatalogue().topics.find((topic) => topic.slug === slug)?.name ?? slug;
 }

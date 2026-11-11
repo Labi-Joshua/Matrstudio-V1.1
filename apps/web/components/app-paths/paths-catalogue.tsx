@@ -53,7 +53,7 @@ export function PathsCatalogue() {
   const params = useSearchParams();
   const query = normaliseQuery(params.get("q"));
   return (
-    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-7">
+    <div className="mx-auto flex w-full flex-col gap-7">
       {query ? <SearchResults query={query} /> : <Landing />}
     </div>
   );

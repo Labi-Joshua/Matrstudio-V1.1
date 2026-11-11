@@ -5,7 +5,7 @@ import { BTN_DARK, PageHeader, StateBlock } from "../../../../components/app-lib
 /** Figma "Library: couldn't load (error)": the header stays, with a Try again button. */
 export default function LibraryError({ reset }: { error: Error; reset: () => void }) {
   return (
-    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-6">
+    <div className="mx-auto flex w-full flex-col gap-6">
       <PageHeader
         title="Library"
         intro="Free videos, articles and tools picked by our curators. Search or filter to find what you need."

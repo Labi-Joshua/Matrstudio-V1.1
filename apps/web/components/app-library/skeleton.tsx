@@ -39,7 +39,7 @@ export function LibrarySkeleton() {
     <div
       role="status"
       aria-busy="true"
-      className="mx-auto flex min-h-[60vh] w-full max-w-[1240px] flex-col gap-6"
+      className="mx-auto flex min-h-[60vh] w-full flex-col gap-6"
     >
       <Loading label="Loading the library" />
       {visible ? (
@@ -82,7 +82,7 @@ export function ResourceSkeleton() {
     <div
       role="status"
       aria-busy="true"
-      className="mx-auto flex w-full max-w-[1240px] flex-col gap-6"
+      className="mx-auto flex w-full flex-col gap-6"
     >
       <Loading label="Loading the resource" />
       <div className={`${BAR} h-5 w-20`} aria-hidden="true" />

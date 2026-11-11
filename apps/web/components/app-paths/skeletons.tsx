@@ -52,7 +52,7 @@ function HeaderBars() {
 export function CatalogueSkeleton() {
   const topics = getCatalogue().topics;
   return (
-    <div aria-busy="true" className="mx-auto flex w-full max-w-[1240px] flex-col gap-7">
+    <div aria-busy="true" className="mx-auto flex w-full flex-col gap-7">
       <Loading label="Loading paths" />
       <div aria-hidden="true" className="flex flex-col gap-7">
         <HeaderBars />
@@ -95,7 +95,7 @@ export function MyPathsSkeleton() {
 
 export function PathDetailSkeleton() {
   return (
-    <div aria-busy="true" className="mx-auto flex w-full max-w-[1240px] flex-col gap-8">
+    <div aria-busy="true" className="mx-auto flex w-full flex-col gap-8">
       <Loading label="Loading path" />
       <div aria-hidden="true" className="flex flex-col gap-8">
         <div className={`${SKELETON} h-8 w-[102px]`} />
@@ -135,7 +135,7 @@ export function PathDetailSkeleton() {
 /** Figma "Lesson: loading": back link, title block, media, about card, buttons and the outline. */
 export function LessonSkeleton() {
   return (
-    <div aria-busy="true" className="mx-auto flex w-full max-w-[1240px] flex-col gap-6">
+    <div aria-busy="true" className="mx-auto flex w-full flex-col gap-6">
       <Loading label="Loading lesson" />
       <div aria-hidden="true" className="flex flex-col gap-6">
         <div className={`${SKELETON} h-8 w-[160px]`} />

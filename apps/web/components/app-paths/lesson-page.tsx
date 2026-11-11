@@ -58,7 +58,7 @@ export function LessonPage({
 
   if (!view) {
     return (
-      <div className="mx-auto w-full max-w-[1240px]">
+      <div className="mx-auto w-full">
         <ErrorState
           title="This lesson isn’t available"
           body="It may have been removed from the path, or the link is wrong."
@@ -125,7 +125,7 @@ function LessonBody({ view }: { view: NonNullable<ReturnType<typeof buildLessonV
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-6">
+    <div className="mx-auto flex w-full flex-col gap-6">
       <Link
         href={pathUrl}
         className={`-ml-2.5 inline-flex items-center gap-1 self-start rounded-md px-2.5 py-1.5 font-medium text-[14px] text-text leading-5 tracking-[-0.14px] hover:bg-bg-fill1 ${FOCUS}`}

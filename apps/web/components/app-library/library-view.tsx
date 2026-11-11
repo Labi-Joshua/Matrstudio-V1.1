@@ -64,7 +64,7 @@ export function LibraryView() {
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-6">
+    <div className="mx-auto flex w-full flex-col gap-6">
       <PhoneSearch key={view.q} q={view.q} onSubmit={(q) => go({ q, filters: NO_FILTERS })} />
       {view.q ? (
         <SearchResults model={model} q={view.q} />

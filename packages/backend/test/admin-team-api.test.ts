@@ -762,6 +762,16 @@ describe("shell: search, notifications, /me badges", () => {
     expect((await app.call("/api/admin/search?q=kemi", { as: BOSS })).status).toBe(401);
 
     // tables from migration 0014 appear: picked up with no code change; gated by their own areas
+    // 0014 now creates these tables for real; swap in minimal ones so the test controls the rows.
+    for (const t of [
+      "path_lessons",
+      "path_modules",
+      "resource_tags",
+      "link_checks",
+      "paths",
+      "resources",
+    ])
+      run(app, `DROP TABLE IF EXISTS ${t}`);
     run(app, "CREATE TABLE resources (id TEXT PRIMARY KEY, title TEXT NOT NULL, status TEXT)");
     run(app, "CREATE TABLE paths (id TEXT PRIMARY KEY, title TEXT NOT NULL)");
     run(app, "INSERT INTO resources VALUES ('r1', 'Kemi on Flexbox', 'published')");

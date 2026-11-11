@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { type FormEvent, type RefObject, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import type { RefObject } from "react";
 import { currentLabel } from "../../lib/app/nav";
 import { ROUTES } from "../../lib/routes";
-import { SubmitDialog } from "../app-submit/submit-dialog";
 import { MenuIcon, SearchIcon, UploadIcon } from "./icons";
 import { NotificationsBell } from "./notifications";
+import { useOverlays } from "./overlays";
 import { Wordmark } from "./sidebar";
 import { FOCUS } from "./ui";
 import { UserMenu } from "./user-menu";
@@ -35,88 +35,69 @@ export function Breadcrumb() {
   );
 }
 
-/** A visual search field: submitting goes to the library with the text as ?q= (no in-app search yet). */
+/**
+ * The search field (xl). It looks like an input but is a button: pressing it opens the command
+ * palette (as does ⌘K / Ctrl+K), where the typing happens.
+ */
 function SearchField() {
-  const router = useRouter();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [query, setQuery] = useState("");
-
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        inputRef.current?.focus();
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, []);
-
-  function submit(event: FormEvent) {
-    event.preventDefault();
-    const q = query.trim();
-    router.push(q ? `${ROUTES.app.library}?q=${encodeURIComponent(q)}` : ROUTES.app.library);
-  }
-
+  const { openPalette } = useOverlays();
   return (
-    <search className="hidden h-10 w-[320px] items-center gap-2 rounded-[10px] border border-border-soft bg-bg-base px-3 focus-within:border-primary-border xl:flex">
-      <form onSubmit={submit} className="contents">
-        <SearchIcon size={18} className="shrink-0 text-text-tertiary" />
-        <input
-          ref={inputRef}
-          type="search"
-          name="q"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search paths and resources"
-          aria-label="Search paths and resources"
-          autoComplete="off"
-          className="min-w-0 flex-1 bg-transparent text-[14px] text-text leading-5 tracking-[-0.14px] outline-none placeholder:text-text-tertiary"
-        />
-        <span
-          aria-hidden="true"
-          className="rounded-md border border-border-soft bg-bg-fill2 px-1.5 py-0.5 font-medium font-sans text-[12px] text-text-tertiary leading-4 tracking-[-0.12px]"
-        >
-          ⌘K
-        </span>
-      </form>
-    </search>
+    <button
+      type="button"
+      onClick={openPalette}
+      aria-haspopup="dialog"
+      aria-label="Search paths and resources"
+      className={`hidden h-10 w-[320px] items-center gap-2 rounded-[10px] border border-border-soft bg-bg-base px-3 text-left hover:border-border xl:flex ${FOCUS}`}
+    >
+      <SearchIcon size={18} className="shrink-0 text-text-tertiary" />
+      <span className="min-w-0 flex-1 truncate text-[14px] text-text-tertiary leading-5 tracking-[-0.14px]">
+        Search paths and resources
+      </span>
+      <span
+        aria-hidden="true"
+        className="rounded-md border border-border-soft bg-bg-fill2 px-1.5 py-0.5 font-medium font-sans text-[12px] text-text-tertiary leading-4 tracking-[-0.12px]"
+      >
+        ⌘K
+      </span>
+    </button>
   );
 }
 
 const ICON_BUTTON = `flex size-10 items-center justify-center rounded-[10px] border border-border-soft bg-bg-base text-text-secondary hover:text-text ${FOCUS}`;
 
-function SearchLink({ className = "" }: { className?: string }) {
+function SearchButton({ className = "" }: { className?: string }) {
+  const { openPalette } = useOverlays();
   return (
-    <Link
-      href={ROUTES.app.library}
-      aria-label="Search the library"
+    <button
+      type="button"
+      onClick={openPalette}
+      aria-haspopup="dialog"
+      aria-label="Search paths and resources"
       className={`${ICON_BUTTON} ${className}`}
     >
       <SearchIcon size={20} />
-    </Link>
+    </button>
   );
 }
 
 export function DesktopTopBar() {
-  const [submitOpen, setSubmitOpen] = useState(false);
+  const { openSubmit } = useOverlays();
   return (
     <header className="hidden items-center gap-4 py-[18px] pr-8 pl-12 md:flex">
       <div className="min-w-0 flex-1">
         <Breadcrumb />
       </div>
       <SearchField />
-      <SearchLink className="xl:hidden" />
+      <SearchButton className="xl:hidden" />
       <button
         type="button"
-        onClick={() => setSubmitOpen(true)}
+        onClick={openSubmit}
         aria-haspopup="dialog"
         className={`btn-lift hidden h-10 items-center gap-1.5 rounded-lg border border-border bg-bg-base px-3 font-medium text-[14px] text-text leading-5 tracking-[-0.14px] shadow-e1 xl:flex ${FOCUS}`}
       >
         <UploadIcon size={20} />
         Submit a resource
       </button>
-      <SubmitDialog open={submitOpen} onClose={() => setSubmitOpen(false)} />
       <NotificationsBell />
       <UserMenu />
     </header>
@@ -154,7 +135,7 @@ export function PhoneBar({
       >
         <Wordmark />
       </Link>
-      <SearchLink />
+      <SearchButton />
       <NotificationsBell />
     </header>
   );

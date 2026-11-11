@@ -1,6 +1,6 @@
-import { ResourceSkeleton } from "../../../../../components/app-library/skeleton";
+import { ResourceDetailSkeleton } from "../../../../../components/app-library/detail-skeleton";
 
 /** Figma "Resource: loading". */
 export default function Loading() {
-  return <ResourceSkeleton />;
+  return <ResourceDetailSkeleton />;
 }

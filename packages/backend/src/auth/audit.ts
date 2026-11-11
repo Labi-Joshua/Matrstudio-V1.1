@@ -85,7 +85,6 @@ export type AuditAction =
   | "admin.role.duplicated"
   | "admin.role.deleted"
   | "admin.audit.exported"
-  | "admin.bootstrap";
   | "admin.bootstrap"
   // Admin portal, people side (ADMIN-PEOPLE.md). Targets are learner ids, ticket ids or batch ids;
   // meta holds counts, ids and category codes only, never addresses or free text.

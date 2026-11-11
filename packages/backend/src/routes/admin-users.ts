@@ -2,7 +2,7 @@ import {
   type AdminUserRow,
   type AdminUserStatus,
   adminDeleteUserSchema,
-  adminSuspendSchema,
+  learnerSuspendSchema,
   USER_STATUSES,
 } from "@matr/types";
 import { Hono, type MiddlewareHandler } from "hono";
@@ -284,7 +284,7 @@ adminUsers.post("/:id/suspend", requireAdmin("users_waitlist", "manage"), async 
   const found = await loadUser(c);
   if (found.res) return found.res;
   const { row } = found;
-  const body = await parseBody(c, adminSuspendSchema);
+  const body = await parseBody(c, learnerSuspendSchema);
   if (!body) return invalid(c);
   if (row.suspended) return c.json(authError("already_suspended", "Already suspended."), 409);
   const db = c.env.DB;

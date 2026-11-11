@@ -63,13 +63,13 @@ import { clientIp, describeDevice, emailRef, sha256Hex } from "../auth/util";
 import type { Bindings } from "../env";
 import { enqueueAuthEmail } from "../queue/auth-email";
 import { adminAudit } from "./admin-audit";
+import { adminDashboard } from "./admin-dashboard";
+import { adminMetrics } from "./admin-metrics";
 import { adminRoles } from "./admin-roles";
 import { adminShell, shellCounts } from "./admin-shell";
 import { adminSupport } from "./admin-support";
-import { adminTeam } from "./admin-team";
-import { adminDashboard } from "./admin-dashboard";
-import { adminMetrics } from "./admin-metrics";
 import { adminSupportInbox } from "./admin-support-inbox";
+import { adminTeam } from "./admin-team";
 import { adminUsers } from "./admin-users";
 import { adminWaitlist } from "./admin-waitlist";
 

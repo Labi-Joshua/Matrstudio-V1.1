@@ -15,13 +15,13 @@ export type AdminUserStatus = (typeof USER_STATUSES)[number];
 export const SUSPEND_REASONS = ["spam", "guidelines", "security", "other"] as const;
 export type SuspendReason = string;
 /** `message` is the text emailed to the learner (never shown to other learners). */
-export const adminSuspendSchema = z
+export const learnerSuspendSchema = z
   .object({
     reason: z.string().trim().min(1).max(60),
     message: z.string().trim().max(1000).optional(),
   })
   .strict();
-export type AdminSuspendBody = z.input<typeof adminSuspendSchema>;
+export type AdminSuspendBody = z.input<typeof learnerSuspendSchema>;
 /** `confirm` must equal the learner's email address (typed by the admin). */
 export const adminDeleteUserSchema = z
   .object({ confirm: z.string().trim().min(3).max(320), emailCopy: z.boolean().optional() })

@@ -51,6 +51,7 @@ export const AUTH_ERROR = {
   captchaUnavailable: "captcha_unavailable",
   inviteInvalid: "invite_invalid",
   invalidToken: "invalid_token",
+  accountSuspended: "account_suspended",
 } as const;
 
 export const GENERIC_LINK_MESSAGE = "If an account exists for that email, we've sent a link.";
@@ -436,9 +437,23 @@ function build(env: Bindings, deps: AuthDeps = {}) {
     databaseHooks: {
       session: {
         create: {
-          before: async (session) => ({
-            data: { ...session, ipAddress: truncateIp(session.ipAddress as string | undefined) },
-          }),
+          before: async (session) => {
+            // A suspended learner (admin portal, user_suspensions) gets no new session, by any
+            // sign-in method. Reached only after the credentials or link checked out.
+            const suspended = await env.DB.prepare(
+              "SELECT 1 AS x FROM user_suspensions WHERE user_id = ?",
+            )
+              .bind(session.userId)
+              .first();
+            if (suspended)
+              throw new APIError("FORBIDDEN", {
+                code: AUTH_ERROR.accountSuspended,
+                message: "This account is suspended. Check your email for details.",
+              });
+            return {
+              data: { ...session, ipAddress: truncateIp(session.ipAddress as string | undefined) },
+            };
+          },
         },
       },
       user: {

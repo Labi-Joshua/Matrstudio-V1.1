@@ -67,6 +67,11 @@ import { adminRoles } from "./admin-roles";
 import { adminShell, shellCounts } from "./admin-shell";
 import { adminSupport } from "./admin-support";
 import { adminTeam } from "./admin-team";
+import { adminDashboard } from "./admin-dashboard";
+import { adminMetrics } from "./admin-metrics";
+import { adminSupportInbox } from "./admin-support-inbox";
+import { adminUsers } from "./admin-users";
+import { adminWaitlist } from "./admin-waitlist";
 
 /**
  * Admin auth API, everything under /api/admin. Lock 1 (Cloudflare Access JWT) runs on every route
@@ -80,6 +85,11 @@ admin.route("/team", adminTeam);
 admin.route("/roles", adminRoles);
 admin.route("/audit", adminAudit);
 admin.route("/", adminShell);
+admin.route("/support", adminSupportInbox);
+admin.route("/users", adminUsers);
+admin.route("/waitlist", adminWaitlist);
+admin.route("/dashboard", adminDashboard);
+admin.route("/metrics", adminMetrics);
 
 type C = Context<AdminCtx>;
 

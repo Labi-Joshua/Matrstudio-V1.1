@@ -652,4 +652,5 @@ export type PathErrorBody = {
   retryAfterSeconds?: number;
 };
 export * from "./admin-team";
+export * from "./admin-people";
 export * from "./settings";

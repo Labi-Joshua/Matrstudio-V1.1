@@ -86,6 +86,21 @@ export type AuditAction =
   | "admin.role.deleted"
   | "admin.audit.exported"
   | "admin.bootstrap";
+  | "admin.bootstrap"
+  // Admin portal, people side (ADMIN-PEOPLE.md). Targets are learner ids, ticket ids or batch ids;
+  // meta holds counts, ids and category codes only, never addresses or free text.
+  | "admin.user.reset_link"
+  | "admin.user.suspended"
+  | "admin.user.restored"
+  | "admin.user.exported"
+  | "admin.user.deleted"
+  | "admin.waitlist.invited"
+  | "admin.waitlist.reminded"
+  | "admin.support.note"
+  | "admin.support.assigned"
+  | "admin.support.issue_logged"
+  | "admin.metrics.exported"
+  | "support.auto_resolved";
 
 export type AuditEntry = {
   actor?: string | null;

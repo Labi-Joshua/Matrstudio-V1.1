@@ -77,6 +77,14 @@ export type AuditAction =
   | "admin.suspended"
   | "admin.unlocked"
   | "admin.removed"
+  | "admin.restored"
+  | "admin.access.temporary"
+  | "admin.access.expired"
+  | "admin.invite.resent"
+  | "admin.role.updated"
+  | "admin.role.duplicated"
+  | "admin.role.deleted"
+  | "admin.audit.exported"
   | "admin.bootstrap";
 
 export type AuditEntry = {

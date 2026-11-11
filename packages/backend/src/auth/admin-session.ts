@@ -36,6 +36,8 @@ export type AdminAccount = {
   roleId: string;
   roleName: string;
   mfaEnrolled: boolean;
+  /** Unix seconds when temporary access ends; null = permanent. */
+  accessExpiresAt: number | null;
 };
 
 const nowSec = () => Math.floor(Date.now() / 1000);
@@ -101,6 +103,7 @@ type Row = {
   role_name: string;
   status: string;
   totp_enrolled_at: number | null;
+  access_expires_at: number | null;
 };
 
 /**
@@ -117,7 +120,7 @@ export async function loadAdminSession(
   const row = await env.DB.prepare(
     `SELECT s.id, s.admin_id, s.stage, s.created_at, s.last_seen_at, s.expires_at,
             s.absolute_expires_at, s.last_reauth_at,
-            u.email, u.name, u.role_id, u.status, u.totp_enrolled_at, r.name AS role_name
+            u.email, u.name, u.role_id, u.status, u.totp_enrolled_at, u.access_expires_at, r.name AS role_name
        FROM admin_sessions s
        JOIN admin_users u ON u.id = s.admin_id
        JOIN admin_roles r ON r.id = u.role_id
@@ -127,7 +130,14 @@ export async function loadAdminSession(
     .first<Row>();
   if (!row) return null;
   const now = nowSec();
-  if (row.expires_at <= now || row.absolute_expires_at <= now || row.status !== "active") {
+  // Temporary access: past its end date the admin has no session, whatever the cookie says.
+  const accessEnded = row.access_expires_at !== null && row.access_expires_at <= now;
+  if (
+    row.expires_at <= now ||
+    row.absolute_expires_at <= now ||
+    row.status !== "active" ||
+    accessEnded
+  ) {
     await env.DB.prepare("DELETE FROM admin_sessions WHERE id = ?").bind(row.id).run();
     return null;
   }
@@ -157,6 +167,7 @@ export async function loadAdminSession(
       roleId: row.role_id,
       roleName: row.role_name,
       mfaEnrolled: row.totp_enrolled_at !== null,
+      accessExpiresAt: row.access_expires_at,
     },
   };
 }

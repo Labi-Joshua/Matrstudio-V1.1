@@ -194,6 +194,11 @@ export type AdminMeResponse = {
   /** Unix seconds when the session ends if idle, and its hard cap. */
   sessionExpiresAt: number;
   sessionAbsoluteExpiresAt: number;
+  /** Unix seconds when temporary access ends; null for permanent access. */
+  accessExpiresAt: number | null;
+  /** Shell counts: items waiting in the review queue (0 without review_queues:view), unread admin notifications. */
+  badges: { review: number };
+  unreadNotifications: number;
 };
 
 export type AdminSignInResponse = { status: "mfa_required" };
@@ -646,4 +651,5 @@ export type PathErrorBody = {
   message: string;
   retryAfterSeconds?: number;
 };
+export * from "./admin-team";
 export * from "./settings";

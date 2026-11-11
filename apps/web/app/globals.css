@@ -341,3 +341,13 @@ button {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* No visible scrollbars anywhere; every area still scrolls with wheel, touch, trackpad and keys. */
+html,
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}

@@ -29,6 +29,7 @@ import {
   WrenchIcon,
 } from "./icons";
 import { BUTTON_INVERSE, ErrorState, LargeCover, LevelBadge, SampleTag } from "./parts";
+import { StarControls } from "./star-action";
 
 /**
  * /learn/paths/{topic} (Figma "5. Path detail", "New account"): back link, header with facts and
@@ -42,7 +43,14 @@ import { BUTTON_INVERSE, ErrorState, LargeCover, LevelBadge, SampleTag } from ".
 
 const PREVIEW_LESSONS = 5;
 
-export function PathDetail({ topic }: { topic: TopicSlug }) {
+export function PathDetail({
+  topic,
+  starring,
+}: {
+  topic: TopicSlug;
+  /** Only passed once starring has a real handler; without it there is no Star path button. */
+  starring?: { starred: boolean; onToggle: () => void };
+}) {
   const requested = useSearchParams().get("path");
   const view = useMemo(() => buildPathDetail(getCatalogue(), topic, requested), [topic, requested]);
 
@@ -54,19 +62,25 @@ export function PathDetail({ topic }: { topic: TopicSlug }) {
           body="It may have been unpublished, or the link is wrong."
         >
           <Link href={ROUTES.app.paths} className={BUTTON_INVERSE}>
-            Browse paths
+            Browse all paths
           </Link>
         </ErrorState>
       </div>
     );
   }
-  return <DetailBody view={view} />;
+  return <DetailBody view={view} starring={starring} />;
 }
 
 const H2 = "font-semibold text-[20px] text-text leading-7 tracking-[-0.2px]";
 const CARD = "flex flex-col gap-3.5 rounded-2xl border border-border-soft bg-bg-base p-5";
 
-function DetailBody({ view }: { view: PathDetailView }) {
+function DetailBody({
+  view,
+  starring,
+}: {
+  view: PathDetailView;
+  starring?: { starred: boolean; onToggle: () => void };
+}) {
   const { path } = view;
   return (
     <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-8">
@@ -78,8 +92,8 @@ function DetailBody({ view }: { view: PathDetailView }) {
         <span className="px-0.5">All paths</span>
       </Link>
 
-      <section className="flex flex-col gap-6 lg:flex-row lg:items-center lg:gap-14">
-        <div className="order-2 flex min-w-0 flex-1 flex-col gap-5 lg:order-1">
+      <section className="flex flex-col gap-6 xl:flex-row xl:items-center xl:gap-14">
+        <div className="order-2 flex min-w-0 flex-1 flex-col gap-5 xl:order-1">
           <div className="flex flex-wrap items-center gap-2">
             <LevelBadge level={path.level} large />
             <span className="rounded-md bg-bg-fill1 px-1.5 py-1 font-medium text-[14px] text-text-secondary leading-5 tracking-[-0.14px]">
@@ -109,9 +123,9 @@ function DetailBody({ view }: { view: PathDetailView }) {
             <Fact icon={<SignalIcon size={18} />} label="Level" value={LEVEL_LABEL[path.level]} />
             <Fact icon={<BadgeDollarIcon size={18} />} label="Cost" value="Free" />
           </dl>
-          <StartPath url={view.startUrl} />
+          <StartPath url={view.startUrl} title={path.title} starring={starring} />
         </div>
-        <div className="order-1 w-full lg:order-2 lg:w-[460px] lg:shrink-0 xl:w-[560px]">
+        <div className="order-1 w-full md:order-3 xl:order-2 xl:w-[560px] xl:shrink-0">
           <LargeCover topic={path.topicSlug} />
         </div>
       </section>
@@ -177,10 +191,18 @@ function Fact({ icon, label, value }: { icon: ReactNode; label: string; value: s
 }
 
 /** A real first-lesson URL opens the original source; otherwise the button is disabled (no fake progress). */
-function StartPath({ url }: { url: string | null }) {
+function StartPath({
+  url,
+  title,
+  starring,
+}: {
+  url: string | null;
+  title: string;
+  starring?: { starred: boolean; onToggle: () => void };
+}) {
   const size = "h-11 px-3 text-[16px] leading-6 tracking-[-0.16px]";
   return (
-    <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
+    <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
       {url ? (
         <a
           href={url}
@@ -201,7 +223,9 @@ function StartPath({ url }: { url: string | null }) {
           Start path
         </button>
       )}
-      {url ? null : (
+      {starring ? (
+        <StarControls title={title} starred={starring.starred} onToggle={starring.onToggle} />
+      ) : url ? null : (
         <p className="text-[14px] text-text-tertiary leading-5 tracking-[-0.14px]">
           Coming soon: opening lessons here and tracking progress.
         </p>
@@ -216,7 +240,7 @@ function Outcomes({ outcomes }: { outcomes: string[] }) {
       <h2 id="outcomes-heading" className={H2}>
         What you’ll learn
       </h2>
-      <ul className="m-0 grid list-none gap-x-4 gap-y-3.5 p-0 md:grid-cols-2">
+      <ul className="m-0 grid list-none gap-x-4 gap-y-3.5 p-0 md:grid-cols-3 xl:grid-cols-2">
         {outcomes.map((outcome) => (
           <li key={outcome} className="flex items-start gap-2.5">
             <CheckIcon size={20} className="mt-0.5 shrink-0 text-success-text" />

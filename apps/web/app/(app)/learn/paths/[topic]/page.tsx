@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PathDetail } from "../../../../../components/app-paths/path-detail";
+import { DelayedFallback } from "../../../../../components/app-paths/skeleton-gate";
 import { PathDetailSkeleton } from "../../../../../components/app-paths/skeletons";
 import { getCatalogue } from "../../../../../lib/catalogue/data";
 import type { TopicSlug } from "../../../../../lib/catalogue/types";
@@ -40,7 +41,13 @@ export default async function PathTopicPage({ params }: { params: Params }) {
   const { topic } = await params;
   if (!isTopic(topic)) notFound();
   return (
-    <Suspense fallback={<PathDetailSkeleton />}>
+    <Suspense
+      fallback={
+        <DelayedFallback>
+          <PathDetailSkeleton />
+        </DelayedFallback>
+      }
+    >
       <PathDetail topic={topic} />
     </Suspense>
   );

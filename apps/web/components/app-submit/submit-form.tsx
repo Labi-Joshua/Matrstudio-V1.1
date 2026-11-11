@@ -50,15 +50,18 @@ import { TURNSTILE_CONFIGURED, Turnstile, type TurnstileHandle } from "../auth/t
  * Deviation: the design has a "Type" select (Video / Article / Tool), but the submissions API has
  * no type field, so it is left out until the API carries it (a curator sets the format anyway).
  */
-type Mode = { kind: "new" } | { kind: "edit"; submission: Submission };
+export type Mode = { kind: "new" } | { kind: "edit"; submission: Submission };
 
 export function SubmitForm({
   mode,
+  bare = false,
   onDone,
   onCancel,
   onShowMine,
 }: {
   mode: Mode;
+  /** No card chrome: the dialog around it supplies the surface and padding. */
+  bare?: boolean;
   /** The API accepted the submission (created or resubmitted). */
   onDone: (submission: Submission, mode: Mode["kind"]) => void;
   onCancel: () => void;
@@ -170,7 +173,11 @@ export function SubmitForm({
       noValidate
       aria-labelledby="submit-form-title"
       aria-busy={pending || undefined}
-      className="flex w-full max-w-[560px] flex-col gap-5 md:mx-auto md:rounded-3xl md:border md:border-border-soft md:bg-bg-base md:p-8 md:shadow-card"
+      className={`flex w-full flex-col gap-5 ${
+        bare
+          ? ""
+          : "max-w-[560px] md:mx-auto md:rounded-3xl md:border md:border-border-soft md:bg-bg-base md:p-8 md:shadow-card"
+      }`}
     >
       <h2 id="submit-form-title" className="sr-only">
         {editing ? "Edit and resubmit" : "Submit a resource"}

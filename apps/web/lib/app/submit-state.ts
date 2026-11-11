@@ -207,3 +207,16 @@ export function submissionDetail(
 export function sortSubmissions<T extends Pick<Submission, "createdAt">>(rows: readonly T[]): T[] {
   return [...rows].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
 }
+
+/** Figma 5 "Submitted, in review": what the learner is told after sending or resubmitting. */
+export function submittedNotice(kind: "new" | "edit") {
+  return kind === "new"
+    ? {
+        title: "Submitted for review",
+        description: "A curator will look at it. Check back here to see where it stands.",
+      }
+    : {
+        title: "Resubmitted for review",
+        description: "Thanks for the update. A curator will take another look.",
+      };
+}

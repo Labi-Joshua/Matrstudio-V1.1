@@ -26,7 +26,7 @@ export function Breadcrumb() {
         {crumbs.map((crumb, index) => {
           const last = index === crumbs.length - 1;
           return (
-            <li key={`${crumb.label}-${index}`} className="flex items-center gap-1">
+            <li key={crumb.label} className="flex items-center gap-1">
               {index > 0 ? (
                 <span aria-hidden="true" className="px-1 text-text-tertiary">
                   /

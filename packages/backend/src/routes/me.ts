@@ -14,6 +14,7 @@ import { verifyPassword } from "../auth/password";
 import { clientIp, describeDevice, emailRef, truncateIp } from "../auth/util";
 import { notifications } from "./notifications";
 import { profile } from "./profile";
+import { paths } from "./paths";
 import { saved } from "./saved";
 import { submissions } from "./submissions";
 import { support } from "./support";
@@ -25,6 +26,7 @@ me.route("/me/saved", saved);
 me.route("/me/notifications", notifications);
 me.route("/me/support", support);
 me.route("/me/profile", profile);
+me.route("/me/paths", paths);
 
 // Validation failures use the same { code, message } body as every other auth error.
 const invalid = (

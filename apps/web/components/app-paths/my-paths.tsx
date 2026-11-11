@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { pathHref } from "../../lib/app/paths-catalogue";
+import { useMemo, useState } from "react";
+import { getCatalogueData, pathHref } from "../../lib/app/paths-catalogue";
 import {
   filterMine,
   MINE_FILTERS,
@@ -14,6 +14,9 @@ import {
   progressLabel,
   showMineFilters,
 } from "../../lib/app/paths-state";
+import { buildMine } from "../../lib/app/progress-logic";
+import { getCatalogue } from "../../lib/catalogue/data";
+import { usePaths } from "../app-progress/progress-provider";
 import { Chip } from "./filters";
 import {
   BUTTON_INVERSE,
@@ -28,30 +31,28 @@ import { MyPathsSkeleton } from "./skeletons";
 
 /**
  * "My paths" (Figma "My paths": All, In progress, Starred, Completed, "New account, no paths",
- * loading and couldn't load). The learner's paths come from progress and starring, which have no
- * API yet, so the loader below always resolves to an empty list and the screen is the honest
- * "Your paths will live here". The list, tabs and error state are built and tested for when it
- * has a real source.
+ * loading and couldn’t load). The list is the learner’s real progress (usePaths()): paths they
+ * started or starred, with a star on every card and the progress strip on started ones.
  */
-
-/** No progress or starred-paths API exists yet: nothing to load. Replace with the real call. */
-async function loadMyPaths(): Promise<MyPath[]> {
-  return [];
-}
-
 export function MyPaths({ onExplore }: { onExplore: () => void }) {
-  const [state, setState] = useState<MineState>({ status: "loading" });
-  const load = useCallback(() => {
-    setState({ status: "loading" });
-    loadMyPaths().then(
-      (items) => setState({ status: "ready", items }),
-      () => setState({ status: "error" }),
-    );
-  }, []);
-  useEffect(load, [load]);
+  const paths = usePaths();
+  const state = useMemo<MineState>(() => {
+    if (paths.status === "loading") return { status: "loading" };
+    if (paths.status === "error") return { status: "error" };
+    return {
+      status: "ready",
+      items: buildMine(paths.entries, getCatalogueData(getCatalogue()).paths),
+    };
+  }, [paths.status, paths.entries]);
   const showSkeleton = useSkeletonGate(state.status === "loading");
   return (
-    <MyPathsView state={state} showSkeleton={showSkeleton} onRetry={load} onExplore={onExplore} />
+    <MyPathsView
+      state={state}
+      showSkeleton={showSkeleton}
+      onRetry={paths.reload}
+      onExplore={onExplore}
+      onToggleStar={(item) => void paths.toggleStar(item.path.slug)}
+    />
   );
 }
 
@@ -68,7 +69,7 @@ export function MyPathsView({
   showSkeleton: boolean;
   onRetry: () => void;
   onExplore: () => void;
-  /** Only passed once starring has a real handler; without it cards have no star. */
+  /** Without it cards have no star. */
   onToggleStar?: (item: MyPath) => void;
   initialFilter?: MineFilter;
 }) {

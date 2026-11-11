@@ -131,3 +131,28 @@ export function PathDetailSkeleton() {
     </div>
   );
 }
+
+/** Figma "Lesson: loading": back link, title block, media, about card, buttons and the outline. */
+export function LessonSkeleton() {
+  return (
+    <div aria-busy="true" className="mx-auto flex w-full max-w-[1240px] flex-col gap-6">
+      <Loading label="Loading lesson" />
+      <div aria-hidden="true" className="flex flex-col gap-6">
+        <div className={`${SKELETON} h-8 w-[160px]`} />
+        <div className="flex flex-col gap-8 xl:flex-row xl:items-start">
+          <div className="flex min-w-0 flex-1 flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <div className={`${SKELETON} h-3 w-[70px]`} />
+              <div className={`${SKELETON} h-9 w-full max-w-[380px]`} />
+              <div className={`${SKELETON} h-4 w-[160px]`} />
+            </div>
+            <div className={`${SKELETON} aspect-video w-full rounded-2xl`} />
+            <div className={`${SKELETON} h-[110px] w-full rounded-2xl`} />
+            <div className={`${SKELETON} h-10 w-full rounded-lg`} />
+          </div>
+          <div className={`${SKELETON} hidden h-[580px] w-[320px] shrink-0 rounded-2xl md:block`} />
+        </div>
+      </div>
+    </div>
+  );
+}

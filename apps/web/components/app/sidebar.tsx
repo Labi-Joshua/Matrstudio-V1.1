@@ -6,15 +6,8 @@ import { type ReactNode, useId, useState } from "react";
 import { isNavActive, LEARN_NAV, type NavItem, SUPPORT_NAV } from "../../lib/app/nav";
 import { displayName } from "../../lib/app/profile";
 import { ROUTES } from "../../lib/routes";
-import {
-  ArrowRightIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  LogOutIcon,
-  NavGlyph,
-  RouteIcon,
-  SpinnerIcon,
-} from "./icons";
+import { YourPaths } from "../app-paths/sidebar-paths";
+import { ChevronDownIcon, ChevronRightIcon, LogOutIcon, NavGlyph, SpinnerIcon } from "./icons";
 import { useSession } from "./session";
 import { Avatar, FOCUS, ThemeSwitch } from "./ui";
 
@@ -143,35 +136,6 @@ function Group({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-/** "Your paths" has no progress to list yet (no progress API): always the designed empty card. */
-function YourPaths() {
-  return (
-    <div className="flex flex-col gap-2.5 rounded-[14px] border border-border-soft border-dashed bg-bg-fill1 p-3.5">
-      <div className="flex items-center gap-2.5">
-        <span
-          aria-hidden="true"
-          className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-accent text-primary-text"
-        >
-          <RouteIcon size={16} />
-        </span>
-        <p className="font-semibold text-[14px] text-text leading-5 tracking-[-0.14px]">
-          No paths yet
-        </p>
-      </div>
-      <p className="text-[12px] text-text-secondary leading-4 tracking-[-0.12px]">
-        Start a path, or star one to save it for later. It’ll show up here.
-      </p>
-      <Link
-        href={ROUTES.app.paths}
-        className={`link-slide inline-flex items-center gap-1 self-start rounded-md font-semibold text-[14px] text-primary-text leading-5 tracking-[-0.14px] ${FOCUS}`}
-      >
-        Browse paths
-        <ArrowRightIcon size={14} />
-      </Link>
-    </div>
-  );
-}
-
 function SignOutButton({ rail }: { rail: boolean }) {
   const { signOut, signingOut } = useSession();
   const button = (
@@ -294,7 +258,7 @@ export function Sidebar({
           </nav>
           <section aria-label="Your paths">
             <Group label="Your paths">
-              <YourPaths />
+              <YourPaths onNavigate={onNavigate} />
             </Group>
           </section>
         </div>

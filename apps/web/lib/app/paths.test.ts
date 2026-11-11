@@ -283,9 +283,33 @@ describe("path detail", () => {
     expect(aboutHours(7)).toBe("about 7 hrs");
     expect(aboutHours(0)).toBeNull();
     const grouped = summariseSources([
-      { title: "a", kind: "video", minutes: 1, sourceName: "YouTube", url: null },
-      { title: "b", kind: "video", minutes: 1, sourceName: "YouTube", url: null },
-      { title: "c", kind: "article", minutes: 1, sourceName: null, url: null },
+      {
+        id: "a",
+        title: "a",
+        kind: "video",
+        minutes: 1,
+        sourceName: "YouTube",
+        sourceSlug: "youtube",
+        url: null,
+      },
+      {
+        id: "b",
+        title: "b",
+        kind: "video",
+        minutes: 1,
+        sourceName: "YouTube",
+        sourceSlug: "youtube",
+        url: null,
+      },
+      {
+        id: "c",
+        title: "c",
+        kind: "article",
+        minutes: 1,
+        sourceName: null,
+        sourceSlug: null,
+        url: null,
+      },
     ]);
     expect(grouped).toEqual([{ name: "YouTube", kind: "video", count: 2 }]);
     expect(sourceCountLabel({ name: "x", kind: "video", count: 1 })).toBe("1 video");

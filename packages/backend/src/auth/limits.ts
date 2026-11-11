@@ -34,6 +34,8 @@ export const LIMITS = {
   profileCheckUser: { limit: 60, windowSec: 600 },
   /** Public profile pages, per network: 120 per 10 minutes. */
   profilePublicIp: { limit: 120, windowSec: 600 },
+  /** Path progress writes (start, lesson done or undone, star): 120 per hour per learner. */
+  pathsUser: { limit: 120, windowSec: 3600 },
   // Admin portal: stricter than learners (ADMIN-AUTH.md). Same thresholds for the password step per
   // email and per IP; the 2-step code and re-auth share one 5-failures-per-15-minutes budget per admin.
   adminSigninEmail: { limit: 5, windowSec: 900 },

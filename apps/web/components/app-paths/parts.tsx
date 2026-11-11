@@ -101,7 +101,7 @@ export function PathCard({
         <button
           type="button"
           aria-pressed={star.starred}
-          aria-label={`Star ${path.title}`}
+          aria-label={star.starred ? `Unstar ${path.title}` : `Star ${path.title}`}
           onClick={star.onToggle}
           className={`absolute top-3 right-3 flex size-9 items-center justify-center rounded-lg border bg-bg-base ${FOCUS} ${
             star.starred ? "border-primary text-primary" : "border-border-soft text-text-secondary"

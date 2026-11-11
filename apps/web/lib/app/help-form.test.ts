@@ -38,7 +38,7 @@ describe("validateReport and links", () => {
       "kind",
       "detail",
     ]);
-    expect(validateReport({ kind: "broken", detail: "It broke", link: "" })).toEqual({});
+    expect(validateReport({ kind: "broken", detail: "It broke badly", link: "" })).toEqual({});
   });
 
   it("accepts https links with or without the prefix and refuses the rest", () => {
@@ -47,7 +47,9 @@ describe("validateReport and links", () => {
     expect(normaliseReportLink("http://a.com")).toBeUndefined();
     expect(normaliseReportLink("javascript:alert(1)")).toBeUndefined();
     expect(normaliseReportLink("https://u:p@a.com")).toBeUndefined();
-    expect(validateReport({ kind: "link", detail: "x", link: "ftp://a.com" }).link).toBeDefined();
+    expect(
+      validateReport({ kind: "link", detail: "A dead link here", link: "ftp://a.com" }).link,
+    ).toBeDefined();
   });
 });
 

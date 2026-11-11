@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { HELP_EMAIL } from "../../lib/app/help-form";
@@ -6,14 +8,14 @@ import { buttonClasses } from "../auth/button";
 import { PageHeader } from "./fields";
 import { BugIcon, MessageCircleIcon } from "./help-icons";
 import { OfflineNotice } from "./offline-notice";
+import { RequestsList } from "./requests-list";
+import { SentToast } from "./sent-toast";
+import { TicketRedirect } from "./ticket-redirect";
 
 /**
- * Help centre hub (Figma Help centre 485:45143, desktop, tablet and mobile, light and dark; offline 671:76742): the header
- * and two option cards, Contact support and Report a problem, each opening its own in-app page.
- *
- * Not built: the "Your requests" list under the cards (support replies, "Support replied",
- * "Request resolved"). It needs a support-ticket API and notifications, neither of which exists
- * yet. When they do, add the list below the cards.
+ * Help centre hub (Figma Help centre 485:45143, desktop, tablet and mobile, light and dark; offline
+ * 671:76742): the header, two option cards (Contact support, Report a problem), then "Your
+ * requests" from the support API and the success toast after a send.
  */
 function Option({
   icon,
@@ -60,6 +62,8 @@ function Option({
 export function HelpHub() {
   return (
     <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-8">
+      <TicketRedirect />
+      <SentToast />
       <OfflineNotice />
       <PageHeader
         title="Help centre"
@@ -83,6 +87,7 @@ export function HelpHub() {
           action="Report a problem"
         />
       </div>
+      <RequestsList />
       <p className="text-[14px] text-text-secondary leading-5 tracking-[-0.14px]">
         Prefer email? Write to{" "}
         <a

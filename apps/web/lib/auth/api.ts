@@ -35,6 +35,7 @@ export const SERVER_ERROR_CODES = [
   "already_submitted",
   "not_editable",
   "saved_limit",
+  "ticket_closed",
   "INVALID_EMAIL_OR_PASSWORD",
   "PASSWORD_TOO_SHORT",
   "PASSWORD_TOO_LONG",

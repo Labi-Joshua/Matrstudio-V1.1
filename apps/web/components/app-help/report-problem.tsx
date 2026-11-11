@@ -10,13 +10,12 @@ import {
   type ReportContext,
   type ReportDraft,
   type ReportErrors,
-  reportMailto,
   validateReport,
 } from "../../lib/app/help-form";
+import { reportTicket } from "../../lib/app/help-requests";
 import { ROUTES } from "../../lib/routes";
 import { FileTextIcon } from "../app/icons";
 import { useSession } from "../app/session";
-import { Banner, bannerActionClasses, StatusRegion } from "../auth/banner";
 import { Button, ButtonLink } from "../auth/button";
 import { InfoIcon } from "../auth/icons";
 import {
@@ -32,7 +31,8 @@ import { BugIcon, LinkBrokenIcon, MessageCircleQuestionIcon } from "./help-icons
 import { HelpSent } from "./help-sent";
 import { OfflineNotice } from "./offline-notice";
 import { ScreenshotField } from "./screenshot-field";
-import { useMailtoSend } from "./use-mailto-send";
+import { CaptchaBlock, SendFailure } from "./send-parts";
+import { useTicketSend } from "./use-ticket-send";
 
 const EMPTY: ReportDraft = { kind: "", detail: "", link: "" };
 
@@ -52,21 +52,22 @@ const KIND_ICONS: Record<string, ReactNode> = {
  * the form shows the context chip and prefills the link (see parseReportContext). Without those
  * it is the plain form.
  *
- * Deviations: the screenshot box is switched off (no upload endpoint, see ScreenshotField), and
- * the report opens the email app (see lib/app/help-form.ts, TODO(support-api)).
+ * Posts to POST /api/me/support with the Turnstile check. The context chip and the link travel as
+ * the ticket's `context`. Deviation: the screenshot box is switched off (no upload endpoint, see
+ * ScreenshotField).
  */
 export function ReportProblem() {
   const { me } = useSession();
   const [draft, setDraft] = useState<ReportDraft>(EMPTY);
   const [errors, setErrors] = useState<ReportErrors>({});
   const [context, setContext] = useState<ReportContext | null>(null);
-  const mail = useMailtoSend();
+  const { status, send, clear, captcha, setToken } = useTicketSend("report");
   const group = useId();
   const linkId = useId();
   const firstKind = useRef<HTMLInputElement>(null);
   const detailRef = useRef<HTMLTextAreaElement>(null);
   const linkRef = useRef<HTMLInputElement>(null);
-  const sending = mail.state === "sending";
+  const sending = status.state === "sending";
 
   // The URL is only readable in the browser (static export), so the context arrives after mount.
   useEffect(() => {
@@ -89,7 +90,7 @@ export function ReportProblem() {
     if (next.kind) return firstKind.current?.focus();
     if (next.detail) return detailRef.current?.focus();
     if (next.link) return linkRef.current?.focus();
-    mail.send(reportMailto(draft, me.email, context));
+    send(reportTicket(draft, context));
   }
 
   return (
@@ -100,37 +101,24 @@ export function ReportProblem() {
         title="Report a problem"
         description="Something broken, a dead link or content that looks wrong? Tell us and we’ll fix it."
       />
-      {mail.state === "sent" && mail.href ? (
+      {status.state === "sent" ? (
         <HelpSent
-          title="Your report is ready to send"
-          mailto={mail.href}
+          title="Report sent"
+          kind="report"
+          ticketId={status.ticket.id}
           replyTo={me.email}
-          editLabel="Edit report"
-          onEdit={mail.reset}
         />
       ) : (
         <>
-          <StatusRegion politeness="assertive">
-            {mail.state === "failed" ? (
-              <div className="xl:max-w-[820px]">
-                <Banner
-                  tone="error"
-                  title="Your report didn’t send"
-                  action={
-                    <button
-                      type="button"
-                      onClick={() => mail.href && mail.send(mail.href)}
-                      className={bannerActionClasses}
-                    >
-                      Retry
-                    </button>
-                  }
-                >
-                  We couldn’t open your email app. We kept what you wrote.
-                </Banner>
-              </div>
-            ) : null}
-          </StatusRegion>
+          <SendFailure
+            status={status}
+            maxWidth="xl:max-w-[820px]"
+            onRetry={() =>
+              Object.keys(validateReport(draft)).length > 0
+                ? clear()
+                : send(reportTicket(draft, context))
+            }
+          />
           <form
             onSubmit={submit}
             noValidate
@@ -247,6 +235,8 @@ export function ReportProblem() {
             </FieldShell>
 
             <ScreenshotField />
+
+            <CaptchaBlock captchaRef={captcha} onToken={setToken} />
 
             {errors.kind || errors.detail || errors.link ? (
               <p role="alert" className="sr-only">

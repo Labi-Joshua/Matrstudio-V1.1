@@ -1,14 +1,14 @@
 import { HELP_CONTACT, HELP_EMAIL, HELP_REPORT, MESSAGE_MAX } from "../pages/company-help";
 
 /**
- * Pure logic of the in-app Contact support and Report a problem forms (Figma Help centre).
- *
- * TODO(support-api): there is no support-ticket backend yet, so "sending" opens the learner's
- * email app with a prefilled mailto: to hello@matrstudio.com, exactly like the public /help page.
- * When the support API exists, post the same fields (plus the Turnstile token, docs/SECURITY-AUTH.md
- * section 5) instead and drop buildMailto().
+ * Pure logic of the in-app Contact support and Report a problem forms (Figma Help centre). The
+ * forms post to the support API (lib/auth/support-api.ts, request shapes in lib/app/help-requests.ts);
+ * the mailto: builders below remain for the public /help page and as a fallback address.
  */
 export { HELP_EMAIL, MESSAGE_MAX };
+
+/** The API refuses messages shorter than this. */
+export const MESSAGE_MIN = 10;
 
 export const CONTACT_TOPICS: readonly string[] = HELP_CONTACT.topics;
 export const REPORT_KINDS = HELP_REPORT.types;
@@ -21,6 +21,7 @@ export const HELP_MESSAGES = {
   topic: "Choose a topic so the right person picks this up.",
   message: "Write a short message so we can help.",
   messageTooLong: `Keep this under ${MESSAGE_MAX} characters.`,
+  messageTooShort: `Add a little more detail, at least ${MESSAGE_MIN} characters.`,
   generalMissing: "Some details are missing. Check the fields marked in red.",
   kind: "Choose what kind of problem it is.",
   detail: "Tell us what happened.",
@@ -32,6 +33,7 @@ export function validateContact(draft: ContactDraft): ContactErrors {
   if (!CONTACT_TOPICS.includes(draft.topic)) errors.topic = HELP_MESSAGES.topic;
   const message = draft.message.trim();
   if (message === "") errors.message = HELP_MESSAGES.message;
+  else if (message.length < MESSAGE_MIN) errors.message = HELP_MESSAGES.messageTooShort;
   else if (message.length > MESSAGE_MAX) errors.message = HELP_MESSAGES.messageTooLong;
   return errors;
 }
@@ -61,6 +63,7 @@ export function validateReport(draft: ReportDraft): ReportErrors {
   if (!REPORT_KINDS.some((k) => k.id === draft.kind)) errors.kind = HELP_MESSAGES.kind;
   const detail = draft.detail.trim();
   if (detail === "") errors.detail = HELP_MESSAGES.detail;
+  else if (detail.length < MESSAGE_MIN) errors.detail = HELP_MESSAGES.messageTooShort;
   else if (detail.length > MESSAGE_MAX) errors.detail = HELP_MESSAGES.messageTooLong;
   if (normaliseReportLink(draft.link) === undefined) errors.link = HELP_MESSAGES.link;
   return errors;

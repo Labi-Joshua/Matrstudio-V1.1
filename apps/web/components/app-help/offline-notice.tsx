@@ -6,9 +6,9 @@ import { ClockAlertIcon } from "../auth/icons";
 import { useOnline } from "./use-online";
 
 /**
- * Figma "Help centre: offline": an amber strip above the page. Reading still works, and a mailto:
- * is handed to the email app, which sends it once the device is back online, so the copy is true.
- * "Try again" re-reads the connection flag; if it is still off the strip says so.
+ * Figma "Help centre: offline": an amber strip above the page. Pages already loaded stay readable,
+ * but sending a message or reply needs a connection, and the copy says so. "Try again" re-reads
+ * the connection flag; if it is still off the strip says so.
  */
 export function OfflineNotice() {
   const { online, recheck } = useOnline();
@@ -22,7 +22,7 @@ export function OfflineNotice() {
           <p className="min-w-0 flex-1 basis-56">
             {stillOffline
               ? "Still offline. We’ll check again when your connection returns."
-              : "You’re offline. You can still read this page, and your email will send when you’re back online."}
+              : "You’re offline. You can still read this page, but sending a message needs a connection."}
           </p>
           <button
             type="button"

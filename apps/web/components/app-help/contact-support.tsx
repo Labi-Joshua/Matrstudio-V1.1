@@ -5,14 +5,13 @@ import {
   CONTACT_TOPICS,
   type ContactDraft,
   type ContactErrors,
-  contactMailto,
   HELP_MESSAGES,
   MESSAGE_MAX,
   validateContact,
 } from "../../lib/app/help-form";
+import { contactTicket } from "../../lib/app/help-requests";
 import { ROUTES } from "../../lib/routes";
 import { useSession } from "../app/session";
-import { Banner, bannerActionClasses, StatusRegion } from "../auth/banner";
 import { Button, ButtonLink } from "../auth/button";
 import {
   BackLink,
@@ -26,7 +25,8 @@ import {
 } from "./fields";
 import { HelpSent } from "./help-sent";
 import { OfflineNotice } from "./offline-notice";
-import { useMailtoSend } from "./use-mailto-send";
+import { CaptchaBlock, SendFailure } from "./send-parts";
+import { useTicketSend } from "./use-ticket-send";
 
 /**
  * Contact support (Figma Contact support 485:45196: Topic, Message with counter, "We'll reply to"
@@ -34,8 +34,8 @@ import { useMailtoSend } from "./use-mailto-send";
  * errors; "Message sent" 485:45258 is HelpSent; sending 671:76273 and "didn't send" 671:76627 are
  * the pending button and the error banner with Retry).
  *
- * TODO(support-api): opens a prefilled mailto: to hello@matrstudio.com, see lib/app/help-form.ts.
- * No Turnstile yet: it belongs to the API call (docs/SECURITY-AUTH.md section 5).
+ * Posts to POST /api/me/support with the Turnstile check, like the Submit form. The Figma frames
+ * have no subject field, so the subject is the first line of the message (see contactTicket).
  */
 const EMPTY: ContactDraft = { topic: "", message: "" };
 
@@ -43,10 +43,10 @@ export function ContactSupport() {
   const { me } = useSession();
   const [draft, setDraft] = useState<ContactDraft>(EMPTY);
   const [errors, setErrors] = useState<ContactErrors>({});
-  const mail = useMailtoSend();
+  const { status, send, clear, captcha, setToken } = useTicketSend("message");
   const topicRef = useRef<HTMLSelectElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
-  const sending = mail.state === "sending";
+  const sending = status.state === "sending";
 
   function change<K extends keyof ContactDraft>(key: K, value: ContactDraft[K]) {
     setDraft((d) => ({ ...d, [key]: value }));
@@ -60,10 +60,9 @@ export function ContactSupport() {
     setErrors(next);
     if (next.topic) return topicRef.current?.focus();
     if (next.message) return messageRef.current?.focus();
-    mail.send(contactMailto(draft, me.email));
+    send(contactTicket(draft));
   }
 
-  const showSent = mail.state === "sent" && mail.href;
   const replyId = "contact-reply";
 
   return (
@@ -74,36 +73,20 @@ export function ContactSupport() {
         title="Contact support"
         description="Tell us what you need help with. We reply by email within 2 working days."
       />
-      {showSent && mail.href ? (
+      {status.state === "sent" ? (
         <HelpSent
-          title="Your email is ready to send"
-          mailto={mail.href}
+          title="Message sent"
+          kind="support"
+          ticketId={status.ticket.id}
           replyTo={me.email}
-          onEdit={mail.reset}
         />
       ) : (
         <>
-          <StatusRegion politeness="assertive">
-            {mail.state === "failed" ? (
-              <div className="xl:max-w-[720px]">
-                <Banner
-                  tone="error"
-                  title="Your message didn’t send"
-                  action={
-                    <button
-                      type="button"
-                      onClick={() => mail.href && mail.send(mail.href)}
-                      className={bannerActionClasses}
-                    >
-                      Retry
-                    </button>
-                  }
-                >
-                  We couldn’t open your email app. We kept what you wrote.
-                </Banner>
-              </div>
-            ) : null}
-          </StatusRegion>
+          <SendFailure
+            status={status}
+            maxWidth="xl:max-w-[720px]"
+            onRetry={() => (validateContact(draft).message ? clear() : send(contactTicket(draft)))}
+          />
           <form
             onSubmit={submit}
             noValidate
@@ -156,6 +139,7 @@ export function ContactSupport() {
                 />
               </div>
             </FieldShell>
+            <CaptchaBlock captchaRef={captcha} onToken={setToken} />
             {errors.topic || errors.message ? (
               <p role="alert" className="sr-only">
                 {HELP_MESSAGES.generalMissing}

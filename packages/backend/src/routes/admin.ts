@@ -62,6 +62,10 @@ import { formatSecretKey, generateTotpSecret, otpauthUri, verifyTotp } from "../
 import { clientIp, describeDevice, emailRef, sha256Hex } from "../auth/util";
 import type { Bindings } from "../env";
 import { enqueueAuthEmail } from "../queue/auth-email";
+import { adminPaths } from "./admin-paths";
+import { adminResources } from "./admin-resources";
+import { adminReview } from "./admin-review";
+import { adminSettings } from "./admin-settings";
 import { adminSupport } from "./admin-support";
 
 /**
@@ -72,6 +76,10 @@ import { adminSupport } from "./admin-support";
 export const admin = new Hono<AdminCtx>();
 admin.use("*", requireAccess);
 admin.route("/support", adminSupport);
+admin.route("/resources", adminResources);
+admin.route("/paths", adminPaths);
+admin.route("/review", adminReview);
+admin.route("/settings", adminSettings);
 
 type C = Context<AdminCtx>;
 

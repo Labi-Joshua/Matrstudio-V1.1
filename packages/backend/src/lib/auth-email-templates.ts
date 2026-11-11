@@ -25,7 +25,9 @@ export type AuthEmailMessage =
     }
   // Admin portal. The link is built by the producer on PUBLIC_ADMIN_URL.
   | { type: "admin-invite"; to: string; link: string; invitedBy: string | null; role: string }
-  | { type: "admin-signin-paused"; to: string; when: string; device: string };
+  | { type: "admin-signin-paused"; to: string; when: string; device: string }
+  // Plain staff-written message (review outcomes, template test sends). Escaped when rendered.
+  | { type: "staff-message"; to: string; subject: string; message: string };
 
 type Layout = {
   subject: string;
@@ -302,6 +304,15 @@ export function renderAuthEmail(webUrl: string, msg: AuthEmailMessage) {
         note: "Sign in to Cloudflare Access with this same email when asked. Didn’t expect this? Ignore it and tell a Super admin.",
         fallbackLink: msg.link,
         footerReason: `You’re getting this because ${msg.to} was invited to the Matr Studio admin.`,
+      });
+    case "staff-message":
+      return render(webUrl, {
+        subject: oneLine(msg.subject),
+        preview: oneLine(msg.message).slice(0, 90),
+        tag: "Matr Studio",
+        title: oneLine(msg.subject),
+        body: msg.message,
+        footerReason: ACCOUNT_REASON,
       });
     case "admin-signin-paused":
       return render(webUrl, {

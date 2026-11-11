@@ -67,6 +67,10 @@ import { adminDashboard } from "./admin-dashboard";
 import { adminMetrics } from "./admin-metrics";
 import { adminRoles } from "./admin-roles";
 import { adminShell, shellCounts } from "./admin-shell";
+import { adminPaths } from "./admin-paths";
+import { adminResources } from "./admin-resources";
+import { adminReview } from "./admin-review";
+import { adminSettings } from "./admin-settings";
 import { adminSupport } from "./admin-support";
 import { adminSupportInbox } from "./admin-support-inbox";
 import { adminTeam } from "./admin-team";
@@ -90,6 +94,10 @@ admin.route("/users", adminUsers);
 admin.route("/waitlist", adminWaitlist);
 admin.route("/dashboard", adminDashboard);
 admin.route("/metrics", adminMetrics);
+admin.route("/resources", adminResources);
+admin.route("/paths", adminPaths);
+admin.route("/review", adminReview);
+admin.route("/settings", adminSettings);
 
 type C = Context<AdminCtx>;
 

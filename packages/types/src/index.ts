@@ -653,4 +653,5 @@ export type PathErrorBody = {
 };
 export * from "./admin-people";
 export * from "./admin-team";
+export * from "./admin-content";
 export * from "./settings";

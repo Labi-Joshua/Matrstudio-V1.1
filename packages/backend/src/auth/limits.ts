@@ -4,6 +4,11 @@
 export type Limit = { limit: number; windowSec: number };
 
 export const LIMITS = {
+  /** Admin content: URL previews and link checks fetch third-party pages, so they are capped per admin. */
+  adminPreview: { limit: 30, windowSec: 600 },
+  adminTestEmail: { limit: 10, windowSec: 3600 },
+  /** Learner: "report this profile". */
+  profileReportUser: { limit: 10, windowSec: 3600 },
   signinEmail: { limit: 5, windowSec: 900 },
   signinIp: { limit: 20, windowSec: 900 },
   magicEmail: { limit: 5, windowSec: 900 },

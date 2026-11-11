@@ -99,7 +99,37 @@ export type AuditAction =
   | "admin.support.assigned"
   | "admin.support.issue_logged"
   | "admin.metrics.exported"
-  | "support.auto_resolved";
+  | "support.auto_resolved"
+  // Admin content (ADMIN-CONTENT.md). Targets are ids; meta holds field names, statuses and counts only.
+  | "content.resource.created"
+  | "content.resource.updated"
+  | "content.resource.link_fixed"
+  | "content.resource.retired"
+  | "content.path.created"
+  | "content.path.updated"
+  | "content.path.lesson_added"
+  | "content.path.lesson_removed"
+  | "content.path.published"
+  | "content.path.unpublished"
+  | "review.submission.assigned"
+  | "review.submission.approved"
+  | "review.submission.change_requested"
+  | "review.submission.declined"
+  | "review.link_report.assigned"
+  | "review.link_report.dismissed"
+  | "review.profile_report.assigned"
+  | "review.profile_report.hidden"
+  | "review.profile_report.dismissed"
+  | "profile.reported"
+  | "settings.taxonomy.created"
+  | "settings.taxonomy.renamed"
+  | "settings.taxonomy.merged"
+  | "settings.taxonomy.deleted"
+  | "settings.home_curation.updated"
+  | "settings.email_template.updated"
+  | "settings.email_template.test_sent"
+  | "settings.nudge_rules.updated"
+  | "settings.queue_targets.updated";
 
 export type AuditEntry = {
   actor?: string | null;

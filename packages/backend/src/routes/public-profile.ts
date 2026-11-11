@@ -55,7 +55,7 @@ publicProfiles.get("/profiles/:username", async (c) => {
          FROM profiles p
          JOIN user u ON u.id = p.user_id
          LEFT JOIN onboarding o ON o.userId = p.user_id
-        WHERE p.username = ? AND p.is_public = 1`,
+        WHERE p.username = ? AND p.is_public = 1 AND p.hidden_at IS NULL`,
     )
     .bind(checked.username)
     .first<Joined>();
@@ -121,14 +121,14 @@ publicProfiles.get("/avatars/:userId", async (c) => {
   const missing = () => c.json(notFound(), 404);
   if (!USER_ID.test(userId)) return missing();
   const row = await c.env.DB.prepare(
-    "SELECT avatar, avatar_type, is_public FROM profiles WHERE user_id = ? AND avatar_type IS NOT NULL",
+    "SELECT avatar, avatar_type, is_public, hidden_at FROM profiles WHERE user_id = ? AND avatar_type IS NOT NULL",
   )
     .bind(userId)
-    .first<{ avatar: unknown; avatar_type: string; is_public: number }>();
+    .first<{ avatar: unknown; avatar_type: string; is_public: number; hidden_at: number | null }>();
   const bytes = row ? toBytes(row.avatar) : null;
   if (!row || !bytes) return missing();
   let cache = "public, max-age=31536000, immutable";
-  if (row.is_public !== 1) {
+  if (row.is_public !== 1 || row.hidden_at !== null) {
     const session = await getAuth(c.env)
       .api.getSession({ headers: c.req.raw.headers })
       .catch(() => null);

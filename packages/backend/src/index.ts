@@ -6,6 +6,7 @@ import { purgeStaleLimits } from "./auth/limits";
 import { runAdminAccessTick } from "./cron/admin-access";
 import { deleteStaleUnconfirmed, isCleanupTick } from "./cron/cleanup";
 import { autoResolveWaiting } from "./cron/support";
+import { runLinkChecks } from "./cron/link-check";
 import { checkUsage } from "./cron/usage-monitor";
 import type { AppEnv, Bindings } from "./env";
 import type { AuthEmailMessage } from "./lib/auth-email-templates";
@@ -102,6 +103,11 @@ export default {
     ctx.waitUntil(
       runAdminAccessTick(env).catch((err) =>
         console.error("admin access tick failed", err instanceof Error ? err.name : "error"),
+      ),
+    );
+    ctx.waitUntil(
+      runLinkChecks(env).catch((err) =>
+        console.error("link check failed", err instanceof Error ? err.name : "error"),
       ),
     );
     if (isCleanupTick(controller.scheduledTime)) {

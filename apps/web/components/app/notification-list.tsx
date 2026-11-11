@@ -28,6 +28,7 @@ import { FOCUS } from "./ui";
 const KIND_LOOK: Record<NotificationKind, { icon: typeof RouteIcon; tone: string }> = {
   "curator-approved": { icon: CircleCheckIcon, tone: "bg-success-focus text-success-text" },
   "curator-changes": { icon: AlertCircleIcon, tone: "bg-warning-focus text-warning-text" },
+  "curator-declined": { icon: AlertCircleIcon, tone: "bg-bg-fill2 text-text-secondary" },
   "new-lesson": { icon: RouteIcon, tone: "bg-primary-focus text-primary-text" },
   "path-reminder": { icon: RouteIcon, tone: "bg-primary-focus text-primary-text" },
   "support-reply": { icon: MessageIcon, tone: "bg-bg-fill2 text-text-secondary" },

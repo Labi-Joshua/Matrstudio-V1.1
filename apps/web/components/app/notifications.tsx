@@ -8,6 +8,7 @@ import {
   markRead,
   type NotificationFilter,
   type NotificationItem,
+  saveReadIds,
   unreadCount,
 } from "../../lib/app/notifications";
 import {
@@ -61,9 +62,12 @@ function useNotificationFeed() {
 
   const retry = useCallback(() => setAttempt((value) => value + 1), []);
   const update: Update = useCallback((change) => {
-    setFeed((state) =>
-      state.status === "ready" ? { status: "ready", items: change(state.items) } : state,
-    );
+    setFeed((state) => {
+      if (state.status !== "ready") return state;
+      const items = change(state.items);
+      saveReadIds(items);
+      return { status: "ready", items };
+    });
   }, []);
   return { feed, retry, update };
 }

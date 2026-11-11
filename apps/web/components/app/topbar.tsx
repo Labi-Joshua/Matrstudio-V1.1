@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type FormEvent, type RefObject, useEffect, useRef, useState } from "react";
 import { currentLabel } from "../../lib/app/nav";
+import { SubmitDialog } from "../app-submit/submit-dialog";
 import { ROUTES } from "../../lib/routes";
 import { MenuIcon, SearchIcon, UploadIcon } from "./icons";
 import { NotificationsBell } from "./notifications";
@@ -98,6 +99,7 @@ function SearchLink({ className = "" }: { className?: string }) {
 }
 
 export function DesktopTopBar() {
+  const [submitOpen, setSubmitOpen] = useState(false);
   return (
     <header className="hidden items-center gap-4 py-[18px] pr-8 pl-12 md:flex">
       <div className="min-w-0 flex-1">
@@ -105,13 +107,16 @@ export function DesktopTopBar() {
       </div>
       <SearchField />
       <SearchLink className="xl:hidden" />
-      <Link
-        href={ROUTES.app.submit}
+      <button
+        type="button"
+        onClick={() => setSubmitOpen(true)}
+        aria-haspopup="dialog"
         className={`btn-lift hidden h-10 items-center gap-1.5 rounded-lg border border-border bg-bg-base px-3 font-medium text-[14px] text-text leading-5 tracking-[-0.14px] shadow-e1 xl:flex ${FOCUS}`}
       >
         <UploadIcon size={20} />
         Submit a resource
-      </Link>
+      </button>
+      <SubmitDialog open={submitOpen} onClose={() => setSubmitOpen(false)} />
       <NotificationsBell />
       <UserMenu />
     </header>

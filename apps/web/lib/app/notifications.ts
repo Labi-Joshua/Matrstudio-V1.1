@@ -3,16 +3,19 @@
  * production loads an empty feed; every kind below is a typed shape the view components render
  * and the tests cover with fixtures.
  *
- * Seam for the submissions work: build `NotificationItem`s (kind "curator-approved" or
- * "curator-changes", `createdAt` from the submission's decision time) in
- * lib/app/submit-notifications.ts and merge them into the feed in `loadNotifications`.
+ * The only real source today is the learner's own submissions: a curator decision becomes an item
+ * (lib/app/submit-notifications.ts). Everything else (path reminders, support replies) waits for
+ * its API. Read state is a per-device convenience kept in localStorage.
  */
+import { listSubmissions, type Submission } from "../auth/submissions-api";
+import { submissionNotifications } from "./submit-notifications";
 
 export type NotificationKind =
   | "path-reminder"
   | "new-lesson"
   | "curator-approved"
   | "curator-changes"
+  | "curator-declined"
   | "support-reply"
   | "report-fixed"
   | "report-cant-reproduce";
@@ -39,7 +42,9 @@ export const FILTER_LABEL: Record<NotificationFilter, string> = {
 
 /** Curator decisions on shared resources are the "Submissions" tab. */
 export function isSubmissionKind(kind: NotificationKind): boolean {
-  return kind === "curator-approved" || kind === "curator-changes";
+  return (
+    kind === "curator-approved" || kind === "curator-changes" || kind === "curator-declined"
+  );
 }
 
 export function unreadCount(items: readonly NotificationItem[]): number {
@@ -101,13 +106,58 @@ export function relativeTime(iso: string, now: Date): string {
 
 export type FeedResult = { ok: true; items: NotificationItem[] } | { ok: false };
 
+const KIND_BY_TONE = {
+  success: "curator-approved",
+  warning: "curator-changes",
+  neutral: "curator-declined",
+} as const;
+
+/** Curator decisions on the learner's submissions as feed items, unread unless seen on this device. */
+export function submissionFeed(
+  submissions: readonly Submission[],
+  read: ReadonlySet<string>,
+): NotificationItem[] {
+  return submissionNotifications(submissions).map((entry) => ({
+    id: entry.id,
+    kind: KIND_BY_TONE[entry.tone],
+    title: entry.title,
+    body: entry.body,
+    createdAt: entry.at,
+    read: read.has(entry.id),
+    href: entry.href,
+  }));
+}
+
+const READ_KEY = "ms_notifications_read";
+
+/** Ids the learner has already seen on this device. Storage can be blocked: then everything is new. */
+export function loadReadIds(): Set<string> {
+  try {
+    const parsed: unknown = JSON.parse(localStorage.getItem(READ_KEY) ?? "[]");
+    return new Set(Array.isArray(parsed) ? parsed.filter((id) => typeof id === "string") : []);
+  } catch {
+    return new Set();
+  }
+}
+
+export function saveReadIds(items: readonly NotificationItem[]): void {
+  try {
+    const ids = items.filter((item) => item.read).map((item) => item.id);
+    if (ids.length > 0) localStorage.setItem(READ_KEY, JSON.stringify(ids));
+  } catch {
+    // Read state is a convenience; a blocked store only means items show as new again.
+  }
+}
+
 /**
- * Loads the learner's notifications. No endpoint exists, so a reachable app has an empty feed;
- * offline is reported as a failure so the panel offers Retry instead of claiming "all caught up".
+ * Loads the learner's notifications. Offline, or when the submissions request fails, is reported
+ * as a failure so the panel offers Try again instead of claiming "all caught up".
  */
 export async function loadNotifications(online: boolean): Promise<FeedResult> {
   if (!online) return { ok: false };
-  return { ok: true, items: [] };
+  const result = await listSubmissions();
+  if (!result.ok) return { ok: false };
+  return { ok: true, items: submissionFeed(result.data, loadReadIds()) };
 }
 
 export const NOTIFICATION_FIXTURES = {

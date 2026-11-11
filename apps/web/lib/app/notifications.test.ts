@@ -8,8 +8,10 @@ import {
   markRead,
   type NotificationItem,
   relativeTime,
+  submissionFeed,
   unreadCount,
 } from "./notifications";
+import type { Submission } from "../auth/submissions-api";
 
 const now = new Date(2026, 10, 11, 14, 0, 0);
 const at = (day: number, hour: number) => new Date(2026, 10, day, hour, 0, 0).toISOString();
@@ -76,8 +78,45 @@ describe("grouping and time", () => {
 });
 
 describe("loadNotifications", () => {
-  it("is an empty feed while online (no API yet) and a failure offline", async () => {
-    expect(await loadNotifications(true)).toEqual({ ok: true, items: [] });
+  it("is a failure offline, so the panel offers Try again", async () => {
     expect(await loadNotifications(false)).toEqual({ ok: false });
+  });
+});
+
+describe("submissionFeed", () => {
+  const submission = (id: string, status: Submission["status"]): Submission => ({
+    id,
+    url: "https://example.com/post",
+    title: "A post",
+    note: null,
+    topic: null,
+    status,
+    curatorNote: null,
+    createdAt: at(10, 9),
+    updatedAt: at(11, 9),
+  });
+
+  it("turns each curator decision into an item and skips submissions still in review", () => {
+    const feed = submissionFeed(
+      [
+        submission("a", "accepted"),
+        submission("b", "needs_changes"),
+        submission("c", "declined"),
+        submission("d", "in_review"),
+      ],
+      new Set(),
+    );
+    expect(feed.map((entry) => entry.kind).sort()).toEqual([
+      "curator-approved",
+      "curator-changes",
+      "curator-declined",
+    ]);
+    expect(feed.every((entry) => !entry.read && isSubmissionKind(entry.kind))).toBe(true);
+  });
+
+  it("marks the ones already seen on this device as read", () => {
+    const [first] = submissionFeed([submission("a", "accepted")], new Set());
+    const [again] = submissionFeed([submission("a", "accepted")], new Set([first?.id ?? ""]));
+    expect(again?.read).toBe(true);
   });
 });

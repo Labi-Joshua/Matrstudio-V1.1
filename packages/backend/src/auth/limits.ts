@@ -20,6 +20,8 @@ export const LIMITS = {
   /** Resource submissions: 10 per hour per learner and per network. */
   submissionUser: { limit: 10, windowSec: 3600 },
   submissionIp: { limit: 10, windowSec: 3600 },
+  /** Bookmarking (PUT/DELETE saved resources): 120 per hour per learner. */
+  savedUser: { limit: 120, windowSec: 3600 },
   // Admin portal: stricter than learners (ADMIN-AUTH.md). Same thresholds for the password step per
   // email and per IP; the 2-step code and re-auth share one 5-failures-per-15-minutes budget per admin.
   adminSigninEmail: { limit: 5, windowSec: 900 },

@@ -11,6 +11,7 @@ import { getCatalogue } from "../../lib/catalogue/data";
 import { LEVEL_TEXT } from "../../lib/pages/browse-library";
 import { ROUTES } from "../../lib/routes";
 import { FOCUS } from "../app/ui";
+import { SaveButton } from "../app-saved/save-button";
 import { ClockIcon } from "../landing/at-work-art";
 import { ExternalIcon, KIND_ICON, SampleTag } from "./art";
 import { SourceCard, VideoBlock } from "./detail-source";
@@ -29,7 +30,7 @@ const H2 = "font-medium text-[14px] text-text leading-5 tracking-[-0.14px]";
  * from the catalogue (the data has no description or "why it's here" text, so none is invented).
  * "Used in these paths" lists real published paths only and is hidden when there are none.
  *
- * Save is not here yet: a later step adds it to the actions row, which has room for it on the left.
+ * Save (app-saved/save-button.tsx) leads the actions row.
  * "Report a broken link" opens a prefilled email (see report-link.tsx).
  */
 export function ResourceDetail({ item, all }: { item: LibraryItem; all: LibraryItem[] }) {
@@ -75,7 +76,7 @@ export function ResourceDetail({ item, all }: { item: LibraryItem; all: LibraryI
 
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-wrap items-center gap-2">
-              {/* Save button slot: the saved-resources step adds it here. */}
+              <SaveButton id={item.id} title={item.title} />
               {isVideo && url ? (
                 <a
                   href={url}

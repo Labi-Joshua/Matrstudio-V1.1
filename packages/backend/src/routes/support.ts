@@ -11,6 +11,7 @@ import { hit, LIMITS } from "../auth/limits";
 import { verifyTurnstile } from "../auth/turnstile";
 import { clientIp, truncateIp } from "../auth/util";
 import { enqueueAuthEmail } from "../queue/auth-email";
+import { addWorkingDays, FIRST_REPLY_WORKING_DAYS } from "../support/sla";
 import {
   ID_PATTERN,
   loadTicket,
@@ -121,8 +122,8 @@ support.post("/", async (c) => {
     db
       .prepare(
         `INSERT INTO support_tickets (id, user_id, kind, category, subject, status, created_at, updated_at,
-           context_resource, context_where, context_link)
-         VALUES (?1, ?2, ?3, ?4, ?5, 'open', ?6, ?6, ?7, ?8, ?9)`,
+           context_resource, context_where, context_link, due_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, 'open', ?6, ?6, ?7, ?8, ?9, ?10)`,
       )
       .bind(
         id,
@@ -134,6 +135,7 @@ support.post("/", async (c) => {
         context?.resource ?? null,
         context?.where ?? null,
         context?.link ?? null,
+        addWorkingDays(now, FIRST_REPLY_WORKING_DAYS),
       ),
     db
       .prepare(
@@ -189,8 +191,8 @@ support.post("/:id/messages", async (c) => {
   // One atomic statement, scoped to the caller and to a ticket that is still open.
   const reopened = await db
     .prepare(
-      `UPDATE support_tickets SET status = 'open', updated_at = ?3
-        WHERE id = ?1 AND user_id = ?2 AND status IN ('open', 'replied') RETURNING kind`,
+      `UPDATE support_tickets SET status = 'open', waiting_since = NULL, updated_at = ?3
+        WHERE id = ?1 AND user_id = ?2 AND status IN ('open', 'replied', 'waiting_on_user') RETURNING kind`,
     )
     .bind(id, user.id, now)
     .first<{ kind: string }>();

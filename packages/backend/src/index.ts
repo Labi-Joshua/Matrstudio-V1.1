@@ -4,6 +4,7 @@ import { getAuth } from "./auth";
 import { bootstrapSuperAdmin } from "./auth/admin-invites";
 import { purgeStaleLimits } from "./auth/limits";
 import { deleteStaleUnconfirmed, isCleanupTick } from "./cron/cleanup";
+import { autoResolveWaiting } from "./cron/support";
 import { checkUsage } from "./cron/usage-monitor";
 import type { AppEnv, Bindings } from "./env";
 import type { AuthEmailMessage } from "./lib/auth-email-templates";
@@ -86,6 +87,11 @@ export default {
   fetch: app.fetch,
   scheduled(controller, env, ctx) {
     ctx.waitUntil(checkUsage(env));
+    ctx.waitUntil(
+      autoResolveWaiting(env).catch((err) =>
+        console.error("support auto-resolve failed", err instanceof Error ? err.name : "error"),
+      ),
+    );
     // First super admin: a no-op (one query, or none) unless ADMIN_BOOTSTRAP_EMAIL is set and no super admin exists.
     ctx.waitUntil(
       bootstrapSuperAdmin(env).catch((err) =>

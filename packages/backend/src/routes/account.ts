@@ -8,6 +8,7 @@ import {
 import { isAPIError } from "better-auth/api";
 import { isPasswordCompromised } from "better-auth/plugins/haveibeenpwned";
 import { type Context, type Handler, Hono } from "hono";
+import { collectLearnerExport, deleteLearnerAccount } from "../auth/account-deletion";
 import { writeAudit } from "../auth/audit";
 import { type AuthedEnv, authError, can } from "../auth/guard";
 import { FRESH_AUTH_SECONDS, getAuth, SESSION_COOKIE } from "../auth/index";
@@ -336,36 +337,11 @@ account.get("/export", async (c) => {
   const db = c.env.DB;
   const blocked = await limited(c, `export:user:${user.id}`, LIMITS.exportUser, "export_user");
   if (blocked) return blocked;
-  const [onboarding, prefs, saved, submissions] = await Promise.all([
-    db
-      .prepare("SELECT goal, level, topics, completed_at FROM onboarding WHERE userId = ?")
-      .bind(user.id)
-      .first(),
-    db.prepare("SELECT * FROM user_preferences WHERE user_id = ?").bind(user.id).first(),
-    db
-      .prepare(
-        "SELECT resource_id, created_at FROM saved_resources WHERE user_id = ? ORDER BY created_at DESC",
-      )
-      .bind(user.id)
-      .all(),
-    db
-      .prepare(
-        "SELECT id, url, title, note, topic, status, curator_note, created_at, updated_at FROM resource_submissions WHERE user_id = ? ORDER BY created_at DESC",
-      )
-      .bind(user.id)
-      .all(),
-  ]);
+  const body = await collectLearnerExport(db, user);
   await writeAudit(db, { ...auditCtx(c), action: "account.exported" });
   c.header("Content-Disposition", 'attachment; filename="matr-studio-data.json"');
   c.header("Cache-Control", "no-store");
-  return c.json({
-    exportedAt: new Date().toISOString(),
-    account: { id: user.id, name: user.name, email: user.email, emailVerified: user.emailVerified },
-    onboarding,
-    preferences: prefs,
-    saved: saved.results,
-    submissions: submissions.results,
-  });
+  return c.json(body);
 });
 
 // Deletes the learner and everything they own. Needs re-authentication: a session created in the
@@ -381,25 +357,7 @@ export const deleteAccount: Handler<AuthedEnv> = async (c) => {
     return c.json(authError("invalid_request", "Check the details you entered."), 400);
   const reauth = await requireReauth(c, parsed.data.password);
   if (reauth) return reauth;
-  const eref = await emailRef(c.env.BETTER_AUTH_SECRET, user.email);
-  await db.batch([
-    db.prepare("DELETE FROM session WHERE userId = ?").bind(user.id),
-    db.prepare("DELETE FROM account WHERE userId = ?").bind(user.id),
-    db.prepare("DELETE FROM passkey WHERE userId = ?").bind(user.id),
-    db.prepare("DELETE FROM onboarding WHERE userId = ?").bind(user.id),
-    db.prepare("DELETE FROM user_preferences WHERE user_id = ?").bind(user.id),
-    db.prepare("DELETE FROM pending_email_changes WHERE user_id = ?").bind(user.id),
-    db
-      .prepare("DELETE FROM verification WHERE value = ?1 OR value LIKE ?2")
-      .bind(user.id, `%"email":"${user.email.toLowerCase()}"%`), // magic-link records carry the address
-    db.prepare("DELETE FROM invites WHERE email = ?").bind(user.email.toLowerCase()),
-    db
-      .prepare(
-        "UPDATE audit_log SET actor = NULL, target = NULL, ip = NULL, ua = NULL WHERE actor = ?1 OR target = ?1 OR target = ?2",
-      )
-      .bind(user.id, `email:${eref}`),
-    db.prepare("DELETE FROM user WHERE id = ?").bind(user.id),
-  ]);
+  await deleteLearnerAccount(c.env, user);
   await writeAudit(db, { action: "account.deleted", meta: {} });
   c.header("Set-Cookie", expiredSessionCookie());
   return c.json({ deleted: true });

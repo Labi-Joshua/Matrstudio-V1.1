@@ -51,6 +51,12 @@ export const LIMITS = {
   adminMfa: { limit: 5, windowSec: 900 },
   /** Invite link checks and acceptance, per IP (the token is unguessable; this stops hammering). */
   adminInviteIp: { limit: 30, windowSec: 900 },
+  /** People admin: reset links per learner and per admin, invites and reminders, exports. */
+  adminResetLinkUser: { limit: 3, windowSec: 3600 },
+  adminResetLinkAdmin: { limit: 30, windowSec: 3600 },
+  adminInvitesAdmin: { limit: 10, windowSec: 3600 },
+  adminExportAdmin: { limit: 20, windowSec: 3600 },
+  adminSupportWrite: { limit: 200, windowSec: 3600 },
   /** One "sign-in paused" email per window per admin. */
   adminPausedNotice: { limit: 1, windowSec: 900 },
 } as const satisfies Record<string, Limit>;

@@ -136,7 +136,7 @@ describe("POST /api/admin/support/:id/status", () => {
   it("rejects fixed and cant_reproduce for a support ticket, bad statuses, and closed tickets", async () => {
     const { app, boss, ada } = await setup();
     const sup = await open(app, ada, "support");
-    for (const st of ["fixed", "cant_reproduce", "open", "replied", "nope", undefined]) {
+    for (const st of ["fixed", "cant_reproduce", "replied", "nope", undefined]) {
       const r = await status(app, boss, sup, st);
       expect(r.status, String(st)).toBe(400);
       expect(r.json.code).toBe("invalid_request");

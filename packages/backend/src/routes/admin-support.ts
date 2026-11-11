@@ -1,4 +1,4 @@
-import { adminSupportStatusSchema, supportFollowUpSchema } from "@matr/types";
+import { adminTicketStatusSchema, supportFollowUpSchema } from "@matr/types";
 import { type Context, Hono } from "hono";
 import { type AdminCtx, requireAdmin } from "../auth/admin-guard";
 import { writeAudit } from "../auth/audit";
@@ -6,7 +6,7 @@ import { authError } from "../auth/guard";
 import { clientIp } from "../auth/util";
 import { createNotification } from "../notifications/create";
 import { enqueueAuthEmail } from "../queue/auth-email";
-import { CLOSED, ID_PATTERN, loadTicket, type TicketRow } from "../support/tickets";
+import { CLOSED, ID_PATTERN, LIVE_SQL, loadTicket, type TicketRow } from "../support/tickets";
 
 // Mounted by routes/admin.ts after requireAccess (lock 1); requireAdmin adds lock 2 and the role check.
 export const adminSupport = new Hono<AdminCtx>();
@@ -58,16 +58,17 @@ adminSupport.post("/:id/reply", requireAdmin("support_inbox", "manage"), async (
   // Atomic: only a still-open ticket takes a reply.
   const changed = await db
     .prepare(
-      "UPDATE support_tickets SET status = 'replied', updated_at = ?2 WHERE id = ?1 AND status IN ('open', 'replied')",
+      `UPDATE support_tickets SET status = 'waiting_on_user', waiting_since = ?2, updated_at = ?2,
+         first_reply_at = COALESCE(first_reply_at, ?2) WHERE id = ?1 AND status IN ${LIVE_SQL}`,
     )
     .bind(t.id, now)
     .run();
   if (!changed.meta.changes) return closed(c);
   await db
     .prepare(
-      "INSERT INTO support_messages (id, ticket_id, author, body, created_at) VALUES (?, ?, 'staff', ?, ?)",
+      "INSERT INTO support_messages (id, ticket_id, author, body, created_at, admin_id) VALUES (?, ?, 'staff', ?, ?, ?)",
     )
-    .bind(crypto.randomUUID(), t.id, message, now)
+    .bind(crypto.randomUUID(), t.id, message, now, c.get("admin").id)
     .run();
   await createNotification(db, {
     userId: t.row.user_id,
@@ -84,26 +85,58 @@ adminSupport.post("/:id/reply", requireAdmin("support_inbox", "manage"), async (
       subject: t.row.subject,
       message,
     });
-  await audit(c, "support.replied", t.id, { kind: t.row.kind, status: "replied" });
+  await audit(c, "support.replied", t.id, { kind: t.row.kind, status: "waiting_on_user" });
   return c.json({ ticket: (await loadTicket(db, t.id))?.ticket });
 });
 
+// POST /support/:id/status {status, message?}. open and waiting_on_user move a live ticket (open also
+// reopens a closed one); resolved, fixed and cant_reproduce close it and tell the learner, with
+// `message` as the staff message they read. fixed and cant_reproduce are for problem reports only.
 adminSupport.post("/:id/status", requireAdmin("support_inbox", "manage"), async (c) => {
-  const t = await target(c);
-  if (t.res) return t.res;
-  const parsed = adminSupportStatusSchema.safeParse(await c.req.json().catch(() => null));
+  const id = c.req.param("id") ?? "";
+  if (!ID_PATTERN.test(id))
+    return c.json(authError("invalid_request", "That ticket id isn’t valid."), 400);
+  const found = await loadTicket(c.env.DB, id);
+  if (!found) return c.json(authError("not_found", "Ticket not found."), 404);
+  const row = found.row;
+  const parsed = adminTicketStatusSchema.safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return invalid(c);
-  const { status } = parsed.data;
-  // "fixed" and "can't reproduce" are outcomes of a bug report only.
-  if (t.row.kind === "support" && status !== "resolved") return invalid(c);
+  const { status, message } = parsed.data;
+  if (row.kind === "support" && (status === "fixed" || status === "cant_reproduce"))
+    return invalid(c);
   const db = c.env.DB;
+  const now = Math.floor(Date.now() / 1000);
+  const isClosed = (CLOSED as readonly string[]).includes(row.status);
+
+  if (status === "open" || status === "waiting_on_user") {
+    if (isClosed && status !== "open") return closed(c);
+    const waiting = status === "waiting_on_user";
+    await db
+      .prepare(
+        `UPDATE support_tickets SET status = ?2, updated_at = ?3, closed_at = NULL,
+           waiting_since = CASE WHEN ?4 = 1 THEN COALESCE(waiting_since, ?3) ELSE NULL END WHERE id = ?1`,
+      )
+      .bind(id, status, now, waiting ? 1 : 0)
+      .run();
+    await audit(c, "support.status_changed", id, { kind: row.kind, before: row.status, status });
+    return c.json({ ticket: (await loadTicket(db, id))?.ticket });
+  }
+
   const changed = await db
     .prepare(
-      "UPDATE support_tickets SET status = ?2, updated_at = ?3 WHERE id = ?1 AND status IN ('open', 'replied')",
+      `UPDATE support_tickets SET status = ?2, updated_at = ?3, closed_at = ?3, waiting_since = NULL
+         WHERE id = ?1 AND status IN ${LIVE_SQL}`,
     )
-    .bind(t.id, status, Math.floor(Date.now() / 1000))
+    .bind(id, status, now)
     .run();
   if (!changed.meta.changes) return closed(c);
+  if (message)
+    await db
+      .prepare(
+        "INSERT INTO support_messages (id, ticket_id, author, body, created_at, admin_id) VALUES (?, ?, 'staff', ?, ?, ?)",
+      )
+      .bind(crypto.randomUUID(), id, message, now, c.get("admin").id)
+      .run();
   const copy = {
     resolved: ["support-reply", "Your message was resolved"],
     fixed: ["report-fixed", "We fixed what you reported"],
@@ -111,24 +144,21 @@ adminSupport.post("/:id/status", requireAdmin("support_inbox", "manage"), async 
   } as const;
   const [kind, title] = copy[status];
   await createNotification(db, {
-    userId: t.row.user_id,
+    userId: row.user_id,
     kind,
     title,
-    body: t.row.subject,
-    href: href(t.id),
+    body: message ?? row.subject,
+    href: href(id),
   });
-  const to = await learnerEmail(c, t.row.user_id);
+  const to = await learnerEmail(c, row.user_id);
   if (to)
     await enqueueAuthEmail(c.env, {
       type: "support-closed",
       to: to.email,
-      subject: t.row.subject,
+      subject: row.subject,
       status,
+      ...(message ? { message } : {}),
     });
-  await audit(c, "support.status_changed", t.id, {
-    kind: t.row.kind,
-    before: t.row.status,
-    status,
-  });
-  return c.json({ ticket: (await loadTicket(db, t.id))?.ticket });
+  await audit(c, "support.status_changed", id, { kind: row.kind, before: row.status, status });
+  return c.json({ ticket: (await loadTicket(db, id))?.ticket });
 });

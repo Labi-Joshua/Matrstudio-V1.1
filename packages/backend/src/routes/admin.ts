@@ -62,7 +62,12 @@ import { formatSecretKey, generateTotpSecret, otpauthUri, verifyTotp } from "../
 import { clientIp, describeDevice, emailRef, sha256Hex } from "../auth/util";
 import type { Bindings } from "../env";
 import { enqueueAuthEmail } from "../queue/auth-email";
+import { adminDashboard } from "./admin-dashboard";
+import { adminMetrics } from "./admin-metrics";
 import { adminSupport } from "./admin-support";
+import { adminSupportInbox } from "./admin-support-inbox";
+import { adminUsers } from "./admin-users";
+import { adminWaitlist } from "./admin-waitlist";
 
 /**
  * Admin auth API, everything under /api/admin. Lock 1 (Cloudflare Access JWT) runs on every route
@@ -72,6 +77,11 @@ import { adminSupport } from "./admin-support";
 export const admin = new Hono<AdminCtx>();
 admin.use("*", requireAccess);
 admin.route("/support", adminSupport);
+admin.route("/support", adminSupportInbox);
+admin.route("/users", adminUsers);
+admin.route("/waitlist", adminWaitlist);
+admin.route("/dashboard", adminDashboard);
+admin.route("/metrics", adminMetrics);
 
 type C = Context<AdminCtx>;
 

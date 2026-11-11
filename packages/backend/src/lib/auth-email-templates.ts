@@ -22,7 +22,15 @@ export type AuthEmailMessage =
       to: string;
       subject: string;
       status: "resolved" | "fixed" | "cant_reproduce";
+      /** What the admin told the learner (fixed, can't reproduce). */
+      message?: string;
     }
+  // Waitlist invites sent from the admin portal (14 days; one reminder).
+  | { type: "waitlist-invite"; to: string; link: string }
+  | { type: "waitlist-reminder"; to: string; link: string }
+  // Account moderation by an admin. `reason` is a short phrase chosen from a fixed list.
+  | { type: "account-suspended"; to: string; reason: string; message?: string }
+  | { type: "account-restored"; to: string }
   // Admin portal. The link is built by the producer on PUBLIC_ADMIN_URL.
   | { type: "admin-invite"; to: string; link: string; invitedBy: string | null; role: string }
   | { type: "admin-signin-paused"; to: string; when: string; device: string };
@@ -286,10 +294,59 @@ export function renderAuthEmail(webUrl: string, msg: AuthEmailMessage) {
           cant_reproduce: "We couldn’t reproduce it.",
         }[msg.status],
         body: `${line} Your message: “${oneLine(msg.subject)}”.`,
+        ...(msg.message ? { note: msg.message } : {}),
         button: { label: "Open help centre", href: `${webUrl}/learn/help` },
         footerReason: ACCOUNT_REASON,
       });
     }
+    case "waitlist-invite":
+      return render(webUrl, {
+        subject: "You’re in: your Matr Studio invite",
+        preview: "Your spot is ready. Create your account in a minute.",
+        tag: "Invite",
+        title: "You’re in.",
+        body: "Thanks for waiting. Your spot on Matr Studio is ready. Create your account to pick a goal and start your first free path:",
+        button: { label: "Create my account", href: msg.link },
+        expires: "This invite link works for 14 days and can be used once.",
+        note: "If you haven’t joined after 7 days we’ll send one reminder, then stop.",
+        fallbackLink: msg.link,
+        footerReason: `You’re getting this because ${msg.to} joined the Matr Studio waitlist.`,
+      });
+    case "waitlist-reminder":
+      return render(webUrl, {
+        subject: "Your Matr Studio invite is still waiting",
+        preview: "Your spot is held. Here’s a fresh link.",
+        tag: "Invite",
+        title: "Your invite is still waiting.",
+        body: "You haven’t joined yet, so here’s a fresh link to create your account:",
+        button: { label: "Create my account", href: msg.link },
+        expires: "This link works for 14 days and can be used once.",
+        note: "This is the only reminder. After that, the invite just expires.",
+        fallbackLink: msg.link,
+        footerReason: `You’re getting this because ${msg.to} joined the Matr Studio waitlist.`,
+      });
+    case "account-suspended":
+      return render(webUrl, {
+        subject: "Your Matr Studio account was suspended",
+        preview: "You’re signed out everywhere and can’t sign in for now.",
+        tag: "Account suspended",
+        title: "Your account is suspended.",
+        body: `We suspended your Matr Studio account because of ${oneLine(msg.reason)}. You’re signed out everywhere and can’t sign in until we restore access.`,
+        note:
+          msg.message ??
+          "If you think this is a mistake, reply to this email and we’ll take another look.",
+        footerReason: ACCOUNT_REASON,
+      });
+    case "account-restored":
+      return render(webUrl, {
+        subject: "Your Matr Studio account is back",
+        preview: "You can sign in again.",
+        tag: "Account restored",
+        title: "Welcome back.",
+        body: "We restored access to your Matr Studio account. You can sign in again.",
+        button: { label: "Sign in", href: `${webUrl}/sign-in` },
+        footerReason: ACCOUNT_REASON,
+      });
     case "admin-invite":
       return render(webUrl, {
         subject: "You’ve been invited to the Matr Studio admin",

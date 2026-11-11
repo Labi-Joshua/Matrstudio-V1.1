@@ -32,6 +32,20 @@ async function sendViaResend(env: Bindings, msg: AuthEmailMessage): Promise<void
   if (!res.ok) throw new Error(`resend ${res.status}`);
 }
 
+/** Daily counters for the Emails metrics tab (no addresses). Never lets counting break delivery. */
+async function countEmail(env: Bindings, type: string, outcome: "sent" | "dropped"): Promise<void> {
+  try {
+    await env.DB.prepare(
+      `INSERT INTO email_daily (day, type, ${outcome}) VALUES (date('now'), ?1, 1)
+       ON CONFLICT (day, type) DO UPDATE SET ${outcome} = ${outcome} + 1`,
+    )
+      .bind(type)
+      .run();
+  } catch {
+    // Metrics only: swallow.
+  }
+}
+
 /**
  * Consumer. Failures are retried with a growing delay (wrangler.toml max_retries). There is no
  * dead-letter queue (it would have to exist on the account before a deploy); instead the final
@@ -45,6 +59,7 @@ export async function handleAuthEmailBatch(
     try {
       await sendViaResend(env, message.body);
       message.ack();
+      await countEmail(env, message.body.type, "sent");
     } catch (err) {
       const reason = err instanceof Error ? err.message.slice(0, 40) : "error";
       if (message.attempts >= AUTH_EMAIL_MAX_ATTEMPTS) {
@@ -54,6 +69,7 @@ export async function handleAuthEmailBatch(
           meta: { type: message.body.type, reason },
         });
         message.ack();
+        await countEmail(env, message.body.type, "dropped");
       } else {
         console.error("auth email retry", message.body.type, reason);
         message.retry({ delaySeconds: 30 * message.attempts ** 2 });

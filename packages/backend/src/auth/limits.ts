@@ -20,6 +20,12 @@ export const LIMITS = {
   /** Resource submissions: 10 per hour per learner and per network. */
   submissionUser: { limit: 10, windowSec: 3600 },
   submissionIp: { limit: 10, windowSec: 3600 },
+  /** Support tickets and reports: 10 new per hour per learner and per network; follow-ups 30 per hour. */
+  supportUser: { limit: 10, windowSec: 3600 },
+  supportIp: { limit: 10, windowSec: 3600 },
+  supportMessageUser: { limit: 30, windowSec: 3600 },
+  /** Marking notifications read: 300 per hour per learner. */
+  notificationsUser: { limit: 300, windowSec: 3600 },
   /** Bookmarking (PUT/DELETE saved resources): 120 per hour per learner. */
   savedUser: { limit: 120, windowSec: 3600 },
   // Admin portal: stricter than learners (ADMIN-AUTH.md). Same thresholds for the password step per

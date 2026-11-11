@@ -321,3 +321,138 @@ export type SavedErrorBody = {
   message: string;
   retryAfterSeconds?: number;
 };
+
+// --- Notifications (packages/backend/NOTIFICATIONS.md) ------------------------------------------
+export const NOTIFICATION_KINDS = [
+  "path-reminder",
+  "new-lesson",
+  "support-reply",
+  "report-fixed",
+  "report-cant-reproduce",
+] as const;
+export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
+export const NOTIFICATIONS_LIMIT = 50;
+
+export type AppNotification = {
+  id: string;
+  kind: NotificationKind;
+  title: string;
+  body: string;
+  href: string | null;
+  createdAt: string; // ISO 8601
+  readAt: string | null; // ISO 8601
+};
+export type ListNotificationsResponse = { notifications: AppNotification[] };
+
+/** Omit `ids` to mark every notification read. */
+export const markNotificationsReadSchema = z
+  .object({ ids: z.array(z.string().min(1).max(64)).max(NOTIFICATIONS_LIMIT).optional() })
+  .strict();
+export type MarkNotificationsReadBody = z.input<typeof markNotificationsReadSchema>;
+export type MarkNotificationsReadResponse = { updated: number };
+
+export type NotificationErrorBody = {
+  code: "invalid_request" | "rate_limited" | "unauthorized";
+  message: string;
+  retryAfterSeconds?: number;
+};
+
+// --- Support tickets (packages/backend/SUPPORT.md) ----------------------------------------------
+export const SUPPORT_KINDS = ["support", "report"] as const;
+export type SupportKind = (typeof SUPPORT_KINDS)[number];
+export const SUPPORT_STATUSES = ["open", "replied", "resolved", "fixed", "cant_reproduce"] as const;
+export type SupportStatus = (typeof SUPPORT_STATUSES)[number];
+/** Statuses an admin can close a ticket with. */
+export const SUPPORT_CLOSING_STATUSES = ["resolved", "fixed", "cant_reproduce"] as const;
+export type SupportClosingStatus = (typeof SUPPORT_CLOSING_STATUSES)[number];
+export const SUPPORT_LIMITS = {
+  subject: 120,
+  messageMin: 10,
+  message: 2000,
+  category: 60,
+  contextText: 200,
+  contextLink: 500,
+} as const;
+
+const supportMessage = z.string().trim().max(SUPPORT_LIMITS.message);
+const optionalSupportText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .transform((v) => (v === "" ? undefined : v))
+    .optional();
+
+export const createSupportTicketSchema = z
+  .object({
+    kind: z.enum(SUPPORT_KINDS),
+    category: optionalSupportText(SUPPORT_LIMITS.category),
+    subject: optionalSupportText(SUPPORT_LIMITS.subject),
+    message: supportMessage.min(SUPPORT_LIMITS.messageMin),
+    context: z
+      .object({
+        resource: optionalSupportText(SUPPORT_LIMITS.contextText),
+        where: optionalSupportText(SUPPORT_LIMITS.contextText),
+        link: z
+          .string()
+          .trim()
+          .max(SUPPORT_LIMITS.contextLink)
+          .refine((v) => {
+            try {
+              return new URL(v).protocol === "https:";
+            } catch {
+              return false;
+            }
+          })
+          .optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
+export type CreateSupportTicketBody = z.input<typeof createSupportTicketSchema>;
+
+export const supportFollowUpSchema = z.object({ message: supportMessage.min(1) }).strict();
+export type SupportFollowUpBody = z.input<typeof supportFollowUpSchema>;
+
+export const adminSupportStatusSchema = z
+  .object({ status: z.enum(SUPPORT_CLOSING_STATUSES) })
+  .strict();
+export type AdminSupportStatusBody = z.input<typeof adminSupportStatusSchema>;
+
+export type SupportMessage = {
+  id: string;
+  author: "you" | "support";
+  body: string;
+  createdAt: string; // ISO 8601
+};
+export type SupportTicket = {
+  id: string;
+  kind: SupportKind;
+  category: string | null;
+  subject: string;
+  status: SupportStatus;
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
+  messageCount: number;
+  context: { resource: string | null; where: string | null; link: string | null } | null;
+  /** Only on the single-ticket endpoints. */
+  messages?: SupportMessage[];
+};
+export type ListSupportTicketsResponse = { tickets: SupportTicket[] };
+export type SupportTicketResponse = { ticket: SupportTicket };
+
+export type SupportErrorBody = {
+  code:
+    | "invalid_request"
+    | "captcha_required"
+    | "captcha_failed"
+    | "captcha_unavailable"
+    | "rate_limited"
+    | "not_found"
+    | "ticket_closed"
+    | "unauthorized";
+  message: string;
+  fieldErrors?: Partial<Record<"kind" | "category" | "subject" | "message" | "context", string>>;
+  retryAfterSeconds?: number;
+};

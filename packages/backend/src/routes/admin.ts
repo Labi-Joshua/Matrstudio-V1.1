@@ -62,6 +62,7 @@ import { formatSecretKey, generateTotpSecret, otpauthUri, verifyTotp } from "../
 import { clientIp, describeDevice, emailRef, sha256Hex } from "../auth/util";
 import type { Bindings } from "../env";
 import { enqueueAuthEmail } from "../queue/auth-email";
+import { adminSupport } from "./admin-support";
 
 /**
  * Admin auth API, everything under /api/admin. Lock 1 (Cloudflare Access JWT) runs on every route
@@ -70,6 +71,7 @@ import { enqueueAuthEmail } from "../queue/auth-email";
  */
 export const admin = new Hono<AdminCtx>();
 admin.use("*", requireAccess);
+admin.route("/support", adminSupport);
 
 type C = Context<AdminCtx>;
 

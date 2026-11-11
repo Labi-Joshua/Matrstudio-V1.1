@@ -26,6 +26,11 @@ export type AuditAction =
   | "submission.created"
   | "submission.edited"
   | "submission.reviewed"
+  // Support tickets: target is the ticket id, meta holds kind and status only (never the text).
+  | "support.created"
+  | "support.message"
+  | "support.replied"
+  | "support.status_changed"
   // Saved resources: target is the catalogue id, no meta.
   | "saved.added"
   | "saved.removed"

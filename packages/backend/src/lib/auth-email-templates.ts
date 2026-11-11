@@ -14,6 +14,15 @@ export type AuthEmailMessage =
   | { type: "password-updated"; to: string; when: string; device: string }
   | { type: "too-many-attempts"; to: string; when: string; device: string }
   | { type: "email-changed"; to: string; newEmailHint: string; when: string; device: string }
+  // Support. `subject` is the learner's own ticket subject (escaped when rendered).
+  | { type: "support-received"; to: string; subject: string; kind: "support" | "report" }
+  | { type: "support-reply"; to: string; subject: string; message: string }
+  | {
+      type: "support-closed";
+      to: string;
+      subject: string;
+      status: "resolved" | "fixed" | "cant_reproduce";
+    }
   // Admin portal. The link is built by the producer on PUBLIC_ADMIN_URL.
   | { type: "admin-invite"; to: string; link: string; invitedBy: string | null; role: string }
   | { type: "admin-signin-paused"; to: string; when: string; device: string };
@@ -131,6 +140,9 @@ function render(webUrl: string, l: Layout) {
   return { subject: l.subject, html, text };
 }
 
+/** User text inside a sentence: no line breaks, bounded length. */
+const oneLine = (s: string) => s.replace(/\s+/g, " ").trim().slice(0, 120);
+
 const ACCOUNT_REASON = "You’re getting this because you have a Matr Studio account.";
 
 /** Renders a queued message. Links in `msg` were built by the producer from PUBLIC_WEB_URL. */
@@ -233,6 +245,51 @@ export function renderAuthEmail(webUrl: string, msg: AuthEmailMessage) {
         note: "Wasn’t you? Reset your password right away and reply to this email so we can help. We’ve signed you out everywhere.",
         footerReason: ACCOUNT_REASON,
       });
+    case "support-received":
+      return render(webUrl, {
+        subject: msg.kind === "report" ? "We got your report" : "We got your message",
+        preview: "We’ll get back to you here and in the app.",
+        tag: msg.kind === "report" ? "Report received" : "Message received",
+        title: "We’ve got it.",
+        body: `Thanks for writing to us. We received “${oneLine(msg.subject)}” and we’ll reply in the app and by email.`,
+        button: { label: "Open help centre", href: `${webUrl}/learn/help` },
+        footerReason: ACCOUNT_REASON,
+      });
+    case "support-reply":
+      return render(webUrl, {
+        subject: "Matr Studio support replied to you",
+        preview: "There’s a new reply on your message.",
+        tag: "Support reply",
+        title: "We replied.",
+        body: `Our reply on “${oneLine(msg.subject)}”:`,
+        note: msg.message,
+        button: { label: "Open help centre", href: `${webUrl}/learn/help` },
+        footerReason: ACCOUNT_REASON,
+      });
+    case "support-closed": {
+      const copy = {
+        resolved: ["We’ve marked this as resolved.", "Resolved"],
+        fixed: ["Good news: we fixed what you reported.", "Fixed"],
+        cant_reproduce: [
+          "We couldn’t reproduce this one. If it still happens, send us a new report with more detail.",
+          "Can’t reproduce",
+        ],
+      } as const;
+      const [line, tag] = copy[msg.status];
+      return render(webUrl, {
+        subject: `Update on your Matr Studio message: ${tag.toLowerCase()}`,
+        preview: line,
+        tag,
+        title: {
+          resolved: "All sorted.",
+          fixed: "It’s fixed.",
+          cant_reproduce: "We couldn’t reproduce it.",
+        }[msg.status],
+        body: `${line} Your message: “${oneLine(msg.subject)}”.`,
+        button: { label: "Open help centre", href: `${webUrl}/learn/help` },
+        footerReason: ACCOUNT_REASON,
+      });
+    }
     case "admin-invite":
       return render(webUrl, {
         subject: "You’ve been invited to the Matr Studio admin",

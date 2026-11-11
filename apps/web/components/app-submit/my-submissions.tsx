@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useSkeletonGate } from "../../lib/app/submit-loading";
 import {
   STATUS_PRESENTATION,
   type StatusTone,
@@ -13,7 +14,7 @@ import { getCatalogue } from "../../lib/catalogue/data";
 import { ArrowRightIcon, UploadIcon } from "../app/icons";
 import { FOCUS } from "../app/ui";
 import { Button } from "../auth/button";
-import { SpinnerIcon } from "../auth/icons";
+import { SubmissionsSkeleton } from "./skeletons";
 
 /**
  * "My submissions" (Figma 6 My submissions, 9 No submissions yet, "My submissions: loading"):
@@ -103,25 +104,9 @@ export function MySubmissions({
   onEdit: (submission: Submission) => void;
   onSubmitNew: () => void;
 }) {
-  if (state.status === "loading") {
-    return (
-      <div aria-busy="true" className="flex flex-col gap-3">
-        <p
-          role="status"
-          aria-live="polite"
-          className="flex items-center gap-2 text-[14px] text-text-secondary leading-5 tracking-[-0.14px]"
-        >
-          <SpinnerIcon />
-          Loading your submissions…
-        </p>
-        <div aria-hidden="true" className="flex flex-col gap-3">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="h-[66px] rounded-xl bg-bg-fill2 motion-safe:animate-pulse" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const gate = useSkeletonGate(state.status === "loading");
+  if (gate === "wait") return <div aria-busy="true" className="min-h-[240px]" />;
+  if (gate === "skeleton" || state.status === "loading") return <SubmissionsSkeleton />;
 
   if (state.status === "error") {
     return (

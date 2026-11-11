@@ -55,7 +55,13 @@ export function firstErrorField(errors: SubmitErrors): SubmitField | null {
 export type SubmitFeedback = {
   fieldErrors: SubmitErrors;
   /** A notice above the actions (the "couldn’t send" state), or null when only fields are marked. */
-  banner: { tone: "error" | "warning"; title: string; description: string } | null;
+  banner: {
+    tone: "error" | "warning";
+    title: string;
+    description: string;
+    /** Offer "Try again" (the failure was the network or the server, not the input). */
+    retry?: boolean;
+  } | null;
   /** The link was already sent by this learner (409). */
   alreadySubmitted: boolean;
   /** The Turnstile token was used or refused, so the widget must be reset. */
@@ -136,6 +142,7 @@ function couldNotSend() {
     tone: "error" as const,
     title: "We couldn’t send your resource",
     description: "Check your connection and try again. Your details are still here.",
+    retry: true,
   };
 }
 

@@ -23,6 +23,11 @@ export const ROUTES = {
   dashboard: "/dashboard",
   onboarding: "/onboarding",
   topic: (slug: string) => `/paths/${slug}`,
+  settingsAccount: "/settings/account",
+  settingsNotifications: "/settings/notifications",
+  settingsLearning: "/settings/learning",
+  settingsAppearance: "/settings/appearance",
+  settingsConfirmEmail: "/settings/confirm-email",
   /**
    * Pages inside the signed-in app (the shell with the side menu). They live under /learn so they
    * never clash with the public marketing pages of the same name (/paths, /library, ...).

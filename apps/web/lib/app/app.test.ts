@@ -32,10 +32,11 @@ describe("nav model", () => {
     expect(home && isNavActive(home, "/paths")).toBe(false);
   });
 
-  it("never marks a disabled item active", () => {
+  it("marks Settings active on every settings page and nothing that merely starts with the word", () => {
     const settings = SUPPORT_NAV.find((i) => i.id === "settings");
-    expect(settings?.href).toBeNull();
-    expect(settings && isNavActive(settings, "/settings")).toBe(false);
+    expect(settings?.href).toBe("/settings");
+    expect(settings && isNavActive(settings, "/settings/notifications")).toBe(true);
+    expect(settings && isNavActive(settings, "/settingsish")).toBe(false);
   });
 
   it("gives every item a label and only same-site links", () => {

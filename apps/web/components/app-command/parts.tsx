@@ -77,6 +77,7 @@ function RowIcon({ row }: { row: CommandRow }) {
     case "library":
     case "saved":
     case "help":
+    case "settings":
       return <NavGlyph icon={row.icon} size={18} />;
     case "profile":
       return <UserIcon size={18} />;

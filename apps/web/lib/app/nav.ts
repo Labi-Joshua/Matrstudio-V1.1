@@ -6,8 +6,7 @@ import { ROUTES } from "../routes";
  * render the same items and the active rule is tested once.
  *
  * Every item links to a page inside the app (ROUTES.app, under /learn), never to the public
- * marketing pages. Settings has no destination yet: it is `href: null` and renders disabled with a
- * "coming soon" title.
+ * marketing pages. An item with `href: null` renders disabled with a "coming soon" title (none do today).
  */
 export type NavIcon = "home" | "paths" | "library" | "saved" | "help" | "settings";
 
@@ -19,7 +18,7 @@ export type NavItem = {
   href: string | null;
 };
 
-/** The settings pages (no ROUTES entry yet; they are built separately). */
+/** The settings pages all live under this path ("/settings" redirects to the account page). */
 const SETTINGS_BASE = "/settings";
 
 export const LEARN_NAV: readonly NavItem[] = [
@@ -31,7 +30,7 @@ export const LEARN_NAV: readonly NavItem[] = [
 
 export const SUPPORT_NAV: readonly NavItem[] = [
   { id: "help", label: "Help centre", icon: "help", href: ROUTES.app.help },
-  { id: "settings", label: "Settings", icon: "settings", href: null },
+  { id: "settings", label: "Settings", icon: "settings", href: SETTINGS_BASE },
 ];
 
 /** Drops a trailing slash (static export serves /dashboard/), keeping "/" as is. */

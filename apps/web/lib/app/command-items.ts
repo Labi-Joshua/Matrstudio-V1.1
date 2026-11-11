@@ -12,6 +12,7 @@ export type CommandIcon =
   | "saved"
   | "help"
   | "profile"
+  | "settings"
   | "submit"
   | "theme";
 
@@ -79,6 +80,14 @@ export const COMMAND_PAGES: readonly CommandPage[] = [
     icon: "profile",
     keywords: ["account", "me", "public profile", "photo", "edit profile"],
     action: { kind: "navigate", href: ROUTES.profile },
+    jump: true,
+  },
+  {
+    id: "settings",
+    title: "Settings",
+    icon: "settings",
+    keywords: ["account", "email", "password", "notifications", "preferences", "delete account"],
+    action: { kind: "navigate", href: ROUTES.settingsAccount },
     jump: true,
   },
   {

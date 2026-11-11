@@ -89,6 +89,7 @@ describe("palette content", () => {
       "Saved",
       "Help centre",
       "Profile",
+      "Settings",
       "Your requests",
       "Submit a resource",
     ]);

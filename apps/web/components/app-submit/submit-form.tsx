@@ -13,7 +13,13 @@ import {
   type SubmitField,
   validateDraft,
 } from "../../lib/app/submit-state";
-import { checkLink, findInLibrary, hostLabel, stripHttpsPrefix } from "../../lib/app/submit-url";
+import {
+  checkLink,
+  findInLibrary,
+  hostLabel,
+  LINK_MESSAGES,
+  stripHttpsPrefix,
+} from "../../lib/app/submit-url";
 import { authErrorCopy } from "../../lib/auth/messages";
 import {
   createSubmission,
@@ -29,7 +35,7 @@ import {
   SelectField,
   TextAreaField,
 } from "../app-help/fields";
-import { Banner, StatusRegion } from "../auth/banner";
+import { Banner, bannerActionClasses, StatusRegion } from "../auth/banner";
 import { Button } from "../auth/button";
 import { CircleAlertIcon } from "../auth/icons";
 import { TURNSTILE_CONFIGURED, Turnstile, type TurnstileHandle } from "../auth/turnstile";
@@ -44,15 +50,18 @@ import { TURNSTILE_CONFIGURED, Turnstile, type TurnstileHandle } from "../auth/t
  * Deviation: the design has a "Type" select (Video / Article / Tool), but the submissions API has
  * no type field, so it is left out until the API carries it (a curator sets the format anyway).
  */
-type Mode = { kind: "new" } | { kind: "edit"; submission: Submission };
+export type Mode = { kind: "new" } | { kind: "edit"; submission: Submission };
 
 export function SubmitForm({
   mode,
+  bare = false,
   onDone,
   onCancel,
   onShowMine,
 }: {
   mode: Mode;
+  /** No card chrome: the dialog around it supplies the surface and padding. */
+  bare?: boolean;
   /** The API accepted the submission (created or resubmitted). */
   onDone: (submission: Submission, mode: Mode["kind"]) => void;
   onCancel: () => void;
@@ -90,6 +99,13 @@ export function SubmitForm({
     setDraft((d) => ({ ...d, [key]: value }));
     setErrors((e) => ({ ...e, [key]: undefined }));
     setFeedback(null);
+  }
+
+  // The broken-link state (Figma 3) shows as soon as the learner leaves the field.
+  function checkLinkOnBlur() {
+    if (draft.url.trim() === "") return;
+    const link = checkLink(draft.url);
+    if (!link.ok) setErrors((e) => ({ ...e, url: LINK_MESSAGES[link.problem] }));
   }
 
   function focusField(field: SubmitField | null) {
@@ -156,7 +172,12 @@ export function SubmitForm({
       onSubmit={submit}
       noValidate
       aria-labelledby="submit-form-title"
-      className="flex w-full max-w-[560px] flex-col gap-5 md:rounded-3xl md:border md:border-border-soft md:bg-bg-base md:p-8 md:shadow-card"
+      aria-busy={pending || undefined}
+      className={`flex w-full flex-col gap-5 ${
+        bare
+          ? ""
+          : "max-w-[560px] md:mx-auto md:rounded-3xl md:border md:border-border-soft md:bg-bg-base md:p-8 md:shadow-card"
+      }`}
     >
       <h2 id="submit-form-title" className="sr-only">
         {editing ? "Edit and resubmit" : "Submit a resource"}
@@ -172,6 +193,7 @@ export function SubmitForm({
             error={urlError}
             invalid={Boolean(inLibrary)}
             onChange={(value) => change("url", stripHttpsPrefix(value))}
+            onBlur={checkLinkOnBlur}
           />
         </div>
       )}
@@ -202,7 +224,10 @@ export function SubmitForm({
         </AlertBox>
       ) : null}
 
-      <fieldset disabled={pending} className="m-0 flex min-w-0 flex-col gap-5 border-0 p-0">
+      <fieldset
+        disabled={pending}
+        className="m-0 flex min-w-0 flex-col gap-5 border-0 p-0 transition-opacity disabled:opacity-60"
+      >
         <legend className="sr-only">Resource details</legend>
         <TitleField
           ref={titleRef}
@@ -241,12 +266,24 @@ export function SubmitForm({
       </fieldset>
 
       {!editing && TURNSTILE_CONFIGURED ? (
-        <Turnstile ref={captcha} onToken={setCaptchaToken} />
+        <div className="max-w-full overflow-x-auto">
+          <Turnstile ref={captcha} onToken={setCaptchaToken} />
+        </div>
       ) : null}
 
       <StatusRegion politeness="assertive">
         {showBanner ? (
-          <Banner tone={showBanner.tone} title={showBanner.title}>
+          <Banner
+            tone={showBanner.tone}
+            title={showBanner.title}
+            action={
+              showBanner.retry ? (
+                <button type="submit" className={bannerActionClasses}>
+                  Try again
+                </button>
+              ) : undefined
+            }
+          >
             {showBanner.description}
           </Banner>
         ) : null}
@@ -349,10 +386,12 @@ function LinkField({
   error,
   invalid,
   onChange,
+  onBlur,
 }: {
   ref: Ref<HTMLInputElement>;
   value: string;
   error: string | null;
+  onBlur: () => void;
   /** Red border without its own message (the "already in the library" alert explains it). */
   invalid: boolean;
   onChange: (value: string) => void;
@@ -380,6 +419,7 @@ function LinkField({
           aria-invalid={error || invalid ? true : undefined}
           aria-describedby={describedBy(id, error, hint)}
           onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
           className="h-9 min-w-0 flex-1 bg-transparent px-2.5 text-[16px] text-text leading-5 tracking-[-0.14px] outline-none placeholder:text-text-tertiary lg:text-[14px]"
         />
       </div>

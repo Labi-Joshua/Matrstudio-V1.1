@@ -1,12 +1,14 @@
 "use client";
 
-import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from "react";
-import { listSubmissions, type Submission } from "../../lib/auth/submissions-api";
+import { type KeyboardEvent, useCallback, useRef, useState } from "react";
+import { submittedNotice } from "../../lib/app/submit-state";
+import type { Submission } from "../../lib/auth/submissions-api";
 import { FOCUS } from "../app/ui";
 import { PageHeader } from "../app-help/fields";
 import { Banner, StatusRegion } from "../auth/banner";
-import { MySubmissions, type SubmissionsState } from "./my-submissions";
+import { MySubmissions } from "./my-submissions";
 import { SubmitForm } from "./submit-form";
+import { useSubmissions } from "./use-submissions";
 
 /**
  * /learn/submit. Two tabs, like the Figma "Library tabs": the form (default) and My submissions.
@@ -26,20 +28,8 @@ export function SubmitScreen() {
   const [tab, setTab] = useState<Tab>("submit");
   const [editing, setEditing] = useState<Submission | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
-  const [list, setList] = useState<SubmissionsState>({ status: "loading" });
-  const [reload, setReload] = useState(0);
+  const { list, reload, added } = useSubmissions();
   const tabRefs = useRef<Record<Tab, HTMLButtonElement | null>>({ submit: null, mine: null });
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `reload` re-runs the load on purpose
-  useEffect(() => {
-    const controller = new AbortController();
-    setList((current) => (current.status === "ready" ? current : { status: "loading" }));
-    listSubmissions(controller.signal).then((result) => {
-      if (controller.signal.aborted) return;
-      setList(result.ok ? { status: "ready", rows: result.data } : { status: "error" });
-    });
-    return () => controller.abort();
-  }, [reload]);
 
   const select = useCallback((next: Tab) => {
     setTab(next);
@@ -60,26 +50,8 @@ export function SubmitScreen() {
   function done(submission: Submission, kind: "new" | "edit") {
     setEditing(null);
     setTab("mine");
-    setNotice(
-      kind === "new"
-        ? {
-            title: "Submitted for review",
-            description: "A curator will look at it. Check back here to see where it stands.",
-          }
-        : {
-            title: "Resubmitted for review",
-            description: "Thanks for the update. A curator will take another look.",
-          },
-    );
-    setList((current) =>
-      current.status === "ready"
-        ? {
-            status: "ready",
-            rows: [submission, ...current.rows.filter((row) => row.id !== submission.id)],
-          }
-        : current,
-    );
-    setReload((n) => n + 1);
+    setNotice(submittedNotice(kind));
+    added(submission);
   }
 
   return (
@@ -151,7 +123,7 @@ export function SubmitScreen() {
           ) : (
             <MySubmissions
               state={list}
-              onRetry={() => setReload((n) => n + 1)}
+              onRetry={reload}
               onEdit={(submission) => {
                 setNotice(null);
                 setEditing(submission);

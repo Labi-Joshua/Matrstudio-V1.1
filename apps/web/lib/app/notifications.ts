@@ -42,9 +42,7 @@ export const FILTER_LABEL: Record<NotificationFilter, string> = {
 
 /** Curator decisions on shared resources are the "Submissions" tab. */
 export function isSubmissionKind(kind: NotificationKind): boolean {
-  return (
-    kind === "curator-approved" || kind === "curator-changes" || kind === "curator-declined"
-  );
+  return kind === "curator-approved" || kind === "curator-changes" || kind === "curator-declined";
 }
 
 export function unreadCount(items: readonly NotificationItem[]): number {

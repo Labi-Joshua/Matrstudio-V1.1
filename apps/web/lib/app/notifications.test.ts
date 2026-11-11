@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { Submission } from "../auth/submissions-api";
 import {
   filterNotifications,
   groupNotifications,
@@ -11,7 +12,6 @@ import {
   submissionFeed,
   unreadCount,
 } from "./notifications";
-import type { Submission } from "../auth/submissions-api";
 
 const now = new Date(2026, 10, 11, 14, 0, 0);
 const at = (day: number, hour: number) => new Date(2026, 10, day, hour, 0, 0).toISOString();

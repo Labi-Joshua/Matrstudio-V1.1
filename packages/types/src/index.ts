@@ -321,3 +321,174 @@ export type SavedErrorBody = {
   message: string;
   retryAfterSeconds?: number;
 };
+
+// --- Profile (packages/backend/PROFILE.md) ------------------------------------------------------
+export const USERNAME_MIN = 3;
+export const USERNAME_MAX = 30;
+export const DISPLAY_NAME_MAX = 60;
+export const BIO_MAX = 200;
+/** Stored avatars are resized by the browser first; the API refuses anything bigger. */
+export const AVATAR_MAX_BYTES = 200 * 1024;
+export const AVATAR_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
+
+/** Paths that must never become a profile link, or that would pass for staff or the product. */
+export const RESERVED_USERNAMES: readonly string[] = [
+  "about",
+  "account",
+  "admin",
+  "administrator",
+  "api",
+  "app",
+  "assets",
+  "auth",
+  "billing",
+  "blog",
+  "contact",
+  "dashboard",
+  "help",
+  "home",
+  "invite",
+  "learn",
+  "library",
+  "login",
+  "logout",
+  "mail",
+  "matr",
+  "matrstudio",
+  "me",
+  "mission",
+  "moderator",
+  "null",
+  "official",
+  "onboarding",
+  "paths",
+  "privacy",
+  "profile",
+  "register",
+  "root",
+  "saved",
+  "security",
+  "settings",
+  "signin",
+  "signout",
+  "signup",
+  "staff",
+  "submit",
+  "support",
+  "system",
+  "team",
+  "terms",
+  "undefined",
+  "user",
+  "users",
+  "verify",
+  "www",
+];
+
+/** Lower-case, trimmed; usernames are case-insensitive and stored lower-case. */
+export const normaliseUsername = (value: string) => value.trim().toLowerCase();
+
+export const usernameSchema = z
+  .string()
+  .transform(normaliseUsername)
+  .pipe(
+    z
+      .string()
+      .min(USERNAME_MIN)
+      .max(USERNAME_MAX)
+      .regex(/^[a-z0-9_]+$/),
+  );
+
+// Plain text without control characters.
+const noControl = (v: string) => [...v].every((ch) => ch.charCodeAt(0) > 31 && ch.charCodeAt(0) !== 127);
+export const displayNameSchema = z.string().trim().min(1).max(DISPLAY_NAME_MAX).refine(noControl);
+export const bioSchema = z
+  .string()
+  .trim()
+  .max(BIO_MAX)
+  .refine((v) => noControl(v.replace(/\n/g, " ")));
+
+/** What a public profile may show beyond the name, photo, bio and interests. */
+export const PROFILE_VISIBILITY_KEYS = ["stats", "paths", "submissions"] as const;
+export type ProfileVisibility = Record<(typeof PROFILE_VISIBILITY_KEYS)[number], boolean>;
+
+export const updateProfileSchema = z
+  .object({
+    displayName: displayNameSchema.optional(),
+    username: usernameSchema.optional(),
+    bio: bioSchema.optional(),
+    isPublic: z.boolean().optional(),
+    visibility: z
+      .object({ stats: z.boolean(), paths: z.boolean(), submissions: z.boolean() })
+      .partial()
+      .strict()
+      .optional(),
+  })
+  .strict()
+  .refine((v) => Object.values(v).some((x) => x !== undefined), {
+    message: "Send at least one field.",
+  });
+export type UpdateProfileBody = z.input<typeof updateProfileSchema>;
+
+/** GET and PATCH /api/me/profile. Times are ISO 8601. */
+export type OwnProfile = {
+  username: string;
+  displayName: string;
+  bio: string;
+  /** Same-origin image URL (versioned), or null when there is no photo. */
+  avatarUrl: string | null;
+  isPublic: boolean;
+  visibility: ProfileVisibility;
+  createdAt: string;
+  updatedAt: string;
+};
+export type OwnProfileResponse = { profile: OwnProfile };
+
+export type UsernameCheckResponse = {
+  available: boolean;
+  /** Present when not available. */
+  reason?: "invalid" | "reserved" | "taken";
+};
+
+export type PublicProfileSubmission = {
+  title: string;
+  url: string;
+  topic: string | null;
+  approvedAt: string | null;
+};
+
+/** GET /api/profiles/:username. Only the sections the owner switched on are filled. */
+export type PublicProfile = {
+  username: string;
+  displayName: string;
+  bio: string;
+  avatarUrl: string | null;
+  level: string | null;
+  topics: string[];
+  joinedAt: string;
+  /** Null when the owner hides stats, or when no progress data exists yet. */
+  stats: {
+    pathsFinished: number;
+    lessonsDone: number;
+    minutesLearned: number;
+    streakDays: number;
+  } | null;
+  completedPaths: Array<{ slug: string; completedAt: string }> | null;
+  submissions: PublicProfileSubmission[] | null;
+};
+export type PublicProfileResponse = { profile: PublicProfile };
+
+export type ProfileErrorBody = {
+  code:
+    | "invalid_request"
+    | "username_taken"
+    | "username_reserved"
+    | "avatar_too_large"
+    | "avatar_invalid"
+    | "rate_limited"
+    | "not_found"
+    | "unauthorized";
+  message: string;
+  fieldErrors?: Partial<Record<"displayName" | "username" | "bio" | "avatar", string>>;
+  retryAfterSeconds?: number;
+};

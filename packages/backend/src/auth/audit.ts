@@ -29,6 +29,11 @@ export type AuditAction =
   // Saved resources: target is the catalogue id, no meta.
   | "saved.added"
   | "saved.removed"
+  // Profiles: meta holds field names and the public flag, never the values.
+  | "profile.updated"
+  | "profile.visibility"
+  | "profile.avatar.set"
+  | "profile.avatar.removed"
   // Admin portal (ADMIN-AUTH.md). Targets are admin ids or "email:<keyed hash>"; before/after in meta.
   | "admin.signin.success"
   | "admin.signin.failure"

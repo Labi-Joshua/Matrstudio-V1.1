@@ -3,27 +3,32 @@ import {
   buildMailto,
   CONTACT_TOPICS,
   contactMailto,
+  linkWithoutScheme,
+  MESSAGE_MAX,
   normaliseReportLink,
+  parseReportContext,
   reportMailto,
   validateContact,
   validateReport,
 } from "./help-form";
 
 describe("validateContact", () => {
-  const good = { topic: CONTACT_TOPICS[0] ?? "", message: "Help please", replyTo: "" };
+  const good = { topic: CONTACT_TOPICS[0] ?? "", message: "Help please" };
 
-  it("accepts a topic and a message; reply-to is optional", () => {
+  it("accepts a topic and a message", () => {
     expect(validateContact(good)).toEqual({});
   });
 
   it("flags a missing topic and a blank message", () => {
-    const errors = validateContact({ topic: "", message: "   ", replyTo: "" });
+    const errors = validateContact({ topic: "", message: "   " });
     expect(Object.keys(errors)).toEqual(["topic", "message"]);
   });
 
-  it("validates a reply-to address only when given", () => {
-    expect(validateContact({ ...good, replyTo: "nope" }).replyTo).toBeDefined();
-    expect(validateContact({ ...good, replyTo: "a@b.co" }).replyTo).toBeUndefined();
+  it("refuses a message over the limit", () => {
+    expect(
+      validateContact({ ...good, message: "x".repeat(MESSAGE_MAX + 1) }).message,
+    ).toBeDefined();
+    expect(validateContact({ ...good, message: "x".repeat(MESSAGE_MAX) })).toEqual({});
   });
 });
 
@@ -59,12 +64,17 @@ describe("mailto", () => {
     expect(subject).not.toContain("%0A");
   });
 
-  it("falls back to the account email for the reply address", () => {
-    const draft = { topic: "Something else", message: "Hello", replyTo: "" };
+  it("replies to the account email", () => {
+    const draft = { topic: "Something else", message: "Hello" };
     expect(decodeURIComponent(contactMailto(draft, "me@x.com"))).toContain("Reply to: me@x.com");
-    expect(
-      decodeURIComponent(contactMailto({ ...draft, replyTo: "o@x.com" }, "me@x.com")),
-    ).toContain("Reply to: o@x.com");
+  });
+
+  it("names the resource a report is about", () => {
+    const context = { title: "Mapping user flows", where: "Lesson 5", link: "" };
+    const text = decodeURIComponent(
+      reportMailto({ kind: "link", detail: "dead", link: "" }, "me@x.com", context),
+    );
+    expect(text).toContain("About: Mapping user flows (Lesson 5)");
   });
 
   it("includes the cleaned link in a report", () => {
@@ -73,5 +83,31 @@ describe("mailto", () => {
     );
     expect(text).toContain("Problem report: Broken link");
     expect(text).toContain("Page or link: https://a.com/x");
+  });
+});
+
+describe("parseReportContext", () => {
+  it("needs a resource title", () => {
+    expect(parseReportContext("")).toBeNull();
+    expect(parseReportContext("?link=https://a.com")).toBeNull();
+    expect(parseReportContext("?resource=%20%20")).toBeNull();
+  });
+
+  it("reads the title, where and a safe link", () => {
+    const search =
+      "?resource=Mapping%20user%20flows&where=Lesson%205&link=https%3A%2F%2Fyoutube.com%2Fwatch%3Fv%3D1";
+    const context = parseReportContext(search);
+    expect(context).toEqual({
+      title: "Mapping user flows",
+      where: "Lesson 5",
+      link: "https://youtube.com/watch?v=1",
+    });
+    expect(linkWithoutScheme(context?.link ?? "")).toBe("youtube.com/watch?v=1");
+  });
+
+  it("drops unsafe links and caps long text", () => {
+    expect(parseReportContext("?resource=A&link=javascript:alert(1)")?.link).toBe("");
+    expect(parseReportContext("?resource=A&link=http://a.com")?.link).toBe("");
+    expect(parseReportContext(`?resource=${"x".repeat(500)}`)?.title.length).toBe(120);
   });
 });

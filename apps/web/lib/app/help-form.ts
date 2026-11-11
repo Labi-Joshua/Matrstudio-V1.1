@@ -1,4 +1,3 @@
-import { validateEmail } from "../auth/validation";
 import { HELP_CONTACT, HELP_EMAIL, HELP_REPORT, MESSAGE_MAX } from "../pages/company-help";
 
 /**
@@ -14,13 +13,13 @@ export { HELP_EMAIL, MESSAGE_MAX };
 export const CONTACT_TOPICS: readonly string[] = HELP_CONTACT.topics;
 export const REPORT_KINDS = HELP_REPORT.types;
 
-export type ContactDraft = { topic: string; message: string; replyTo: string };
-export type ContactField = "topic" | "message" | "replyTo";
+export type ContactDraft = { topic: string; message: string };
+export type ContactField = "topic" | "message";
 export type ContactErrors = Partial<Record<ContactField, string>>;
 
 export const HELP_MESSAGES = {
-  topic: "Pick a topic.",
-  message: "Tell us what you need help with.",
+  topic: "Choose a topic so the right person picks this up.",
+  message: "Write a short message so we can help.",
   messageTooLong: `Keep this under ${MESSAGE_MAX} characters.`,
   generalMissing: "Some details are missing. Check the fields marked in red.",
   kind: "Choose what kind of problem it is.",
@@ -34,11 +33,6 @@ export function validateContact(draft: ContactDraft): ContactErrors {
   const message = draft.message.trim();
   if (message === "") errors.message = HELP_MESSAGES.message;
   else if (message.length > MESSAGE_MAX) errors.message = HELP_MESSAGES.messageTooLong;
-  // The reply-to address is optional here (the account email is the default), but must be valid if given.
-  if (draft.replyTo.trim() !== "") {
-    const problem = validateEmail(draft.replyTo);
-    if (problem) errors.replyTo = problem;
-  }
   return errors;
 }
 
@@ -90,14 +84,47 @@ export function buildMailto(subject: string, lines: readonly string[]): string {
 }
 
 export function contactMailto(draft: ContactDraft, accountEmail: string): string {
-  const replyTo = draft.replyTo.trim() || accountEmail;
-  return buildMailto(`Support: ${draft.topic}`, [draft.message.trim(), "", `Reply to: ${replyTo}`]);
+  return buildMailto(`Support: ${draft.topic}`, [
+    draft.message.trim(),
+    "",
+    `Reply to: ${accountEmail}`,
+  ]);
 }
 
-export function reportMailto(draft: ReportDraft, accountEmail: string): string {
+/** What the learner was looking at when they opened the report form (Figma "from a resource"). */
+export type ReportContext = { title: string; where: string; link: string };
+
+const CONTEXT_TITLE_MAX = 120;
+const CONTEXT_WHERE_MAX = 160;
+
+/**
+ * Reads ?resource=, ?where= and ?link= from the URL the form was opened with. Everything is
+ * untrusted text: it is trimmed and capped, and the link must pass normaliseReportLink (https only).
+ * Returns null without a title, so a hand-edited URL cannot make the chip say anything on its own.
+ */
+export function parseReportContext(search: string): ReportContext | null {
+  const params = new URLSearchParams(search);
+  const title = (params.get("resource") ?? "").trim().slice(0, CONTEXT_TITLE_MAX);
+  if (title === "") return null;
+  const where = (params.get("where") ?? "").trim().slice(0, CONTEXT_WHERE_MAX);
+  const link = normaliseReportLink(params.get("link") ?? "") ?? "";
+  return { title, where, link };
+}
+
+/** The link as the form shows it: without the https:// the field already prints. */
+export function linkWithoutScheme(link: string): string {
+  return link.replace(/^https:\/\//i, "");
+}
+
+export function reportMailto(
+  draft: ReportDraft,
+  accountEmail: string,
+  context?: ReportContext | null,
+): string {
   const label = REPORT_KINDS.find((k) => k.id === draft.kind)?.label ?? draft.kind;
   const link = normaliseReportLink(draft.link);
   const lines = [draft.detail.trim(), ""];
+  if (context) lines.push(`About: ${context.title}${context.where ? ` (${context.where})` : ""}`);
   if (link) lines.push(`Page or link: ${link}`);
   lines.push(`Reply to: ${accountEmail}`);
   return buildMailto(`Problem report: ${label}`, lines);

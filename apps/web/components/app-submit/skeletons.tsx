@@ -30,11 +30,7 @@ export function SubmissionsSkeleton() {
 
 export function FormSkeleton() {
   return (
-    <div
-      role="status"
-      aria-busy="true"
-      className="mx-auto flex w-full flex-col gap-6"
-    >
+    <div role="status" aria-busy="true" className="mx-auto flex w-full flex-col gap-6">
       <p className="sr-only">Loading the form</p>
       <div aria-hidden="true" className="flex flex-col gap-2">
         <div className={`${BAR} h-9 w-56`} />

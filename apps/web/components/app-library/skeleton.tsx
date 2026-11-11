@@ -36,11 +36,7 @@ export function CardSkeleton() {
 export function LibrarySkeleton() {
   const visible = useSkeletonGate(true);
   return (
-    <div
-      role="status"
-      aria-busy="true"
-      className="mx-auto flex min-h-[60vh] w-full flex-col gap-6"
-    >
+    <div role="status" aria-busy="true" className="mx-auto flex min-h-[60vh] w-full flex-col gap-6">
       <Loading label="Loading the library" />
       {visible ? (
         <>
@@ -79,11 +75,7 @@ export function LibrarySkeleton() {
 
 export function ResourceSkeleton() {
   return (
-    <div
-      role="status"
-      aria-busy="true"
-      className="mx-auto flex w-full flex-col gap-6"
-    >
+    <div role="status" aria-busy="true" className="mx-auto flex w-full flex-col gap-6">
       <Loading label="Loading the resource" />
       <div className={`${BAR} h-5 w-20`} aria-hidden="true" />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]" aria-hidden="true">

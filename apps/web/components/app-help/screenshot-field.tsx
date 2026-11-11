@@ -2,9 +2,9 @@ import { HELP_EMAIL } from "../../lib/app/help-form";
 import { UploadIcon } from "../app/icons";
 
 /**
- * Figma "Screenshot (optional)" drop zone, drawn but switched off. A mailto: cannot carry an
- * attachment and there is no upload endpoint, so the box says so instead of accepting a file it
- * would drop. TODO(support-api): make it a real PNG/JPG (max 10 MB) picker once uploads exist.
+ * Figma "Screenshot (optional)" drop zone, drawn but switched off: the support API takes text
+ * only and there is no upload endpoint, so the box says so instead of accepting a file it would
+ * drop. TODO(uploads): make it a real PNG/JPG (max 10 MB) picker once an upload endpoint exists.
  */
 export function ScreenshotField() {
   return (
@@ -27,7 +27,8 @@ export function ScreenshotField() {
           Screenshots can’t be uploaded yet
         </p>
         <p className="max-w-[420px] text-[12px] text-text-tertiary leading-4 tracking-[-0.12px]">
-          Attach a PNG or JPG in your email before you send it, or write to {HELP_EMAIL}.
+          Describe what you saw in the message above, or write to {HELP_EMAIL} with the image
+          attached.
         </p>
       </div>
     </div>

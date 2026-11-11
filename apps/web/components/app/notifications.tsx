@@ -1,6 +1,6 @@
 "use client";
 
-import { type RefObject, useCallback, useEffect, useId, useState } from "react";
+import { type RefObject, useCallback, useEffect, useId, useRef, useState } from "react";
 import {
   filterNotifications,
   loadNotifications,
@@ -8,7 +8,9 @@ import {
   markRead,
   type NotificationFilter,
   type NotificationItem,
+  pushRead,
   saveReadIds,
+  serverUnreadIds,
   unreadCount,
 } from "../../lib/app/notifications";
 import {
@@ -30,17 +32,18 @@ import { FOCUS } from "./ui";
 
 /**
  * Bell and notifications (Figma "Notifications panel": a 420 wide popover from 768px, a full
- * screen sheet with a back button on phones). The feed has no API yet, so production shows the
- * designed "all caught up" state, the loading skeleton while the request is pending and the
- * "didn't load" state with Try again when it fails (offline); the bell only shows an unread dot
- * when there really is something unread.
+ * screen sheet with a back button on phones). The feed is the notifications API merged with the
+ * curator decisions derived from the submissions API (lib/app/notifications.ts). Opening an item
+ * or "Mark all as read" updates the list at once and tells the API; if that call fails the rows
+ * go back to unread. The bell only shows an unread dot when there really is something unread.
  */
 export type FeedState =
   | { status: "loading" }
   | { status: "error" }
   | { status: "ready"; items: NotificationItem[] };
 
-type Update = (change: (items: NotificationItem[]) => NotificationItem[]) => void;
+/** Marks the given ids read (all when omitted): optimistic, rolled back if the API refuses. */
+type Mark = (ids?: readonly string[]) => void;
 
 function useNotificationFeed() {
   const online = useOnlineStatus();
@@ -61,15 +64,32 @@ function useNotificationFeed() {
   }, [online, attempt]);
 
   const retry = useCallback(() => setAttempt((value) => value + 1), []);
-  const update: Update = useCallback((change) => {
-    setFeed((state) => {
-      if (state.status !== "ready") return state;
-      const items = change(state.items);
-      saveReadIds(items);
-      return { status: "ready", items };
+  const feedRef = useRef(feed);
+  feedRef.current = feed;
+  const mark: Mark = useCallback((ids) => {
+    const state = feedRef.current;
+    if (state.status !== "ready") return;
+    const remote = serverUnreadIds(state.items, ids);
+    const items = ids ? ids.reduce(markRead, state.items) : markAllRead(state.items);
+    feedRef.current = { status: "ready", items };
+    setFeed(feedRef.current);
+    saveReadIds(items);
+    if (remote.length === 0) return;
+    pushRead(remote).then((ok) => {
+      if (ok) return;
+      setFeed((now) =>
+        now.status === "ready"
+          ? {
+              status: "ready",
+              items: now.items.map((item) =>
+                remote.includes(item.id) ? { ...item, read: false } : item,
+              ),
+            }
+          : now,
+      );
     });
   }, []);
-  return { feed, retry, update };
+  return { feed, retry, mark };
 }
 
 /** The panel's contents for a feed state (header excluded), separate so it can be tested. */
@@ -122,7 +142,7 @@ function Panel({
   phone,
   feed,
   onRetry,
-  onUpdate,
+  onMark,
   onClose,
 }: {
   id: string;
@@ -131,7 +151,7 @@ function Panel({
   phone: boolean;
   feed: FeedState;
   onRetry: () => void;
-  onUpdate: Update;
+  onMark: Mark;
   onClose: () => void;
 }) {
   const [filter, setFilter] = useState<NotificationFilter>("all");
@@ -162,7 +182,7 @@ function Panel({
         {unread > 0 ? (
           <button
             type="button"
-            onClick={() => onUpdate(markAllRead)}
+            onClick={() => onMark()}
             className={`rounded-md font-medium text-[14px] text-primary-text leading-5 tracking-[-0.14px] hover:underline ${FOCUS}`}
           >
             Mark all as read
@@ -177,7 +197,7 @@ function Panel({
           onFilter={setFilter}
           onRetry={onRetry}
           onOpen={(itemId) => {
-            onUpdate((items) => markRead(items, itemId));
+            onMark([itemId]);
             onClose();
           }}
         />
@@ -204,7 +224,7 @@ function Panel({
 
 export function NotificationsBell() {
   const { open, toggle, close, buttonRef, panelRef } = usePopover();
-  const { feed, retry, update } = useNotificationFeed();
+  const { feed, retry, mark } = useNotificationFeed();
   const phone = useMediaQuery("(max-width: 767px)");
   const panelId = useId();
   const titleId = useId();
@@ -237,7 +257,7 @@ export function NotificationsBell() {
           phone={phone}
           feed={feed}
           onRetry={retry}
-          onUpdate={update}
+          onMark={mark}
           onClose={close}
         />
       ) : null}

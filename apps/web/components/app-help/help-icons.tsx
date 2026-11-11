@@ -49,3 +49,10 @@ export const LinkBrokenIcon = (p: IconProps) => (
     <path d="m18.84 12.25 1.72-1.71a5 5 0 0 0-7.07-7.07l-1.72 1.71M5.17 11.75l-1.71 1.71a5 5 0 0 0 7.07 7.07l1.71-1.71M8 2v3M2 8h3M16 22v-3M22 16h-3" />
   </Glyph>
 );
+
+export const UserIcon = (p: IconProps) => (
+  <Glyph {...p}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21a8 8 0 0 1 16 0" />
+  </Glyph>
+);

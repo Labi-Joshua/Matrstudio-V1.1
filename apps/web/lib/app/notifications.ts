@@ -1,12 +1,15 @@
 /**
- * Notifications model (Figma "Notifications panel"). There is no notifications API yet, so
- * production loads an empty feed; every kind below is a typed shape the view components render
- * and the tests cover with fixtures.
- *
- * The only real source today is the learner's own submissions: a curator decision becomes an item
- * (lib/app/submit-notifications.ts). Everything else (path reminders, support replies) waits for
- * its API. Read state is a per-device convenience kept in localStorage.
+ * Notifications model (Figma "Notifications panel"). Two sources are merged, newest first:
+ * - the notifications API (path reminders, new lessons, support replies, report outcomes), whose
+ *   rows carry their own `readAt`, so read state is the server's;
+ * - curator decisions derived from the learner's submissions (lib/app/submit-notifications.ts),
+ *   which have no server row, so their read state is a per-device convenience in localStorage.
  */
+import {
+  type ApiNotification,
+  listNotifications,
+  markNotificationsRead,
+} from "../auth/notifications-api";
 import { listSubmissions, type Submission } from "../auth/submissions-api";
 import { submissionNotifications } from "./submit-notifications";
 
@@ -30,6 +33,8 @@ export type NotificationItem = {
   read: boolean;
   /** Where "open" goes, an in-app path; absent when the notification is only informational. */
   href?: string;
+  /** Derived items (curator decisions) are read per device; everything else is a server row. */
+  derived?: boolean;
 };
 
 export type NotificationFilter = "all" | "unread" | "submissions";
@@ -123,7 +128,49 @@ export function submissionFeed(
     createdAt: entry.at,
     read: read.has(entry.id),
     href: entry.href,
+    derived: true,
   }));
+}
+
+/** API rows as feed items: read is the server's `readAt`. */
+export function apiFeed(rows: readonly ApiNotification[]): NotificationItem[] {
+  return rows.map((row) => ({
+    id: row.id,
+    kind: row.kind,
+    title: row.title,
+    body: row.body,
+    createdAt: row.createdAt,
+    read: row.readAt !== null,
+    ...(row.href ? { href: row.href } : {}),
+  }));
+}
+
+/** Both sources in one list, newest first. */
+export function mergeFeeds(...feeds: readonly (readonly NotificationItem[])[]): NotificationItem[] {
+  return feeds.flat().sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+}
+
+/** Ids the server should be told about: unread API rows among `ids` (derived items stay local). */
+export function serverUnreadIds(
+  items: readonly NotificationItem[],
+  ids?: readonly string[],
+): string[] {
+  const wanted = ids ? new Set(ids) : null;
+  return items
+    .filter((item) => !item.derived && !item.read && (!wanted || wanted.has(item.id)))
+    .map((item) => item.id);
+}
+
+/**
+ * Tells the API which rows were read, 50 at a time (its limit). Resolves false when any call
+ * fails, so the caller can roll its optimistic update back.
+ */
+export async function pushRead(ids: readonly string[]): Promise<boolean> {
+  for (let i = 0; i < ids.length; i += 50) {
+    const result = await markNotificationsRead(ids.slice(i, i + 50));
+    if (!result.ok) return false;
+  }
+  return true;
 }
 
 const READ_KEY = "ms_notifications_read";
@@ -140,7 +187,7 @@ export function loadReadIds(): Set<string> {
 
 export function saveReadIds(items: readonly NotificationItem[]): void {
   try {
-    const ids = items.filter((item) => item.read).map((item) => item.id);
+    const ids = items.filter((item) => item.derived && item.read).map((item) => item.id);
     if (ids.length > 0) localStorage.setItem(READ_KEY, JSON.stringify(ids));
   } catch {
     // Read state is a convenience; a blocked store only means items show as new again.
@@ -148,14 +195,19 @@ export function saveReadIds(items: readonly NotificationItem[]): void {
 }
 
 /**
- * Loads the learner's notifications. Offline, or when the submissions request fails, is reported
- * as a failure so the panel offers Try again instead of claiming "all caught up".
+ * Loads the learner's notifications: the API feed plus curator decisions from the submissions
+ * API. Offline, or both requests failing, is a failure so the panel offers Try again instead of
+ * claiming "all caught up"; one failing alone shows what the other returned.
  */
 export async function loadNotifications(online: boolean): Promise<FeedResult> {
   if (!online) return { ok: false };
-  const result = await listSubmissions();
-  if (!result.ok) return { ok: false };
-  return { ok: true, items: submissionFeed(result.data, loadReadIds()) };
+  const [feed, submissions] = await Promise.all([listNotifications(), listSubmissions()]);
+  if (!feed.ok && !submissions.ok) return { ok: false };
+  const items = mergeFeeds(
+    feed.ok ? apiFeed(feed.data) : [],
+    submissions.ok ? submissionFeed(submissions.data, loadReadIds()) : [],
+  );
+  return { ok: true, items };
 }
 
 export const NOTIFICATION_FIXTURES = {

@@ -1,32 +1,29 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { HELP_EMAIL } from "../../lib/app/help-form";
+import { requestHref } from "../../lib/app/help-requests";
+import type { TicketKind } from "../../lib/auth/support-api";
 import { ROUTES } from "../../lib/routes";
-import { Button, ButtonLink } from "../auth/button";
-import { MailIcon } from "../auth/icons";
+import { ButtonLink } from "../auth/button";
+import { CircleCheckIcon } from "../auth/icons";
 
 /**
- * Figma "Message sent" 485:45258 / "Report sent" 485:45561: a centred card with the icon, a title,
- * the reply promise and the two actions. There is no support API yet, so nothing has left the
- * device: the email app was opened with the message ready. The screen says exactly that instead
- * of claiming the message was sent, and "View request" is replaced by "Edit message" because
- * there is no request to follow (TODO(support-api): show the real confirmation once it exists).
+ * Figma "Message sent" 485:45258 / "Report sent" 485:45561: a centred card with the check, the
+ * title, the reply promise and the two actions. The request exists on the server by now, so
+ * "View request" opens it. "Back to Help centre" carries ?sent= so the hub can show the success
+ * toast.
  */
 export function HelpSent({
   title,
-  mailto,
+  kind,
+  ticketId,
   replyTo,
-  editLabel = "Edit message",
-  onEdit,
 }: {
   title: string;
-  /** The same mailto: link, offered again in case the email app did not open. */
-  mailto: string;
+  kind: TicketKind;
+  ticketId: string;
   /** The account email the reply goes to. */
   replyTo: string;
-  editLabel?: string;
-  onEdit: () => void;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => heading.current?.focus(), []);
@@ -34,13 +31,13 @@ export function HelpSent({
   return (
     <div
       role="status"
-      className="flex w-full max-w-[720px] flex-col items-center gap-4 rounded-xl border border-border-soft bg-bg-base px-6 py-10 text-center md:py-14"
+      className="flex w-full max-w-[720px] flex-col items-center gap-4 self-center rounded-xl border border-border-soft bg-bg-base px-6 py-10 text-center md:py-14"
     >
       <span
         aria-hidden="true"
-        className="flex size-12 items-center justify-center rounded-xl bg-primary-focus text-primary-text"
+        className="flex size-12 items-center justify-center rounded-xl bg-success-focus text-success-text"
       >
-        <MailIcon size={24} />
+        <CircleCheckIcon size={24} />
       </span>
       <h2
         ref={heading}
@@ -50,27 +47,16 @@ export function HelpSent({
         {title}
       </h2>
       <p className="max-w-[480px] text-[16px] text-text-secondary leading-6 tracking-[-0.16px]">
-        We opened your email app with your message ready to go. Press send there and we’ll reply to{" "}
-        {replyTo} within 2 working days. Nothing reaches us until you do.
-      </p>
-      <p className="text-[14px] text-text-secondary leading-5 tracking-[-0.14px]">
-        Nothing opened?{" "}
-        <a
-          href={mailto}
-          className="rounded-sm font-medium text-primary-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-border"
-        >
-          Try again
-        </a>{" "}
-        or write to {HELP_EMAIL}.
+        We’ll reply to {replyTo} within 2 working days. You can follow it in Your requests.
       </p>
       <div className="mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
         <div className="w-full sm:w-fit">
-          <ButtonLink href={ROUTES.app.help} variant="secondary">
+          <ButtonLink href={`${ROUTES.app.help}?sent=${kind}`} variant="secondary">
             Back to Help centre
           </ButtonLink>
         </div>
         <div className="w-full sm:w-fit">
-          <Button onClick={onEdit}>{editLabel}</Button>
+          <ButtonLink href={requestHref(ticketId)}>View request</ButtonLink>
         </div>
       </div>
     </div>

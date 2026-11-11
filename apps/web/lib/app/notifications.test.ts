@@ -1,14 +1,17 @@
 import { describe, expect, it } from "vitest";
 import type { Submission } from "../auth/submissions-api";
 import {
+  apiFeed,
   filterNotifications,
   groupNotifications,
   isSubmissionKind,
   loadNotifications,
   markAllRead,
   markRead,
+  mergeFeeds,
   type NotificationItem,
   relativeTime,
+  serverUnreadIds,
   submissionFeed,
   unreadCount,
 } from "./notifications";
@@ -118,5 +121,50 @@ describe("submissionFeed", () => {
     const [first] = submissionFeed([submission("a", "accepted")], new Set());
     const [again] = submissionFeed([submission("a", "accepted")], new Set([first?.id ?? ""]));
     expect(again?.read).toBe(true);
+  });
+});
+
+describe("API feed", () => {
+  const rows = [
+    {
+      id: "a",
+      kind: "support-reply" as const,
+      title: "Support replied",
+      body: "b",
+      href: "/learn/help/request?id=t1",
+      createdAt: at(11, 10),
+      readAt: null,
+    },
+    {
+      id: "b",
+      kind: "report-fixed" as const,
+      title: "Fixed",
+      body: "b",
+      href: null,
+      createdAt: at(10, 10),
+      readAt: at(10, 11),
+    },
+  ];
+
+  it("takes read state from readAt and keeps the href", () => {
+    const feed = apiFeed(rows);
+    expect(feed.map((i) => i.read)).toEqual([false, true]);
+    expect(feed[0]?.href).toBe("/learn/help/request?id=t1");
+    expect(feed[1]?.href).toBeUndefined();
+    expect(feed.every((i) => !i.derived)).toBe(true);
+  });
+
+  it("merges with derived items, newest first", () => {
+    const merged = mergeFeeds(apiFeed(rows), [
+      item({ id: "d", derived: true, createdAt: at(11, 12) }),
+    ]);
+    expect(merged.map((i) => i.id)).toEqual(["d", "a", "b"]);
+  });
+
+  it("only reports unread server rows to the API", () => {
+    const items = mergeFeeds(apiFeed(rows), [item({ id: "d", derived: true })]);
+    expect(serverUnreadIds(items)).toEqual(["a"]);
+    expect(serverUnreadIds(items, ["d", "b"])).toEqual([]);
+    expect(serverUnreadIds(items, ["a"])).toEqual(["a"]);
   });
 });

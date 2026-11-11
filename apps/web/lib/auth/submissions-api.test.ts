@@ -38,10 +38,30 @@ describe("parsing", () => {
         id: "1",
         url: "https://a.com",
         status: "declined",
-        createdAt: "a",
-        updatedAt: "b",
+        createdAt: 1767225600,
+        updatedAt: 1767225600,
       }),
     ).toMatchObject({ title: null, topic: null, curatorNote: null, status: "declined" });
+  });
+
+  it("reads the unix-second times the API really sends and turns them into ISO strings", () => {
+    expect(
+      parseSubmission({
+        id: "1",
+        url: "https://a.com",
+        status: "in_review",
+        createdAt: 1767225600,
+        updatedAt: 1767229200,
+      }),
+    ).toMatchObject({
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T01:00:00.000Z",
+    });
+  });
+
+  it("rejects a time that is neither a number nor a date string", () => {
+    expect(parseSubmission({ ...row, createdAt: "soon" })).toBeUndefined();
+    expect(parseSubmission({ ...row, updatedAt: null })).toBeUndefined();
   });
 
   it("rejects an unknown status or a missing field", () => {

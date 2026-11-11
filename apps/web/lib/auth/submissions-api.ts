@@ -41,15 +41,29 @@ export type NewSubmission = {
 
 export type SubmissionEdit = { title?: string; note?: string; topic?: string };
 
+/**
+ * The API sends times as unix seconds (see SUBMISSIONS.md); the rest of the app works with ISO
+ * strings. An ISO string is accepted too. Undefined for anything else.
+ */
+function isoTime(value: unknown): string | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return new Date(value * 1000).toISOString();
+  }
+  if (typeof value === "string" && !Number.isNaN(Date.parse(value))) return value;
+  return undefined;
+}
+
 /** Exported for tests. Undefined when the payload is not a usable submission. */
 export function parseSubmission(json: unknown): Submission | undefined {
   if (!isRecord(json)) return undefined;
-  const { id, url, status, createdAt, updatedAt } = json;
+  const { id, url, status } = json;
+  const createdAt = isoTime(json.createdAt);
+  const updatedAt = isoTime(json.updatedAt);
   if (
     typeof id !== "string" ||
     typeof url !== "string" ||
-    typeof createdAt !== "string" ||
-    typeof updatedAt !== "string" ||
+    createdAt === undefined ||
+    updatedAt === undefined ||
     typeof status !== "string" ||
     !(SUBMISSION_STATUSES as readonly string[]).includes(status)
   ) {

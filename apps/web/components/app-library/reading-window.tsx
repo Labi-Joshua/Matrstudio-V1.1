@@ -70,7 +70,11 @@ export function ReadingWindow({
 
   return (
     <div className="fixed inset-0 z-50">
-      <div aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-static-black/40 backdrop-blur-sm" />
+      <div
+        aria-hidden="true"
+        onClick={onClose}
+        className="absolute inset-0 bg-static-black/40 backdrop-blur-sm"
+      />
       <div
         ref={panelRef}
         role="dialog"

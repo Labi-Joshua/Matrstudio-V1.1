@@ -117,7 +117,7 @@ export function PathCard({ path, progress }: { path: DashboardPath; progress?: P
   return (
     <li className="w-[300px] shrink-0 snap-start md:w-auto">
       <Link
-        href={ROUTES.app.pathTopic(path.topicSlug)}
+        href={path.href ?? ROUTES.app.pathTopic(path.topicSlug)}
         className={`card-lift flex h-full flex-col overflow-clip rounded-2xl border border-border-soft bg-bg-base ${FOCUS}`}
       >
         <span className="relative block">

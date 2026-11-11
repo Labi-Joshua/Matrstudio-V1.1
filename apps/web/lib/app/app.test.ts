@@ -49,6 +49,20 @@ describe("nav model", () => {
     expect(currentLabel("/dashboard")).toBe("Home");
     expect(currentLabel("/somewhere-else")).toBe("Home");
   });
+
+  it("labels the profile, settings, request and lesson pages", () => {
+    expect(currentLabel("/profile")).toBe("Profile");
+    expect(currentLabel("/profile/")).toBe("Profile");
+    expect(currentLabel("/profile/edit")).toBe("Edit profile");
+    expect(currentLabel("/settings/account")).toBe("Settings");
+    expect(currentLabel("/settings")).toBe("Settings");
+    expect(currentLabel("/learn/help")).toBe("Help centre");
+    expect(currentLabel("/learn/help/request")).toBe("Your request");
+    expect(currentLabel("/learn/help/contact")).toBe("Help centre");
+    expect(currentLabel("/learn/paths/ui-ux/ui-ux-design-foundations/lessons/intro")).toBe("Paths");
+    expect(currentLabel("/learn/submit")).toBe("Submit a resource");
+    expect(currentLabel("/settingsish")).toBe("Home");
+  });
 });
 
 describe("profile helpers", () => {

@@ -1,0 +1,63 @@
+name: Rollback
+
+# Puts a Worker back on an earlier version. Run it from the Actions tab (always from main).
+# Code only: D1 migrations are not undone, which is why they must stay backward compatible.
+on:
+  workflow_dispatch:
+    inputs:
+      worker:
+        description: Which Worker to roll back.
+        type: choice
+        options: [web, backend]
+        required: true
+      version_id:
+        description: Version to roll back to. Leave empty for the previous version.
+        type: string
+        required: false
+      reason:
+        description: Why (recorded in the Cloudflare deployment history).
+        type: string
+        required: true
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  rollback:
+    name: Roll back ${{ inputs.worker }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Inputs go through env vars, never straight into the script.
+      - name: Roll back
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WORKER: ${{ inputs.worker }}
+          VERSION_ID: ${{ inputs.version_id }}
+          REASON: ${{ inputs.reason }}
+        run: |
+          if [ "$WORKER" = backend ]; then dir=packages/backend; else dir=apps/web; fi
+          cd "$dir"
+          if [ -n "$VERSION_ID" ]; then
+            pnpm exec wrangler rollback "$VERSION_ID" --message "$REASON" --yes
+          else
+            pnpm exec wrangler rollback --message "$REASON" --yes
+          fi
+      - name: Smoke test
+        env:
+          WORKER: ${{ inputs.worker }}
+        run: |
+          if [ "$WORKER" = backend ]; then bash .github/scripts/smoke.sh api; else bash .github/scripts/smoke.sh web; fi

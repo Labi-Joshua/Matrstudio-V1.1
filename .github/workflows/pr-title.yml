@@ -30,6 +30,8 @@ jobs:
           scopes: |
             waitlist
             landing
+            web
+            deps
             user-app
             admin
             backend

@@ -1,0 +1,194 @@
+name: Deploy
+
+# Production release pipeline. Runs when a pull request is merged into main (and by hand).
+#
+#   plan            which Workers changed since the last release tag
+#   verify          lint, typecheck, test and build the merged commit
+#   deploy-backend  D1 migrations, then the API Worker, then a smoke test (rolls back if it fails)
+#   deploy-web      the site Worker, after the API so it never ships ahead of what it calls
+#   release         tags the commit and writes the GitHub Release notes from the merged PR titles
+#
+# See docs/RELEASING.md.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - ".github/CODEOWNERS"
+      - ".github/dependabot.yml"
+      - ".github/rulesets/**"
+  workflow_dispatch:
+    inputs:
+      target:
+        description: What to deploy. "auto" deploys what changed since the last release.
+        type: choice
+        options: [auto, web, backend, both]
+        default: auto
+
+# One production deploy at a time, and never cancel one that is already running. A queued run is
+# replaced by a newer one, which is safe: every run deploys the head of main.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  TURBO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      web: ${{ steps.targets.outputs.web }}
+      backend: ${{ steps.targets.outputs.backend }}
+      base: ${{ steps.targets.outputs.base }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # the plan diffs against the last release tag
+          fetch-tags: true
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Work out what to deploy
+        id: targets
+        env:
+          DISPATCH_TARGET: ${{ inputs.target }}
+        run: bash .github/scripts/plan-targets.sh
+
+  verify:
+    name: Verify merged commit
+    needs: plan
+    if: needs.plan.outputs.web == 'true' || needs.plan.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm turbo run typecheck test build
+
+  deploy-backend:
+    name: Deploy API Worker
+    needs: [plan, verify]
+    if: needs.plan.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Migrations first. They are written to be backward compatible (see docs/RELEASING.md), so the
+      # Worker that is live keeps working until the new one replaces it. They are not rolled back.
+      - name: Apply D1 migrations
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: packages/backend
+          command: d1 migrations apply matr-d1 --remote
+      - name: Deploy Worker
+        id: deploy
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: packages/backend
+          command: deploy
+      - name: Smoke test
+        run: bash .github/scripts/smoke.sh api
+      - name: Roll back after a failed smoke test
+        if: ${{ failure() && steps.deploy.outcome == 'success' }}
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: packages/backend
+          command: rollback --message "automatic rollback after a failed smoke test" --yes
+
+  deploy-web:
+    name: Deploy site Worker
+    needs: [plan, verify, deploy-backend]
+    # The API deploy may be skipped (nothing changed there), but it must not have failed.
+    if: >-
+      ${{ !cancelled()
+      && needs.plan.outputs.web == 'true'
+      && needs.verify.result == 'success'
+      && contains(fromJSON('["success","skipped"]'), needs.deploy-backend.result) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build static export
+        run: pnpm turbo run build --filter=@matr/web
+      - name: Deploy Worker with static assets
+        id: deploy
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/web
+          command: deploy
+      - name: Smoke test
+        run: bash .github/scripts/smoke.sh web
+      - name: Roll back after a failed smoke test
+        if: ${{ failure() && steps.deploy.outcome == 'success' }}
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/web
+          command: rollback --message "automatic rollback after a failed smoke test" --yes
+
+  release:
+    name: Record release
+    needs: [plan, deploy-backend, deploy-web]
+    # Only when something shipped and nothing failed, so a tag always means "this is live".
+    if: >-
+      ${{ !cancelled()
+      && !contains(needs.*.result, 'failure')
+      && (needs.deploy-backend.result == 'success' || needs.deploy-web.result == 'success') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write # create the tag and the release
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BASE: ${{ needs.plan.outputs.base }}
+      BACKEND: ${{ needs.deploy-backend.result }}
+      WEB: ${{ needs.deploy-web.result }}
+    steps:
+      - name: Create the release
+        run: |
+          tag="release-$(date -u +%Y.%m.%d)-${GITHUB_RUN_NUMBER}"
+          shipped=()
+          if [ "$BACKEND" = success ]; then shipped+=(backend); fi
+          if [ "$WEB" = success ]; then shipped+=(web); fi
+          args=(--repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "$tag (${shipped[*]})" --generate-notes --latest)
+          if [ -n "$BASE" ]; then args+=(--notes-start-tag "$BASE"); fi
+          gh release create "$tag" "${args[@]}"

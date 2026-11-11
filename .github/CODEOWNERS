@@ -1,0 +1,11 @@
+# Who is asked to review what. Turn on "Require review from Code Owners" in the main ruleset
+# once there is more than one person on the team.
+*                              @Labi-Joshua
+
+# The release machinery, infrastructure, auth and the database
+/.github/                      @Labi-Joshua
+**/wrangler.toml               @Labi-Joshua
+/packages/backend/migrations/  @Labi-Joshua
+/packages/backend/src/auth/    @Labi-Joshua
+/apps/web/worker/              @Labi-Joshua
+/docs/SECURITY-AUTH.md         @Labi-Joshua

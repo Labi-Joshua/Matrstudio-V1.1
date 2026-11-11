@@ -24,7 +24,8 @@ import { SearchIcon } from "../app/icons";
 import { FOCUS } from "../app/ui";
 import { BookIcon, PathCover, TOPIC_LOOK } from "../landing/at-work-art";
 import { SampleTag } from "./art";
-import { Chip, FilterSheet, SelectMenu, TopicChips, typeOptions } from "./filters";
+import { Chip, SelectMenu, TopicChips, typeOptions } from "./filters";
+import { FilterSheet } from "./filters-sheet";
 import { LibraryCard } from "./resource-card";
 import { BackLink, BTN_PRIMARY, BTN_SECONDARY, PageHeader, StateBlock } from "./ui";
 

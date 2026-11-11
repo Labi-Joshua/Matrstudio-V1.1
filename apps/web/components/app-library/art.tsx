@@ -1,5 +1,6 @@
 import type { ReactNode, SVGProps } from "react";
 import type { LibraryKind } from "../../lib/app/library-data";
+import { LibraryIcon } from "../app/icons";
 
 /**
  * Small visuals shared by the in-app Library and Saved screens: the generated thumbnail, a few
@@ -158,7 +159,22 @@ export function SampleTag() {
  * Illustration for the empty and error states (Figma "No resources match", "Nothing saved yet",
  * "No results"): two stacked outlined cards in the brand colour, with a glyph on the top one.
  */
-export function StateArt({ glyph }: { glyph: "saved" | "filter" | "search" | "alert" }) {
+export function StateArt({
+  glyph,
+}: {
+  glyph: "saved" | "filter" | "search" | "alert" | "library";
+}) {
+  if (glyph === "library") {
+    // "Couldn't load": the library mark in a dashed brand circle.
+    return (
+      <span
+        aria-hidden="true"
+        className="flex size-14 items-center justify-center rounded-full border border-primary-border/60 border-dashed bg-primary-accent text-primary-text"
+      >
+        <LibraryIcon size={24} />
+      </span>
+    );
+  }
   if (glyph === "alert") {
     return (
       <span

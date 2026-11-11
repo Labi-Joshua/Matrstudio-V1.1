@@ -6,6 +6,7 @@ import { StateArt } from "./art";
 /** Button looks shared by the Library and Saved screens (same as the Home dashboard's). */
 export const BTN_PRIMARY = `btn-lift inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 font-medium text-[14px] text-static-white leading-5 tracking-[-0.14px] ${FOCUS}`;
 export const BTN_SECONDARY = `btn-lift inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-border bg-bg-base px-3 font-medium text-[14px] text-text leading-5 tracking-[-0.14px] shadow-e1 ${FOCUS}`;
+export const BTN_DARK = `btn-lift inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-text px-3 font-medium text-[14px] text-bg-base leading-5 tracking-[-0.14px] ${FOCUS}`;
 export const BTN_DISABLED =
   "inline-flex h-10 cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border border-border-soft bg-bg-fill1 px-3 font-medium text-[14px] text-text-tertiary leading-5 tracking-[-0.14px]";
 
@@ -49,12 +50,15 @@ export function StateBlock({
   body,
   children,
   role,
+  large,
 }: {
-  glyph: "saved" | "filter" | "search" | "alert";
+  glyph: "saved" | "filter" | "search" | "alert" | "library";
   title: string;
   body: string;
   children?: ReactNode;
   role?: "alert" | "status";
+  /** Bigger title, for the full-page "couldn't load" state. */
+  large?: boolean;
 }) {
   return (
     <div
@@ -63,7 +67,11 @@ export function StateBlock({
     >
       <StateArt glyph={glyph} />
       <div className="flex flex-col gap-1 pt-2">
-        <h2 className="font-medium text-[16px] text-text leading-6 tracking-[-0.16px]">{title}</h2>
+        <h2
+          className={`font-medium text-text ${large ? "text-[20px] leading-7 tracking-[-0.2px]" : "text-[16px] leading-6 tracking-[-0.16px]"}`}
+        >
+          {title}
+        </h2>
         <p className="text-[14px] text-text-secondary leading-5 tracking-[-0.14px]">{body}</p>
       </div>
       {children ? <div className="flex flex-wrap justify-center gap-2 pt-2">{children}</div> : null}

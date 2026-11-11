@@ -23,6 +23,7 @@ import {
   searchPaths,
   toSearchString,
 } from "./library-filters";
+import { hideDelay, showDelay } from "./library-loading";
 
 const sample = buildLibraryModel(realCatalogue, true);
 const valid = {
@@ -231,5 +232,18 @@ describe("paging", () => {
     expect(pageItems(1, 1)).toEqual([1]);
     expect(pageItems(2, 4)).toEqual([1, 2, 3, 4]);
     expect(pageItems(5, 12)).toEqual([1, "gap", 4, 5, 6, "gap", 12]);
+  });
+});
+
+describe("skeleton timing", () => {
+  it("waits 150 ms before showing and counts time already spent", () => {
+    expect(showDelay(1000, 1000)).toBe(150);
+    expect(showDelay(1000, 1100)).toBe(50);
+    expect(showDelay(1000, 1400)).toBe(0);
+  });
+  it("keeps a shown skeleton for at least 300 ms", () => {
+    expect(hideDelay(5000, 5100)).toBe(200);
+    expect(hideDelay(5000, 5300)).toBe(0);
+    expect(hideDelay(5000, 9000)).toBe(0);
   });
 });

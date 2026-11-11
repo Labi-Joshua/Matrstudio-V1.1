@@ -23,11 +23,11 @@ async function setup() {
   const app = await createAdminApp();
   const boss = await app.enrolAdmin(BOSS, "super_admin", "Tolu Adeyemi");
   const curRole = await createCustomRole(app.env, {
-    name: "Curator",
+    name: "Test curator",
     permissions: { resources: "manage", paths: "manage", review_queues: "manage" },
   });
   const supRole = await createCustomRole(app.env, {
-    name: "Support",
+    name: "Test support",
     permissions: { support_inbox: "manage", resources: "none", review_queues: "none" },
   });
   const cur = await app.enrolAdmin(CUR, curRole.id, "Kemi Curator");

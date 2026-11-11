@@ -20,6 +20,7 @@ import { handleAuthEmailBatch } from "./queue/auth-email";
 import { admin } from "./routes/admin";
 import { health } from "./routes/health";
 import { me } from "./routes/me";
+import { publicProfiles } from "./routes/public-profile";
 import { uploads } from "./routes/uploads";
 import { waitlist } from "./routes/waitlist";
 
@@ -67,6 +68,8 @@ app.on(["GET", "POST"], "/api/auth/*", async (c) => {
   return res;
 });
 app.route("/api/admin", admin);
+// Unauthenticated profile pages and photos: registered first, so the session guard in `me` never runs.
+app.route("/api", publicProfiles);
 app.route("/api", me);
 
 app.route("/health", health);

@@ -21,6 +21,8 @@ export const ROUTES = {
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
   dashboard: "/dashboard",
+  profile: "/profile",
+  publicProfile: (username: string) => `/@${username}`,
   onboarding: "/onboarding",
   topic: (slug: string) => `/paths/${slug}`,
   /**

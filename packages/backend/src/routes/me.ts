@@ -13,6 +13,7 @@ import { FRESH_AUTH_SECONDS, SESSION_COOKIE } from "../auth/index";
 import { verifyPassword } from "../auth/password";
 import { clientIp, describeDevice, emailRef, truncateIp } from "../auth/util";
 import { notifications } from "./notifications";
+import { profile } from "./profile";
 import { saved } from "./saved";
 import { submissions } from "./submissions";
 import { support } from "./support";
@@ -23,6 +24,7 @@ me.route("/me/submissions", submissions);
 me.route("/me/saved", saved);
 me.route("/me/notifications", notifications);
 me.route("/me/support", support);
+me.route("/me/profile", profile);
 
 // Validation failures use the same { code, message } body as every other auth error.
 const invalid = (

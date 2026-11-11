@@ -9,6 +9,7 @@
  *   per-page Content-Security-Policy (see security.ts).
  */
 import cspHashes from "./csp-hashes.json";
+import { isProfilePath } from "./profile-path";
 import { type CspHashes, routeKey, withSecurityHeaders } from "./security";
 
 type Fetcher = { fetch(request: Request): Promise<Response> };
@@ -27,9 +28,13 @@ export default {
     // The API sets its own security headers.
     if (url.pathname.startsWith("/api/")) return env.API.fetch(request);
 
-    const response = await env.ASSETS.fetch(request);
+    // /@name is the public profile page: serve the static /u page and let it read the name.
+    const profile = isProfilePath(url.pathname);
+    const response = await env.ASSETS.fetch(
+      profile ? new Request(new URL("/u", url), request) : request,
+    );
     // An unknown path is served as 404.html, whose scripts are listed under "/404".
-    const key = response.status === 404 ? "/404" : routeKey(url.pathname);
+    const key = response.status === 404 ? "/404" : routeKey(profile ? "/u" : url.pathname);
     return withSecurityHeaders(response, hashes[key] ?? hashes["/404"] ?? []);
   },
 };

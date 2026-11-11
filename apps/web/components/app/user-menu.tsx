@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useId } from "react";
 import { displayName } from "../../lib/app/profile";
+import { ROUTES } from "../../lib/routes";
 import { usePopover } from "./hooks";
 import { ChevronDownIcon, ChevronRightIcon, LogOutIcon, SpinnerIcon } from "./icons";
 import { useSession } from "./session";
@@ -11,13 +13,22 @@ import { Avatar, FOCUS, ThemeSwitch } from "./ui";
  * Profile menu (Figma "Home / Desktop profile menu open"): avatar and chevron in the top bar
  * open a popover with who is signed in, the account rows, the theme choice and Sign out. The
  * profile stats and "View profile" from the frame are left out (no progress or profile screens
- * yet); the three account rows have no destination, so they render disabled with "Coming soon".
+ * yet). View profile opens /profile; the account rows open the settings pages (/settings/account,
+ * built separately).
  */
-const DISABLED_ROWS = [
-  { label: "Account settings", hint: "Name, email and password" },
-  { label: "Notification settings", hint: "Email and in-app alerts" },
-  { label: "Learning preferences", hint: "Goal, level and topics" },
+const SETTINGS = "/settings/account";
+const ROWS = [
+  { label: "Account settings", hint: "Name, email and password", href: SETTINGS },
+  {
+    label: "Notification settings",
+    hint: "Email and in-app alerts",
+    href: `${SETTINGS}#notifications`,
+  },
+  { label: "Learning preferences", hint: "Goal, level and topics", href: `${SETTINGS}#learning` },
 ] as const;
+
+/** The shell owns the phone menu and the popover owns its state, so a link closes them the way Escape does. */
+const closeSurfaces = () => document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
 
 /** Who is signed in, the account rows and the theme choice: the body of the popover and of the phone menu's Profile view. */
 export function ProfileContent() {
@@ -37,30 +48,36 @@ export function ProfileContent() {
           ) : null}
         </div>
       </div>
+      <div className="px-4 pb-3">
+        <Link
+          href={ROUTES.profile}
+          onClick={closeSurfaces}
+          className={`flex h-9 w-full items-center justify-center rounded-lg border border-border bg-bg-base font-medium text-[14px] text-text leading-5 tracking-[-0.14px] shadow-e1 ${FOCUS}`}
+        >
+          View profile
+        </Link>
+      </div>
       <div className="border-border-soft border-t px-2 py-2">
         <p className="px-2 pt-1 pb-1.5 font-medium text-[12px] text-text-tertiary uppercase leading-4 tracking-[0.6px]">
           Account &amp; preferences
         </p>
-        {DISABLED_ROWS.map((row) => (
-          <button
+        {ROWS.map((row) => (
+          <Link
             key={row.label}
-            type="button"
-            aria-disabled="true"
-            title="Coming soon"
-            onClick={(event) => event.preventDefault()}
-            className={`flex w-full cursor-not-allowed items-center gap-2 rounded-lg px-2 py-2 text-left ${FOCUS}`}
+            href={row.href}
+            onClick={closeSurfaces}
+            className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left hover:bg-bg-fill2 ${FOCUS}`}
           >
             <span className="min-w-0 flex-1">
-              <span className="block font-medium text-[14px] text-text-tertiary leading-5 tracking-[-0.14px]">
+              <span className="block font-medium text-[14px] text-text leading-5 tracking-[-0.14px]">
                 {row.label}
-                <span className="sr-only"> (coming soon)</span>
               </span>
               <span className="block text-[12px] text-text-tertiary leading-4 tracking-[-0.12px]">
                 {row.hint}
               </span>
             </span>
             <ChevronRightIcon size={16} className="text-text-tertiary" />
-          </button>
+          </Link>
         ))}
       </div>
       <div className="border-border-soft border-t px-4 py-3">

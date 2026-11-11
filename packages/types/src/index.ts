@@ -397,13 +397,7 @@ export const createSupportTicketSchema = z
           .string()
           .trim()
           .max(SUPPORT_LIMITS.contextLink)
-          .refine((v) => {
-            try {
-              return new URL(v).protocol === "https:";
-            } catch {
-              return false;
-            }
-          })
+          .regex(/^https:\/\/[^\s/?#]+\S*$/)
           .optional(),
       })
       .strict()

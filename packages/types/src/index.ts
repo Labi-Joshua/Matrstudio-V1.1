@@ -529,7 +529,8 @@ export const usernameSchema = z
   );
 
 // Plain text without control characters.
-const noControl = (v: string) => [...v].every((ch) => ch.charCodeAt(0) > 31 && ch.charCodeAt(0) !== 127);
+const noControl = (v: string) =>
+  [...v].every((ch) => ch.charCodeAt(0) > 31 && ch.charCodeAt(0) !== 127);
 export const displayNameSchema = z.string().trim().min(1).max(DISPLAY_NAME_MAX).refine(noControl);
 export const bioSchema = z
   .string()

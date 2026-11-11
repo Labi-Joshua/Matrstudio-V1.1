@@ -7,6 +7,7 @@ import { ROUTES } from "../../lib/routes";
 import { HomeSkeletonBlocks } from "./home-states";
 import { useMediaQuery, useModalSurface, useSkeletonGate } from "./hooks";
 import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, CloseIcon } from "./icons";
+import { OverlaysProvider } from "./overlays";
 import { SessionProvider } from "./session";
 import { Sidebar, Wordmark } from "./sidebar";
 import { Breadcrumb, DesktopTopBar, PhoneBar } from "./topbar";
@@ -33,7 +34,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (state.status === "authenticated") {
     return (
       <SessionProvider me={state.me}>
-        <Frame>{children}</Frame>
+        <OverlaysProvider>
+          <Frame>{children}</Frame>
+        </OverlaysProvider>
       </SessionProvider>
     );
   }

@@ -19,11 +19,70 @@ const DISABLED_ROWS = [
   { label: "Learning preferences", hint: "Goal, level and topics" },
 ] as const;
 
+/** Who is signed in, the account rows and the theme choice: the body of the popover and of the phone menu's Profile view. */
+export function ProfileContent() {
+  const { me } = useSession();
+  const level = levelBadge(me.onboarding.level);
+  return (
+    <>
+      <div className="flex items-start gap-3 p-4">
+        <Avatar me={me} size={40} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium text-[15px] text-text leading-5 tracking-[-0.15px]">
+            {displayName(me)}
+          </p>
+          {me.name ? (
+            <p className="truncate text-[13px] text-text-tertiary leading-[18px] tracking-[-0.13px]">
+              {me.email}
+            </p>
+          ) : null}
+          {level ? (
+            <span className="mt-1.5 inline-block rounded-md bg-success-focus px-1.5 py-0.5 font-medium text-[12px] text-success-text leading-4 tracking-[-0.12px]">
+              {level}
+            </span>
+          ) : null}
+        </div>
+      </div>
+      <div className="border-border-soft border-t px-2 py-2">
+        <p className="px-2 pt-1 pb-1.5 font-medium text-[12px] text-text-tertiary uppercase leading-4 tracking-[0.6px]">
+          Account &amp; preferences
+        </p>
+        {DISABLED_ROWS.map((row) => (
+          <button
+            key={row.label}
+            type="button"
+            aria-disabled="true"
+            title="Coming soon"
+            onClick={(event) => event.preventDefault()}
+            className={`flex w-full cursor-not-allowed items-center gap-2 rounded-lg px-2 py-2 text-left ${FOCUS}`}
+          >
+            <span className="min-w-0 flex-1">
+              <span className="block font-medium text-[14px] text-text-tertiary leading-5 tracking-[-0.14px]">
+                {row.label}
+                <span className="sr-only"> (coming soon)</span>
+              </span>
+              <span className="block text-[12px] text-text-tertiary leading-4 tracking-[-0.12px]">
+                {row.hint}
+              </span>
+            </span>
+            <ChevronRightIcon size={16} className="text-text-tertiary" />
+          </button>
+        ))}
+      </div>
+      <div className="border-border-soft border-t px-4 py-3">
+        <p className="pb-2 font-medium text-[12px] text-text-tertiary uppercase leading-4 tracking-[0.6px]">
+          Theme
+        </p>
+        <ThemeSwitch name="Menu" />
+      </div>
+    </>
+  );
+}
+
 export function UserMenu() {
   const { me, signOut, signingOut, signOutError } = useSession();
   const { open, toggle, buttonRef, panelRef } = usePopover();
   const panelId = useId();
-  const level = levelBadge(me.onboarding.level);
 
   return (
     <div className="relative hidden md:block">
@@ -45,56 +104,7 @@ export function UserMenu() {
           ref={panelRef}
           className="absolute top-full right-0 z-50 mt-2 w-[330px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-border-soft bg-bg-base shadow-card"
         >
-          <div className="flex items-start gap-3 p-4">
-            <Avatar me={me} size={40} />
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-medium text-[15px] text-text leading-5 tracking-[-0.15px]">
-                {displayName(me)}
-              </p>
-              {me.name ? (
-                <p className="truncate text-[13px] text-text-tertiary leading-[18px] tracking-[-0.13px]">
-                  {me.email}
-                </p>
-              ) : null}
-              {level ? (
-                <span className="mt-1.5 inline-block rounded-md bg-success-focus px-1.5 py-0.5 font-medium text-[12px] text-success-text leading-4 tracking-[-0.12px]">
-                  {level}
-                </span>
-              ) : null}
-            </div>
-          </div>
-          <div className="border-border-soft border-t px-2 py-2">
-            <p className="px-2 pt-1 pb-1.5 font-medium text-[12px] text-text-tertiary uppercase leading-4 tracking-[0.6px]">
-              Account &amp; preferences
-            </p>
-            {DISABLED_ROWS.map((row) => (
-              <button
-                key={row.label}
-                type="button"
-                aria-disabled="true"
-                title="Coming soon"
-                onClick={(event) => event.preventDefault()}
-                className={`flex w-full cursor-not-allowed items-center gap-2 rounded-lg px-2 py-2 text-left ${FOCUS}`}
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block font-medium text-[14px] text-text-tertiary leading-5 tracking-[-0.14px]">
-                    {row.label}
-                    <span className="sr-only"> (coming soon)</span>
-                  </span>
-                  <span className="block text-[12px] text-text-tertiary leading-4 tracking-[-0.12px]">
-                    {row.hint}
-                  </span>
-                </span>
-                <ChevronRightIcon size={16} className="text-text-tertiary" />
-              </button>
-            ))}
-          </div>
-          <div className="border-border-soft border-t px-4 py-3">
-            <p className="pb-2 font-medium text-[12px] text-text-tertiary uppercase leading-4 tracking-[0.6px]">
-              Theme
-            </p>
-            <ThemeSwitch name="Menu" />
-          </div>
+          <ProfileContent />
           <div className="border-border-soft border-t p-2">
             <button
               type="button"

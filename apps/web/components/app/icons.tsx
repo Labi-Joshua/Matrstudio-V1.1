@@ -173,6 +173,59 @@ export const SpinnerIcon = (p: IconProps) => (
   </Glyph>
 );
 
+export const ArrowLeftIcon = (p: IconProps) => (
+  <Glyph {...p}>
+    <path d="M19 12H5M12 19l-7-7 7-7" />
+  </Glyph>
+);
+
+export const AlertCircleIcon = (p: IconProps) => (
+  <Glyph {...p}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 8v4M12 16h.01" />
+  </Glyph>
+);
+
+export const MessageIcon = (p: IconProps) => (
+  <Glyph {...p}>
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </Glyph>
+);
+
+export const WrenchIcon = (p: IconProps) => (
+  <Glyph {...p}>
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z" />
+  </Glyph>
+);
+
+export const WifiOffIcon = (p: IconProps) => (
+  <Glyph {...p}>
+    <path d="m2 2 20 20M8.5 16.5a5 5 0 0 1 7 0M2 8.82a15 15 0 0 1 4.17-2.65M10.66 5c4.01-.36 8.14.9 11.34 3.76M16.85 11.25a10 10 0 0 1 2.22 1.68M5 12.86a10 10 0 0 1 5.17-2.69M12 20h.01" />
+  </Glyph>
+);
+
+export const StarIcon = (p: IconProps) => (
+  <Glyph {...p}>
+    <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
+  </Glyph>
+);
+
+export const PlayCircleIcon = (p: IconProps) => (
+  <Glyph {...p}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="m10 8 6 4-6 4z" />
+  </Glyph>
+);
+
+export const ShareIcon = (p: IconProps) => (
+  <Glyph {...p}>
+    <circle cx="18" cy="5" r="3" />
+    <circle cx="6" cy="12" r="3" />
+    <circle cx="18" cy="19" r="3" />
+    <path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98" />
+  </Glyph>
+);
+
 const NAV_ICONS: Record<NavIcon, (p: IconProps) => ReactNode> = {
   home: HomeIcon,
   paths: RouteIcon,

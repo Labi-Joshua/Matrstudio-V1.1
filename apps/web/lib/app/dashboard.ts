@@ -11,6 +11,7 @@ import {
   type OnboardingPath,
 } from "../pages/onboarding-content";
 import { TOPIC_CONTENT, USE_SAMPLE_WHEN_EMPTY } from "../pages/topic-content";
+import type { NotificationItem } from "./notifications";
 import { joinWithAnd } from "./profile";
 
 /**
@@ -112,3 +113,241 @@ export function buildDashboard(
     library: showLibrary ? libraryPicks(libraryData.resources, topicNames) : [],
   };
 }
+
+/**
+ * The four Home layouts of the design. There is no lesson-progress API yet, so production only
+ * ever resolves "new-account" (see `pickHomeVariant`); the other three are built from the typed
+ * `HomeProgress` below, rendered by pure view components and exercised with `HOME_FIXTURES`.
+ */
+export type HomeVariant = "new-account" | "in-progress" | "welcome-back" | "finished";
+
+export type ProgressPath = DashboardPath & {
+  lessonsDone: number;
+  /** Next lesson to open; null when the path is finished or not started. */
+  next: {
+    number: number;
+    title: string;
+    format: "Video" | "Article" | "Tool";
+    minutes: number;
+  } | null;
+  /** Whole days since the learner last opened the path. */
+  lastActiveDays: number;
+};
+
+export type HomeProgress = {
+  /** Paths the learner has started, most recently active first. */
+  started: ProgressPath[];
+  /** The path finished most recently, if any, and how many days ago (0 = today). */
+  finished: { path: ProgressPath; daysAgo: number } | null;
+  /** Paths to suggest next. */
+  recommended: DashboardPath[];
+  /** What changed since the last visit. */
+  away: NotificationItem[];
+};
+
+/** Days away after which "Welcome back" replaces the plain greeting. */
+export const WELCOME_BACK_AFTER_DAYS = 7;
+
+/** Picks the layout; with no progress data (every learner today) it is the new-account one. */
+export function pickHomeVariant(progress: HomeProgress | null): HomeVariant {
+  if (!progress) return "new-account";
+  if (progress.finished && progress.finished.daysAgo <= 1) return "finished";
+  const last = progress.started[0];
+  if (!last) return "new-account";
+  return last.lastActiveDays >= WELCOME_BACK_AFTER_DAYS ? "welcome-back" : "in-progress";
+}
+
+export function progressPercent(done: number, total: number): number {
+  if (total <= 0) return 0;
+  return Math.min(100, Math.max(0, Math.round((done / total) * 100)));
+}
+
+export function lastActiveLabel(days: number): string {
+  if (days <= 0) return "Last active today";
+  if (days === 1) return "Last active yesterday";
+  return `Last active ${days} days ago`;
+}
+
+export function greetingPeriod(hour: number): "morning" | "afternoon" | "evening" {
+  if (hour < 12) return "morning";
+  return hour < 18 ? "afternoon" : "evening";
+}
+
+const COUNT_WORD = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+
+/** Heading and sub-line of each progress layout (Figma wording). */
+export function homeIntro(
+  variant: Exclude<HomeVariant, "new-account">,
+  progress: HomeProgress,
+  firstName: string | null,
+  hour: number,
+): { title: string; subtitle: string } {
+  const comma = firstName ? `, ${firstName}` : "";
+  if (variant === "finished") {
+    return {
+      title: `Congratulations${comma}`,
+      subtitle: `You finished ${progress.finished?.path.title ?? "your path"}. Here’s what’s next.`,
+    };
+  }
+  if (variant === "welcome-back") {
+    const days = progress.started[0]?.lastActiveDays ?? 0;
+    return {
+      title: `Welcome back${comma}`,
+      subtitle: `It’s been ${days} days. Here’s where you stopped.`,
+    };
+  }
+  const count = progress.started.length;
+  const word = COUNT_WORD[count] ?? String(count);
+  return {
+    title: `Good ${greetingPeriod(hour)}${comma}`,
+    subtitle: `You have ${word} ${count === 1 ? "path" : "paths"} on the go. Pick up where you left off.`,
+  };
+}
+
+/** Copy of the section tooltips (Figma "Section tooltips"). */
+export const SECTION_TIPS = {
+  continueLearning: "Jump straight back into the next lesson of the path you used last.",
+  pickUp: "The lesson you stopped at, so you can carry on without searching.",
+  yourPaths: "Paths you’ve started or starred. Progress updates as you mark lessons done.",
+  recommendedNext: "Paths matched to your interests and the paths you’ve taken.",
+  pickedForYou:
+    "Paths matched to the interests you chose when you signed up. Star one to keep it in your sidebar.",
+  howItWorks: "A quick look at how paths, lessons and progress work.",
+  libraryPicks:
+    "Free videos, articles and tools outside your paths, picked by curators for your topics.",
+  popularLibrary: "Free resources other learners are opening this week.",
+  saved: "Resources you bookmarked. Tap the bookmark on any resource to save it.",
+  submissions: "Resources you shared and where each one is in review.",
+  share: "Know something useful? Send it to the curators for the library.",
+  whileAway:
+    "What changed since your last visit: curator decisions on your submissions and new lessons in your paths.",
+  finished: "Celebrate and share the path you just completed.",
+  learnNext: "Paths that build on the one you just finished. Start one and it joins your sidebar.",
+  rate: "Your rating helps curators improve the path and helps others choose.",
+  otherInProgress: "Paths you started that are still waiting for you.",
+} as const;
+
+const samplePathCard = (
+  slug: string,
+  title: string,
+  topicSlug: DashboardPath["topicSlug"],
+  lessons: number,
+  hours: number,
+  description: string,
+): DashboardPath => ({
+  slug,
+  title,
+  topicSlug,
+  level: "beginner",
+  lessons,
+  hours,
+  firstLessons: [],
+  sample: true,
+  description,
+});
+
+const foundations = samplePathCard(
+  "ui-ux-foundations",
+  "UI/UX Foundations",
+  "ui-ux",
+  12,
+  8,
+  "Go from layout basics to a tested prototype.",
+);
+const productDesign = samplePathCard(
+  "product-design-essentials",
+  "Product Design Essentials",
+  "product",
+  10,
+  7,
+  "Frame problems, talk to users, map flows and ship features.",
+);
+
+const productInProgress: ProgressPath = {
+  ...productDesign,
+  lessonsDone: 4,
+  next: { number: 5, title: "Mapping user flows", format: "Video", minutes: 15 },
+  lastActiveDays: 3,
+};
+const foundationsInProgress: ProgressPath = {
+  ...foundations,
+  lessonsDone: 3,
+  next: { number: 4, title: "Wireframing basics", format: "Article", minutes: 8 },
+  lastActiveDays: 5,
+};
+const recommended = [
+  samplePathCard(
+    "design-systems-101",
+    "Design Systems 101",
+    "design-systems",
+    11,
+    9,
+    "Build and document a small design system in Figma.",
+  ),
+  samplePathCard(
+    "seo-for-designers",
+    "SEO for Designers",
+    "seo",
+    8,
+    5,
+    "Design pages that people and search engines can find.",
+  ),
+  samplePathCard(
+    "dev-handoff-essentials",
+    "Dev Handoff Essentials",
+    "dev-handoff",
+    9,
+    6,
+    "Specs, tokens and hand-off habits developers love.",
+  ),
+];
+
+/** Design sample data for the three progress layouts: tests and previews only, never shown in production. */
+export const HOME_FIXTURES: Record<Exclude<HomeVariant, "new-account">, HomeProgress> = {
+  "in-progress": {
+    started: [productInProgress, foundationsInProgress],
+    finished: null,
+    recommended,
+    away: [],
+  },
+  "welcome-back": {
+    started: [{ ...foundationsInProgress, lastActiveDays: 9 }, productInProgress],
+    finished: null,
+    recommended,
+    away: [
+      {
+        id: "a1",
+        kind: "curator-approved",
+        title: "Your resource was approved",
+        body: "“Grid systems for web” is now in the library.",
+        createdAt: "2026-11-08T10:00:00.000Z",
+        read: false,
+      },
+      {
+        id: "a2",
+        kind: "curator-changes",
+        title: "Your submission needs a change",
+        body: "“Prototyping micro-interactions”: please link to the full video, not a short clip.",
+        createdAt: "2026-11-06T10:00:00.000Z",
+        read: false,
+      },
+      {
+        id: "a3",
+        kind: "new-lesson",
+        title: "New lesson in UI/UX Foundations",
+        body: "Lesson 13, Accessibility basics, was added to your path.",
+        createdAt: "2026-11-05T10:00:00.000Z",
+        read: false,
+      },
+    ],
+  },
+  finished: {
+    started: [productInProgress],
+    finished: {
+      path: { ...foundations, lessonsDone: 12, next: null, lastActiveDays: 0 },
+      daysAgo: 0,
+    },
+    recommended,
+    away: [],
+  },
+};

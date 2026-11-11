@@ -4,12 +4,14 @@ import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import { useMe } from "../../lib/auth/use-me";
 import { ROUTES } from "../../lib/routes";
-import { useMediaQuery } from "./hooks";
-import { ChevronLeftIcon, ChevronRightIcon, CloseIcon } from "./icons";
+import { HomeSkeletonBlocks } from "./home-states";
+import { useMediaQuery, useModalSurface, useSkeletonGate } from "./hooks";
+import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, CloseIcon } from "./icons";
 import { SessionProvider } from "./session";
 import { Sidebar, Wordmark } from "./sidebar";
 import { Breadcrumb, DesktopTopBar, PhoneBar } from "./topbar";
 import { FOCUS } from "./ui";
+import { ProfileContent } from "./user-menu";
 
 /**
  * The learner app shell (Figma "Navigation and notification"). It is a static export, so the
@@ -21,6 +23,8 @@ import { FOCUS } from "./ui";
 export function AppShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { state, refresh } = useMe();
+  // No skeleton flash for a fast /api/me; once shown it stays long enough to read as a state.
+  const showSkeleton = useSkeletonGate(state.status === "loading");
 
   useEffect(() => {
     if (state.status === "unauthenticated") router.replace(ROUTES.signIn);
@@ -34,6 +38,9 @@ export function AppShell({ children }: { children: ReactNode }) {
     );
   }
   if (state.status === "error") return <LoadError onRetry={refresh} />;
+  if (state.status === "loading" && !showSkeleton) {
+    return <div aria-busy="true" className="min-h-dvh bg-bg-fill1" />;
+  }
   return (
     <ShellSkeleton
       message={
@@ -72,7 +79,7 @@ function Frame({ children }: { children: ReactNode }) {
         <aside
           id={sidebarId}
           aria-label="Sidebar"
-          className={`sticky top-0 h-dvh shrink-0 ${rail ? "w-[88px]" : "w-[320px]"}`}
+          className={`sticky top-0 z-30 h-dvh shrink-0 ${rail ? "w-[88px]" : "w-[320px]"}`}
         >
           <Sidebar variant={rail ? "rail" : "full"} />
         </aside>
@@ -102,10 +109,13 @@ function Frame({ children }: { children: ReactNode }) {
         )}
 
         <div className="flex min-w-0 flex-1 flex-col rounded-t-3xl border-border-soft border-t bg-bg-base md:rounded-tr-none md:border-l">
-          <DesktopTopBar />
-          <div className="px-5 pt-6 md:hidden">
-            <Breadcrumb />
-          </div>
+          {phone ? (
+            <div className="px-5 pt-6">
+              <Breadcrumb />
+            </div>
+          ) : (
+            <DesktopTopBar />
+          )}
           <main
             id="main"
             tabIndex={-1}
@@ -129,41 +139,27 @@ function Frame({ children }: { children: ReactNode }) {
   );
 }
 
-/** The phone menu (Figma "Menu drawer" 330 wide over a scrim): a modal dialog with a focus trap. */
+/**
+ * The phone menu (Figma "Menu drawer" 330 wide over a scrim): a modal dialog with a focus trap.
+ * Tapping the profile card swaps its content for the Profile view (Figma "Profile open: phone
+ * menu (context swap)") and the back arrow swaps it back.
+ */
 function PhoneDrawer({ id, onClose }: { id: string; onClose: () => void }) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
+  const [view, setView] = useState<"menu" | "profile">("menu");
+  const titleId = useId();
+  useModalSurface(panelRef, onClose);
 
+  // The control that was pressed disappears with the swap: put focus on the new view's first control.
+  const swapped = useRef(false);
   useEffect(() => {
-    closeRef.current?.focus();
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-        return;
-      }
-      if (event.key !== "Tab" || !panelRef.current) return;
-      const focusable = panelRef.current.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])',
-      );
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (!first || !last) return;
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = overflow;
-    };
-  }, [onClose]);
+    if (!swapped.current) {
+      swapped.current = true;
+      return;
+    }
+    const target = view === "profile" ? "[data-profile-back]" : "[data-profile-card]";
+    panelRef.current?.querySelector<HTMLElement>(target)?.focus();
+  }, [view]);
 
   return (
     <div className="fixed inset-0 z-50">
@@ -173,22 +169,59 @@ function PhoneDrawer({ id, onClose }: { id: string; onClose: () => void }) {
         ref={panelRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Menu"
+        aria-label={view === "profile" ? undefined : "Menu"}
+        aria-labelledby={view === "profile" ? titleId : undefined}
         className="absolute inset-y-0 left-0 w-[330px] max-w-[88vw] border-border-soft border-r bg-bg-fill1"
       >
-        <div className="absolute top-5 left-6 z-10">
-          <Wordmark />
-        </div>
-        <button
-          ref={closeRef}
-          type="button"
-          aria-label="Close menu"
-          onClick={onClose}
-          className={`absolute top-3.5 right-4 z-10 flex size-10 items-center justify-center rounded-[10px] border border-border-soft bg-bg-base text-text-secondary hover:text-text ${FOCUS}`}
-        >
-          <CloseIcon size={20} />
-        </button>
-        <Sidebar variant="drawer" onNavigate={onClose} />
+        {view === "profile" ? (
+          <div className="flex h-full flex-col overflow-y-auto">
+            <div className="flex items-center gap-3 px-4 pt-3.5 pb-2">
+              <button
+                type="button"
+                data-profile-back
+                aria-label="Back to menu"
+                onClick={() => setView("menu")}
+                className={`flex size-10 shrink-0 items-center justify-center rounded-[10px] border border-border-soft bg-bg-base text-text-secondary hover:text-text ${FOCUS}`}
+              >
+                <ArrowLeftIcon size={20} />
+              </button>
+              <h2
+                id={titleId}
+                className="flex-1 font-semibold text-[22px] text-text leading-7 tracking-[-0.22px]"
+              >
+                Profile
+              </h2>
+              <button
+                type="button"
+                aria-label="Close menu"
+                onClick={onClose}
+                className={`flex size-10 items-center justify-center rounded-[10px] border border-border-soft bg-bg-base text-text-secondary hover:text-text ${FOCUS}`}
+              >
+                <CloseIcon size={20} />
+              </button>
+            </div>
+            <ProfileContent />
+          </div>
+        ) : (
+          <>
+            <div className="absolute top-5 left-6 z-10">
+              <Wordmark />
+            </div>
+            <button
+              type="button"
+              aria-label="Close menu"
+              onClick={onClose}
+              className={`absolute top-3.5 right-4 z-10 flex size-10 items-center justify-center rounded-[10px] border border-border-soft bg-bg-base text-text-secondary hover:text-text ${FOCUS}`}
+            >
+              <CloseIcon size={20} />
+            </button>
+            <Sidebar
+              variant="drawer"
+              onNavigate={onClose}
+              onOpenProfile={() => setView("profile")}
+            />
+          </>
+        )}
       </div>
     </div>
   );
@@ -217,14 +250,8 @@ function ShellSkeleton({ message }: { message: string }) {
           <p role="status" aria-live="polite" className="sr-only">
             {message}
           </p>
-          <div aria-hidden="true" className="mx-auto flex w-full max-w-[1240px] flex-col gap-4">
-            <div className={`${bar} h-10 w-2/3 max-w-[480px]`} />
-            <div className={`${bar} h-5 w-1/2 max-w-[360px]`} />
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              <div className={`${bar} h-[300px]`} />
-              <div className={`${bar} hidden h-[300px] md:block`} />
-              <div className={`${bar} hidden h-[300px] md:block`} />
-            </div>
+          <div className="mx-auto w-full max-w-[1240px]">
+            <HomeSkeletonBlocks />
           </div>
         </main>
       </div>

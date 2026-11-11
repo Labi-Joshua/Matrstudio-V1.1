@@ -27,6 +27,36 @@ import { Avatar, FOCUS, ThemeSwitch } from "./ui";
  */
 export type SidebarVariant = "full" | "rail" | "drawer";
 
+/**
+ * Label bubble for the icon rail: shows on hover and keyboard focus, Escape dismisses it. The
+ * control keeps its own aria-label, so the bubble is hidden from assistive technology.
+ */
+function RailTip({ label, children }: { label: string; children: ReactNode }) {
+  const [dismissed, setDismissed] = useState(false);
+  return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: wrapper only observes events bubbling from the focusable link or button inside
+    <span
+      role="presentation"
+      className="group relative flex"
+      onKeyDown={(event) => {
+        if (event.key === "Escape") setDismissed(true);
+      }}
+      onPointerLeave={() => setDismissed(false)}
+      onBlur={() => setDismissed(false)}
+    >
+      {children}
+      <span
+        aria-hidden="true"
+        className={`pointer-events-none absolute top-1/2 left-full z-50 ml-3 -translate-y-1/2 whitespace-nowrap rounded-lg bg-text px-2.5 py-1.5 font-medium text-[13px] text-bg-base leading-[18px] tracking-[-0.13px] opacity-0 shadow-e2 transition-opacity duration-100 motion-reduce:transition-none ${
+          dismissed ? "" : "group-focus-within:opacity-100 group-hover:opacity-100"
+        }`}
+      >
+        {label}
+      </span>
+    </span>
+  );
+}
+
 const ITEM_BASE = `flex w-full items-center rounded-xl text-[16px] leading-6 tracking-[-0.16px] ${FOCUS}`;
 
 function NavRow({
@@ -47,12 +77,21 @@ function NavRow({
     <span className="min-w-0 flex-1 truncate text-left">{item.label}</span>
   );
 
+  const wrap = (node: ReactNode) =>
+    rail ? (
+      <RailTip label={item.href === null ? `${item.label} (coming soon)` : item.label}>
+        {node}
+      </RailTip>
+    ) : (
+      node
+    );
+
   if (item.href === null) {
-    return (
+    return wrap(
       <button
         type="button"
         aria-disabled="true"
-        title="Coming soon"
+        title={rail ? undefined : "Coming soon"}
         aria-label={rail ? `${item.label} (coming soon)` : undefined}
         onClick={(event) => event.preventDefault()}
         className={`${ITEM_BASE} ${layout} cursor-not-allowed font-normal text-text-tertiary`}
@@ -60,15 +99,14 @@ function NavRow({
         {icon}
         {label}
         {rail ? null : <span className="sr-only">(coming soon)</span>}
-      </button>
+      </button>,
     );
   }
-  return (
+  return wrap(
     <Link
       href={item.href}
       aria-current={active ? "page" : undefined}
       aria-label={rail ? item.label : undefined}
-      title={rail ? item.label : undefined}
       onClick={onNavigate}
       className={`${ITEM_BASE} ${layout} ${
         active
@@ -78,7 +116,7 @@ function NavRow({
     >
       {icon}
       {label}
-    </Link>
+    </Link>,
   );
 }
 
@@ -136,13 +174,12 @@ function YourPaths() {
 
 function SignOutButton({ rail }: { rail: boolean }) {
   const { signOut, signingOut } = useSession();
-  return (
+  const button = (
     <button
       type="button"
       onClick={signOut}
       aria-disabled={signingOut}
       aria-label={rail ? "Sign out" : undefined}
-      title={rail ? "Sign out" : undefined}
       className={`${ITEM_BASE} ${
         rail ? "size-12 justify-center" : "gap-3 px-3 py-2.5"
       } font-normal text-text-secondary hover:bg-bg-fill2 hover:text-text`}
@@ -153,13 +190,20 @@ function SignOutButton({ rail }: { rail: boolean }) {
       )}
     </button>
   );
+  return rail ? <RailTip label="Sign out">{button}</RailTip> : button;
 }
 
-function ProfileCard() {
+/** Profile card at the top of the phone menu; tapping it swaps the menu to the Profile view. */
+function ProfileCard({ onOpen }: { onOpen?: () => void }) {
   const { me } = useSession();
   const level = levelBadge(me.onboarding.level);
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-border-soft bg-bg-base p-3">
+    <button
+      type="button"
+      data-profile-card
+      onClick={onOpen}
+      className={`flex w-full items-center gap-3 rounded-2xl border border-border-soft bg-bg-base p-3 text-left ${FOCUS}`}
+    >
       <Avatar me={me} size={48} />
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium text-[16px] text-text leading-6 tracking-[-0.16px]">
@@ -170,24 +214,29 @@ function ProfileCard() {
         </p>
       </div>
       <ChevronRightIcon size={18} className="shrink-0 text-text-tertiary" />
-    </div>
+    </button>
   );
 }
 
 export function Sidebar({
   variant,
   onNavigate,
+  onOpenProfile,
 }: {
   variant: SidebarVariant;
   /** Called after a destination is chosen (closes the phone drawer). */
   onNavigate?: () => void;
+  /** The phone menu's profile card was tapped. */
+  onOpenProfile?: () => void;
 }) {
   const { signOutError } = useSession();
 
   if (variant === "rail") {
     return (
-      <div className="relative flex h-full w-full flex-col items-center gap-1 overflow-hidden pt-[35px] pb-6">
-        <Glow />
+      <div className="relative flex h-full w-full flex-col items-center gap-1 pt-[35px] pb-6">
+        <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
+          <Glow />
+        </div>
         <Link
           href={ROUTES.dashboard}
           aria-label="Matr Studio home"
@@ -236,7 +285,7 @@ export function Sidebar({
           </Link>
         )}
         <div className={`relative flex flex-col ${drawer ? "gap-5 pt-[60px]" : "gap-5 pt-6"}`}>
-          {drawer ? <ProfileCard /> : null}
+          {drawer ? <ProfileCard onOpen={onOpenProfile} /> : null}
           <nav aria-label="Learn">
             <Group label="Learn">
               {LEARN_NAV.map((item) => (

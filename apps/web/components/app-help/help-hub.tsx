@@ -2,12 +2,13 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { HELP_EMAIL } from "../../lib/app/help-form";
 import { ROUTES } from "../../lib/routes";
-import { FileTextIcon, HelpCircleIcon } from "../app/icons";
 import { buttonClasses } from "../auth/button";
 import { PageHeader } from "./fields";
+import { BugIcon, MessageCircleIcon } from "./help-icons";
+import { OfflineNotice } from "./offline-notice";
 
 /**
- * Help centre hub (Figma Help centre 485:45143, desktop and mobile, light and dark): the header
+ * Help centre hub (Figma Help centre 485:45143, desktop, tablet and mobile, light and dark; offline 671:76742): the header
  * and two option cards, Contact support and Report a problem, each opening its own in-app page.
  *
  * Not built: the "Your requests" list under the cards (support replies, "Support replied",
@@ -59,6 +60,7 @@ function Option({
 export function HelpHub() {
   return (
     <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-8">
+      <OfflineNotice />
       <PageHeader
         title="Help centre"
         description="Get in touch with the team, or tell us when something isn’t working."
@@ -66,7 +68,7 @@ export function HelpHub() {
       <div className="grid gap-4 md:grid-cols-2 md:gap-5">
         <Option
           titleId="help-contact-title"
-          icon={<HelpCircleIcon size={24} />}
+          icon={<MessageCircleIcon size={24} />}
           title="Contact support"
           body="Questions about your account, paths, the library or your submissions. We reply by email within 2 working days."
           href={`${ROUTES.app.help}/contact`}
@@ -74,7 +76,7 @@ export function HelpHub() {
         />
         <Option
           titleId="help-report-title"
-          icon={<FileTextIcon size={24} />}
+          icon={<BugIcon size={24} />}
           title="Report a problem"
           body="Something broken, a dead link or content that looks wrong? Tell us and we’ll fix it."
           href={`${ROUTES.app.help}/report`}

@@ -163,7 +163,7 @@ export function TextAreaField({
         {max ? (
           <p
             aria-hidden="true"
-            className={`text-right ${MESSAGE} ${value.length > max ? "text-error-text" : "text-text-tertiary"}`}
+            className={`text-right ${MESSAGE} ${value.length > max || error ? "text-error-text" : "text-text-tertiary"}`}
           >
             {value.length} / {max}
           </p>
@@ -214,3 +214,10 @@ export function BackLink({ href, children }: { href: string; children: ReactNode
 /** The 720px card the forms sit in on desktop (Figma "Card"); borderless on phones. */
 export const FORM_CARD =
   "flex w-full max-w-[720px] flex-col gap-5 md:rounded-xl md:border md:border-border-soft md:bg-bg-base md:p-6";
+
+/**
+ * The card the Help forms sit in (Figma "Card": full width on tablet, capped on desktop,
+ * borderless on phones). Submit a resource keeps FORM_CARD above.
+ */
+export const HELP_CARD =
+  "flex w-full flex-col gap-5 md:rounded-xl md:border md:border-border-soft md:bg-bg-base md:p-6";

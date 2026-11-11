@@ -22,6 +22,14 @@ export const LIMITS = {
   submissionIp: { limit: 10, windowSec: 3600 },
   /** Bookmarking (PUT/DELETE saved resources): 120 per hour per learner. */
   savedUser: { limit: 120, windowSec: 3600 },
+  /** Settings: password re-entry (delete account, email change), counted per attempt. */
+  reauthUser: { limit: 5, windowSec: 900 },
+  emailChangeUser: { limit: 3, windowSec: 3600 },
+  emailChangeIp: { limit: 10, windowSec: 3600 },
+  /** Settings writes (preferences, set password, unlink Google) and the data export. */
+  prefsUser: { limit: 120, windowSec: 3600 },
+  accountUser: { limit: 20, windowSec: 3600 },
+  exportUser: { limit: 5, windowSec: 3600 },
   // Admin portal: stricter than learners (ADMIN-AUTH.md). Same thresholds for the password step per
   // email and per IP; the 2-step code and re-auth share one 5-failures-per-15-minutes budget per admin.
   adminSigninEmail: { limit: 5, windowSec: 900 },

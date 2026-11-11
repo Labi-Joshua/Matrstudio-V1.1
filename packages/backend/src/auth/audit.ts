@@ -22,6 +22,13 @@ export type AuditAction =
   | "pwned_check.unavailable"
   | "email.dropped"
   | "account.deleted"
+  // Settings: no personal data in meta (never an address or a password).
+  | "email.change_requested"
+  | "email.change_cancelled"
+  | "password.set"
+  | "account.google_unlinked"
+  | "prefs.updated"
+  | "account.exported"
   // Resource submissions: target is the submission id, meta holds ids and status only.
   | "submission.created"
   | "submission.edited"

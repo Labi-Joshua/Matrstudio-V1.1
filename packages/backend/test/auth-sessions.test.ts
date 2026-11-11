@@ -135,7 +135,7 @@ describe("session revocation", () => {
     const app = createApp();
     const { cookie: first } = await app.signUpConfirmed("ada@example.com");
     const second = (await app.signIn("ada@example.com")).cookie;
-    const req = await app.call("/api/auth/change-email", {
+    const req = await app.call("/api/me/account/email", {
       body: { newEmail: "ada.new@example.com" },
       cookie: first,
     });

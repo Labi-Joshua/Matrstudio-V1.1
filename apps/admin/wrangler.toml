@@ -1,0 +1,22 @@
+#:schema node_modules/wrangler/config-schema.json
+# The admin portal: a static export in out/ served by a Cloudflare Worker at admin.matrstudio.com.
+# Cloudflare Access sits in front of the whole hostname (lock 1, docs/SECURITY-AUTH.md section 6);
+# the Worker forwards /api/* to the API Worker, which verifies the Access JWT itself on every
+# /api/admin/** request, so the Worker never has to be trusted to have checked it.
+name = "matr-studio-admin"
+main = "worker/index.ts"
+compatibility_date = "2026-10-01"
+
+workers_dev = false # production traffic uses admin.matrstudio.com
+routes = [{ pattern = "admin.matrstudio.com", custom_domain = true }]
+
+[[services]]
+binding = "API"
+service = "matr-api"
+
+[assets]
+directory = "./out"
+binding = "ASSETS"
+html_handling = "auto-trailing-slash"
+not_found_handling = "404-page"
+run_worker_first = ["/*", "!/_next/*", "!/images/*"]

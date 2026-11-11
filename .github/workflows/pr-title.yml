@@ -31,6 +31,7 @@ jobs:
             waitlist
             landing
             web
+            admin
             deps
             user-app
             admin

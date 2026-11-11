@@ -1,0 +1,24 @@
+@import "tailwindcss";
+@import "../../../packages/ui/src/styles/theme.css";
+
+/* Tailwind v4 only scans the current project by default. Point it at the shared UI package. */
+@source "../../../packages/ui/src";
+
+@layer base {
+  body {
+    background-color: var(--color-bg-base);
+    color: var(--color-text);
+    font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* No visible scrollbars anywhere; every area still scrolls. */
+html,
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}

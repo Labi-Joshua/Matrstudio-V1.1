@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { displayName, levelBadge } from "../../lib/app/profile";
+import { displayName } from "../../lib/app/profile";
 import { usePopover } from "./hooks";
 import { ChevronDownIcon, ChevronRightIcon, LogOutIcon, SpinnerIcon } from "./icons";
 import { useSession } from "./session";
@@ -22,7 +22,6 @@ const DISABLED_ROWS = [
 /** Who is signed in, the account rows and the theme choice: the body of the popover and of the phone menu's Profile view. */
 export function ProfileContent() {
   const { me } = useSession();
-  const level = levelBadge(me.onboarding.level);
   return (
     <>
       <div className="flex items-start gap-3 p-4">
@@ -35,11 +34,6 @@ export function ProfileContent() {
             <p className="truncate text-[13px] text-text-tertiary leading-[18px] tracking-[-0.13px]">
               {me.email}
             </p>
-          ) : null}
-          {level ? (
-            <span className="mt-1.5 inline-block rounded-md bg-success-focus px-1.5 py-0.5 font-medium text-[12px] text-success-text leading-4 tracking-[-0.12px]">
-              {level}
-            </span>
           ) : null}
         </div>
       </div>

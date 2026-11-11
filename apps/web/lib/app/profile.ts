@@ -1,5 +1,4 @@
 import type { Me } from "../auth/api";
-import { isLevelId, LEVEL_OPTIONS } from "../pages/onboarding-content";
 
 /** Display helpers for the signed-in learner. Pure, so the shell and the dashboard share them. */
 
@@ -36,10 +35,4 @@ export function displayName(me: Pick<Me, "name" | "email">): string {
 export function joinWithAnd(items: readonly string[]): string {
   if (items.length <= 1) return items[0] ?? "";
   return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
-}
-
-/** The onboarding level as a label for the profile badge ("Beginner"), or null when unknown. */
-export function levelBadge(level: string | null | undefined): string | null {
-  if (!isLevelId(level)) return null;
-  return LEVEL_OPTIONS.find((option) => option.id === level)?.title ?? null;
 }

@@ -7,7 +7,7 @@ import { SAMPLE_PATHS } from "../pages/onboarding-content";
 import { ROUTES } from "../routes";
 import { answersFromMe, buildDashboard, libraryPicks, pickForYou } from "./dashboard";
 import { currentLabel, isNavActive, LEARN_NAV, normalisePath, SUPPORT_NAV } from "./nav";
-import { displayName, firstName, initials, joinWithAnd, levelBadge, welcomeTitle } from "./profile";
+import { displayName, firstName, initials, joinWithAnd, welcomeTitle } from "./profile";
 
 const onboarding = (over: Partial<Me["onboarding"]> = {}): Me["onboarding"] => ({
   goal: null,
@@ -76,12 +76,6 @@ describe("profile helpers", () => {
     expect(joinWithAnd(["UI/UX"])).toBe("UI/UX");
     expect(joinWithAnd(["UI/UX", "Brand"])).toBe("UI/UX and Brand");
     expect(joinWithAnd(["UI/UX", "Brand", "SEO"])).toBe("UI/UX, Brand and SEO");
-  });
-
-  it("only badges known levels", () => {
-    expect(levelBadge("beginner")).toBe("Beginner");
-    expect(levelBadge("wizard")).toBeNull();
-    expect(levelBadge(null)).toBeNull();
   });
 });
 

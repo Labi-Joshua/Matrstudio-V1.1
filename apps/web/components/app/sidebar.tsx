@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactNode, useId, useState } from "react";
 import { isNavActive, LEARN_NAV, type NavItem, SUPPORT_NAV } from "../../lib/app/nav";
-import { displayName, levelBadge } from "../../lib/app/profile";
+import { displayName } from "../../lib/app/profile";
 import { ROUTES } from "../../lib/routes";
 import {
   ArrowRightIcon,
@@ -196,7 +196,6 @@ function SignOutButton({ rail }: { rail: boolean }) {
 /** Profile card at the top of the phone menu; tapping it swaps the menu to the Profile view. */
 function ProfileCard({ onOpen }: { onOpen?: () => void }) {
   const { me } = useSession();
-  const level = levelBadge(me.onboarding.level);
   return (
     <button
       type="button"
@@ -210,7 +209,7 @@ function ProfileCard({ onOpen }: { onOpen?: () => void }) {
           {displayName(me)}
         </p>
         <p className="truncate text-[13px] text-text-secondary leading-[18px] tracking-[-0.13px]">
-          {level ? `${level} learner` : me.email}
+          {me.email}
         </p>
       </div>
       <ChevronRightIcon size={18} className="shrink-0 text-text-tertiary" />

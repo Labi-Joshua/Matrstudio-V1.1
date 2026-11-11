@@ -4,6 +4,7 @@ import { getAuth } from "./auth";
 import { bootstrapSuperAdmin } from "./auth/admin-invites";
 import { purgeStaleLimits } from "./auth/limits";
 import { deleteStaleUnconfirmed, isCleanupTick } from "./cron/cleanup";
+import { runAdminAccessTick } from "./cron/admin-access";
 import { checkUsage } from "./cron/usage-monitor";
 import type { AppEnv, Bindings } from "./env";
 import type { AuthEmailMessage } from "./lib/auth-email-templates";
@@ -90,6 +91,11 @@ export default {
     ctx.waitUntil(
       bootstrapSuperAdmin(env).catch((err) =>
         console.error("admin bootstrap failed", err instanceof Error ? err.name : "error"),
+      ),
+    );
+    ctx.waitUntil(
+      runAdminAccessTick(env).catch((err) =>
+        console.error("admin access tick failed", err instanceof Error ? err.name : "error"),
       ),
     );
     if (isCleanupTick(controller.scheduledTime)) {

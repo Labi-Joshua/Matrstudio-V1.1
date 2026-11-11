@@ -80,7 +80,12 @@ export class RoleError extends Error {
  */
 export async function createCustomRole(
   env: Bindings,
-  input: { name: string; permissions: Partial<Permissions>; createdBy?: string },
+  input: {
+    name: string;
+    description?: string;
+    permissions: Partial<Permissions>;
+    createdBy?: string;
+  },
 ): Promise<{ id: string }> {
   const id = crypto.randomUUID();
   const name = input.name.trim().slice(0, 60);
@@ -101,8 +106,8 @@ export async function createCustomRole(
   try {
     await env.DB.batch([
       env.DB.prepare(
-        "INSERT INTO admin_roles (id, name, is_system, created_by) VALUES (?, ?, 0, ?)",
-      ).bind(id, name, input.createdBy ?? null),
+        "INSERT INTO admin_roles (id, name, description, is_system, created_by) VALUES (?, ?, ?, 0, ?)",
+      ).bind(id, name, input.description?.trim().slice(0, 200) || null, input.createdBy ?? null),
       ...rows.map(([area, level]) =>
         env.DB.prepare(
           "INSERT INTO admin_role_permissions (role_id, area, level) VALUES (?, ?, ?)",
@@ -146,7 +151,14 @@ export async function revokeAdminSessions(
 /** Changes an admin's role and signs them out everywhere (a privilege change). */
 export async function changeAdminRole(
   env: Bindings,
-  input: { adminId: string; roleId: string; actor: string },
+  input: {
+    adminId: string;
+    roleId: string;
+    actor: string;
+    confirmed?: boolean;
+    ip?: string | null;
+    ua?: string | null;
+  },
 ): Promise<boolean> {
   const before = await env.DB.prepare("SELECT role_id FROM admin_users WHERE id = ?")
     .bind(input.adminId)
@@ -162,7 +174,13 @@ export async function changeAdminRole(
     actor: input.actor,
     action: "admin.role.assigned" satisfies AuditAction,
     target: input.adminId,
-    meta: { before: before.role_id, after: input.roleId },
+    ip: input.ip,
+    ua: input.ua,
+    meta: {
+      before: before.role_id,
+      after: input.roleId,
+      ...(input.confirmed ? { confirmed: "password_2step" } : {}),
+    },
   });
   await revokeAdminSessions(env, input.adminId, { actor: input.actor, reason: "role_changed" });
   return true;
@@ -171,7 +189,14 @@ export async function changeAdminRole(
 /** Suspends an admin and signs them out everywhere. */
 export async function suspendAdmin(
   env: Bindings,
-  input: { adminId: string; actor: string },
+  input: {
+    adminId: string;
+    actor: string;
+    reason?: string;
+    confirmed?: boolean;
+    ip?: string | null;
+    ua?: string | null;
+  },
 ): Promise<boolean> {
   const res = await env.DB.prepare(
     "UPDATE admin_users SET status = 'suspended', updated_at = unixepoch() WHERE id = ? AND status <> 'suspended'",
@@ -183,7 +208,14 @@ export async function suspendAdmin(
     actor: input.actor,
     action: "admin.suspended",
     target: input.adminId,
-    meta: { before: "active", after: "suspended" },
+    ip: input.ip,
+    ua: input.ua,
+    meta: {
+      before: "active",
+      after: "suspended",
+      ...(input.reason ? { reason: input.reason.slice(0, 200) } : {}),
+      ...(input.confirmed ? { confirmed: "password_2step" } : {}),
+    },
   });
   await revokeAdminSessions(env, input.adminId, { actor: input.actor, reason: "suspended" });
   return true;

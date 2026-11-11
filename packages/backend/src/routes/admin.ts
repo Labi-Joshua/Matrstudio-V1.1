@@ -1,6 +1,5 @@
 import {
   type AdminMeResponse,
-  type AdminTeamMember,
   adminChangePasswordSchema,
   adminInviteAcceptSchema,
   adminInviteEnrolSchema,
@@ -13,6 +12,7 @@ import { isPasswordCompromised } from "better-auth/plugins/haveibeenpwned";
 import { type Context, Hono } from "hono";
 import type { ZodType } from "zod";
 import { type AccessEnv, requireAccess } from "../auth/access";
+import { checkSecondFactor } from "../auth/admin-factor";
 import {
   type AdminCtx,
   requireAdmin,
@@ -62,7 +62,11 @@ import { formatSecretKey, generateTotpSecret, otpauthUri, verifyTotp } from "../
 import { clientIp, describeDevice, emailRef, sha256Hex } from "../auth/util";
 import type { Bindings } from "../env";
 import { enqueueAuthEmail } from "../queue/auth-email";
+import { adminAudit } from "./admin-audit";
+import { adminRoles } from "./admin-roles";
+import { adminShell, shellCounts } from "./admin-shell";
 import { adminSupport } from "./admin-support";
+import { adminTeam } from "./admin-team";
 
 /**
  * Admin auth API, everything under /api/admin. Lock 1 (Cloudflare Access JWT) runs on every route
@@ -72,6 +76,10 @@ import { adminSupport } from "./admin-support";
 export const admin = new Hono<AdminCtx>();
 admin.use("*", requireAccess);
 admin.route("/support", adminSupport);
+admin.route("/team", adminTeam);
+admin.route("/roles", adminRoles);
+admin.route("/audit", adminAudit);
+admin.route("/", adminShell);
 
 type C = Context<AdminCtx>;
 
@@ -150,10 +158,11 @@ type AdminRow = {
   totp_pending_enc: string | null;
   totp_enrolled_at: number | null;
   totp_last_step: number;
+  access_expires_at: number | null;
 };
 
 const ADMIN_COLS =
-  "id, email, name, password_hash, role_id, status, totp_secret_enc, totp_pending_enc, totp_enrolled_at, totp_last_step";
+  "id, email, name, password_hash, role_id, status, totp_secret_enc, totp_pending_enc, totp_enrolled_at, totp_last_step, access_expires_at";
 
 /** One "sign-in paused" email per window per admin (design: Sign-in paused). */
 async function notifyPaused(c: C, adminRow: Pick<AdminRow, "id" | "email">) {
@@ -175,6 +184,7 @@ async function buildMe(
 ): Promise<AdminMeResponse> {
   const permissions = await loadPermissions(env.DB, account.roleId);
   const now = Math.floor(Date.now() / 1000);
+  const counts = await shellCounts(env.DB, account.id, permissions);
   return {
     id: account.id,
     email: account.email,
@@ -187,39 +197,10 @@ async function buildMe(
     fresh: session.lastReauthAt !== null && now - session.lastReauthAt <= ADMIN_FRESH_AUTH_SECONDS,
     sessionExpiresAt: session.expiresAt,
     sessionAbsoluteExpiresAt: session.absoluteExpiresAt,
+    accessExpiresAt: account.accessExpiresAt,
+    badges: { review: counts.review },
+    unreadNotifications: counts.unread,
   };
-}
-
-type FactorResult = { ok: true; via: "totp" | "backup" } | { ok: false };
-
-/**
- * Checks an authenticator code or a backup code for an active admin. A TOTP step is accepted once:
- * the matched step is stored with a conditional UPDATE, so two parallel requests with the same code
- * cannot both win. A backup code is spent with a conditional UPDATE as well.
- */
-async function checkSecondFactor(env: Bindings, a: AdminRow, input: string): Promise<FactorResult> {
-  const code = input.trim();
-  if (/^\d{6}$/.test(code)) {
-    if (!a.totp_secret_enc) return { ok: false };
-    const secret = await decryptTotpSecret(env, a.id, a.totp_secret_enc);
-    if (!secret) return { ok: false };
-    const step = await verifyTotp(secret, code, Math.floor(Date.now() / 1000));
-    if (step === null || step <= a.totp_last_step) return { ok: false };
-    const res = await env.DB.prepare(
-      "UPDATE admin_users SET totp_last_step = ? WHERE id = ? AND totp_last_step < ?",
-    )
-      .bind(step, a.id, step)
-      .run();
-    return res.meta.changes ? { ok: true, via: "totp" } : { ok: false };
-  }
-  const normalised = normaliseBackupCode(code);
-  if (!normalised) return { ok: false };
-  const res = await env.DB.prepare(
-    "UPDATE admin_backup_codes SET used_at = unixepoch() WHERE admin_id = ? AND code_hash = ? AND used_at IS NULL",
-  )
-    .bind(a.id, await hashBackupCode(env, a.id, normalised))
-    .run();
-  return res.meta.changes ? { ok: true, via: "backup" } : { ok: false };
 }
 
 /** Refuses a 2-step attempt while the admin is paused (5 failures per 15 minutes) or in a progressive delay. */
@@ -308,7 +289,8 @@ admin.post("/sign-in", async (c) => {
     passwordOk &&
     accessOk &&
     row.status === "active" &&
-    row.totp_enrolled_at !== null;
+    row.totp_enrolled_at !== null &&
+    (row.access_expires_at === null || row.access_expires_at > Math.floor(Date.now() / 1000));
 
   if (!good || !row) {
     await audit(c, {
@@ -679,33 +661,7 @@ admin.post("/invite/enrol", async (c) => {
   return c.json({ admin: await buildMe(c.env, loaded.admin, loaded.session), backupCodes: codes });
 });
 
-// --- team (examples of the guarded-write pattern; the Admin team screen builds on these) ------
-const toMember = (r: {
-  id: string;
-  email: string;
-  name: string;
-  role_id: string;
-  role_name: string;
-  status: AdminTeamMember["status"];
-  last_signin_at: number | null;
-}): AdminTeamMember => ({
-  id: r.id,
-  email: r.email,
-  name: r.name,
-  roleId: r.role_id,
-  roleName: r.role_name,
-  status: r.status,
-  lastSignInAt: r.last_signin_at,
-});
-
-admin.get("/team", requireAdmin("admin_team", "view"), async (c) => {
-  const rows = await c.env.DB.prepare(
-    `SELECT u.id, u.email, u.name, u.role_id, r.name AS role_name, u.status, u.last_signin_at
-       FROM admin_users u JOIN admin_roles r ON r.id = u.role_id ORDER BY u.created_at`,
-  ).all<Parameters<typeof toMember>[0]>();
-  return c.json({ members: rows.results.map(toMember) });
-});
-
+// --- team: invite and remove live here; everything else is in routes/admin-team.ts ---------------
 admin.post("/team/invite", requireAdmin("admin_team", "manage"), requireFreshAuth(), async (c) => {
   const body = await parse(c, adminTeamInviteSchema);
   if (!body) return invalidRequest(c);
@@ -760,6 +716,12 @@ admin.delete("/team/:id", requireAdmin("admin_team", "manage"), requireFreshAuth
   }
   // Sessions first (immediate revocation), then the account; invites, backup codes cascade.
   await revokeAdminSessions(c.env, id, { actor: actor.id, reason: "removed" });
+  // Invites they sent stop working (design: "invites they sent are cancelled").
+  await c.env.DB.prepare(
+    "UPDATE admin_invites SET cancelled_at = unixepoch() WHERE created_by = ? AND used_at IS NULL AND cancelled_at IS NULL",
+  )
+    .bind(id)
+    .run();
   await audit(c, {
     actor: actor.id,
     action: "admin.removed",

@@ -53,6 +53,11 @@ export const LIMITS = {
   adminInviteIp: { limit: 30, windowSec: 900 },
   /** One "sign-in paused" email per window per admin. */
   adminPausedNotice: { limit: 1, windowSec: 900 },
+  /** Global search in the portal shell, per admin. */
+  adminSearch: { limit: 120, windowSec: 60 },
+  /** Resending invites and exporting the audit log, per admin. */
+  adminResend: { limit: 10, windowSec: 3600 },
+  adminAuditExport: { limit: 10, windowSec: 3600 },
 } as const satisfies Record<string, Limit>;
 
 /** Progressive delay for wrong 2-step codes: none for the first 2, then 5 s, 10 s, 20 s (cap 60 s). */

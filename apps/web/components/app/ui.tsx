@@ -4,22 +4,41 @@ import { useEffect, useState } from "react";
 import { initials } from "../../lib/app/profile";
 import type { Me } from "../../lib/auth/api";
 import { THEME_STORAGE_KEY } from "../../lib/theme";
+import { useAvatarUrl } from "./use-avatar";
 
 /** Small building blocks shared by the app shell and the dashboard. */
 
 export const FOCUS =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-border";
 
-/** The orange-tinted initials circle used in place of a profile photo (there is no photo upload yet). */
+/**
+ * The learner's photo (read once for the whole shell, components/app/use-avatar.ts) in a circle,
+ * or the orange-tinted initials when there is none or the image cannot load.
+ */
 export function Avatar({ me, size }: { me: Pick<Me, "name" | "email">; size: 36 | 40 | 48 }) {
   const box =
     size === 36 ? "size-9 text-[13px]" : size === 40 ? "size-10 text-sm" : "size-12 text-base";
+  const url = useAvatarUrl(me.email);
+  // Remember which URL failed, so a new photo gets a fresh try.
+  const [failed, setFailed] = useState<string | null>(null);
+  const showImage = url !== null && failed !== url;
   return (
     <span
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center rounded-full bg-primary-focus font-semibold text-primary-text tracking-[-0.14px] ${box}`}
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-focus font-semibold text-primary-text tracking-[-0.14px] ${box}`}
     >
-      {initials(me)}
+      {showImage ? (
+        <img
+          src={url}
+          alt=""
+          width={size}
+          height={size}
+          onError={() => setFailed(url)}
+          className="size-full object-cover"
+        />
+      ) : (
+        initials(me)
+      )}
     </span>
   );
 }

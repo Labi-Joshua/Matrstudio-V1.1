@@ -34,6 +34,13 @@ const ClockIcon = (p: IconProps) => (
   </Glyph>
 );
 
+const UserIcon = (p: IconProps) => (
+  <Glyph {...p}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21a8 8 0 0 1 16 0" />
+  </Glyph>
+);
+
 const TrashIcon = (p: IconProps) => (
   <Glyph {...p}>
     <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v5M14 11v5" />
@@ -71,6 +78,8 @@ function RowIcon({ row }: { row: CommandRow }) {
     case "saved":
     case "help":
       return <NavGlyph icon={row.icon} size={18} />;
+    case "profile":
+      return <UserIcon size={18} />;
     case "submit":
       return <UploadIcon size={18} />;
     case "theme":

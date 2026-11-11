@@ -20,9 +20,8 @@ import { FOCUS } from "./ui";
 
 /**
  * The progress layouts of Home (Figma "Learning in progress", "Welcome back", "Path finished").
- * Pure view components over `HomeProgress`: nothing reads an API, so production never renders
- * them (lib/app/dashboard.ts `pickHomeVariant` is "new-account" without progress data); they are
- * covered by tests with HOME_FIXTURES.
+ * Pure view components over `HomeProgress` (built from the learner's path progress in
+ * lib/app/home-data.ts); covered by tests with HOME_FIXTURES.
  */
 
 const BUTTON_PRIMARY = `btn-lift inline-flex h-10 items-center gap-1.5 rounded-lg bg-primary px-3.5 font-medium text-[14px] text-static-white leading-5 tracking-[-0.14px] ${FOCUS}`;
@@ -47,7 +46,7 @@ function ProgressBar({ done, total }: { done: number; total: number }) {
 /** "Continue learning" card: cover, next lesson, progress, and the two actions. */
 export function ContinueCard({ path }: { path: ProgressPath }) {
   const percent = progressPercent(path.lessonsDone, path.lessons);
-  const href = ROUTES.app.pathTopic(path.topicSlug);
+  const href = path.href ?? ROUTES.app.pathTopic(path.topicSlug);
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-border-soft bg-bg-base p-3 md:flex-row md:items-center md:gap-6">
       <div className="overflow-hidden rounded-xl md:w-[320px] md:shrink-0">
@@ -63,8 +62,8 @@ export function ContinueCard({ path }: { path: ProgressPath }) {
         {path.next ? (
           <p className="flex items-center gap-1.5 text-[14px] text-text-secondary leading-5 tracking-[-0.14px]">
             <PlayCircleIcon size={16} className="shrink-0" />
-            Next: Lesson {path.next.number} · {path.next.title} · {path.next.format} ·{" "}
-            {path.next.minutes} min
+            Next: Lesson {path.next.number} · {path.next.title} · {path.next.format}
+            {path.next.minutes === null ? "" : ` · ${path.next.minutes} min`}
           </p>
         ) : null}
         <ProgressBar done={path.lessonsDone} total={path.lessons} />
@@ -73,7 +72,7 @@ export function ContinueCard({ path }: { path: ProgressPath }) {
           {lastActiveLabel(path.lastActiveDays)}
         </p>
         <div className="flex flex-wrap gap-2 pt-1">
-          <Link href={href} className={BUTTON_PRIMARY}>
+          <Link href={path.next?.href ?? href} className={BUTTON_PRIMARY}>
             {path.next ? `Continue lesson ${path.next.number}` : "Open path"}
             <ArrowRightIcon size={16} />
           </Link>
@@ -119,7 +118,7 @@ function FinishedCard({ finished }: { finished: NonNullable<HomeProgress["finish
               Share achievement
             </button>
           ) : null}
-          <Link href={ROUTES.app.pathTopic(path.topicSlug)} className={BUTTON_QUIET}>
+          <Link href={path.href ?? ROUTES.app.pathTopic(path.topicSlug)} className={BUTTON_QUIET}>
             View path
           </Link>
         </div>
@@ -249,6 +248,11 @@ export function ProgressHome({
             tip={variant === "welcome-back" ? SECTION_TIPS.pickUp : SECTION_TIPS.continueLearning}
           >
             <ContinueCard path={lead} />
+            {variant === "welcome-back" && lead.lastDone ? (
+              <p className="text-[16px] text-text-secondary leading-6 tracking-[-0.16px]">
+                Last time you finished Lesson {lead.lastDone.number} · {lead.lastDone.title}
+              </p>
+            ) : null}
           </Section>
           {variant === "welcome-back" && progress.away.length > 0 ? (
             <Section id="away-heading" title="While you were away" tip={SECTION_TIPS.whileAway}>

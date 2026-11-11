@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { PROFILE_CHANGE_EVENT } from "../../lib/app/avatar-store";
 import { getOwnProfile, type OwnProfile } from "../../lib/auth/profile-api";
 
 export type OwnProfileState =
@@ -25,6 +26,10 @@ export function useOwnProfile() {
   }, [reloads]);
 
   const reload = useCallback(() => setReloads((n) => n + 1), []);
-  const set = useCallback((profile: OwnProfile) => setState({ status: "ready", profile }), []);
+  const set = useCallback((profile: OwnProfile) => {
+    setState({ status: "ready", profile });
+    // The shell avatar (top bar, menu) re-reads the photo.
+    window.dispatchEvent(new Event(PROFILE_CHANGE_EVENT));
+  }, []);
   return { state, reload, set };
 }

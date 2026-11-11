@@ -1,11 +1,19 @@
 import { ROUTES } from "../routes";
 
 /**
- * The pages and actions the command palette can jump to. Data only: adding a page (Profile,
- * Settings, Your requests) is one more entry here, the palette, its search and its icons follow.
- * Settings has no destination yet (see nav.ts), so it is not listed.
+ * The pages and actions the command palette can jump to. Data only: adding a page is one more
+ * entry here, the palette and its search follow. Settings has no route constant yet (lib/routes.ts),
+ * so it is not listed; add it with the settings pages.
  */
-export type CommandIcon = "home" | "paths" | "library" | "saved" | "help" | "submit" | "theme";
+export type CommandIcon =
+  | "home"
+  | "paths"
+  | "library"
+  | "saved"
+  | "help"
+  | "profile"
+  | "submit"
+  | "theme";
 
 export type CommandAction =
   | { kind: "navigate"; href: string }
@@ -62,6 +70,22 @@ export const COMMAND_PAGES: readonly CommandPage[] = [
     title: "Help centre",
     icon: "help",
     keywords: ["support", "contact", "faq", "question"],
+    action: { kind: "navigate", href: ROUTES.app.help },
+    jump: true,
+  },
+  {
+    id: "profile",
+    title: "Profile",
+    icon: "profile",
+    keywords: ["account", "me", "public profile", "photo", "edit profile"],
+    action: { kind: "navigate", href: ROUTES.profile },
+    jump: true,
+  },
+  {
+    id: "requests",
+    title: "Your requests",
+    icon: "help",
+    keywords: ["help requests", "tickets", "support requests", "conversations"],
     action: { kind: "navigate", href: ROUTES.app.help },
     jump: true,
   },

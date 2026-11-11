@@ -88,6 +88,8 @@ describe("palette content", () => {
       "Library",
       "Saved",
       "Help centre",
+      "Profile",
+      "Your requests",
       "Submit a resource",
     ]);
     const some = emptyGroups(["figma", "seo"]);

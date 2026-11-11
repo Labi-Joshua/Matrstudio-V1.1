@@ -68,7 +68,11 @@ export function libraryPicks(
   return [...resources.filter(isMine), ...resources.filter((r) => !isMine(r))].slice(0, limit);
 }
 
-export type DashboardPath = OnboardingPath & { description: string | null };
+export type DashboardPath = OnboardingPath & {
+  description: string | null;
+  /** Where the card opens; the topic page when absent. */
+  href?: string;
+};
 
 /** Card description: the catalogue's, else the design sample's for the same title, else none. */
 function describe(catalogue: Catalogue, path: OnboardingPath): DashboardPath {
@@ -96,9 +100,11 @@ export function buildDashboard(
   catalogue: Catalogue,
   onboarding: Me["onboarding"],
   useSample: boolean = USE_SAMPLE_WHEN_EMPTY,
+  /** Paths the learner already has (started or finished): never recommended again. */
+  exclude: ReadonlySet<string> = new Set(),
 ): DashboardView {
   const answers = answersFromMe(onboarding);
-  const all = buildOnboardingPaths(catalogue, useSample);
+  const all = buildOnboardingPaths(catalogue, useSample).filter((p) => !exclude.has(p.slug));
   const topicNames = answers.topics.flatMap(
     (slug) => catalogue.topics.find((t) => t.slug === slug)?.name ?? [],
   );
@@ -115,9 +121,9 @@ export function buildDashboard(
 }
 
 /**
- * The four Home layouts of the design. There is no lesson-progress API yet, so production only
- * ever resolves "new-account" (see `pickHomeVariant`); the other three are built from the typed
- * `HomeProgress` below, rendered by pure view components and exercised with `HOME_FIXTURES`.
+ * The four Home layouts of the design. The learner's path progress picks one (`pickHomeVariant`,
+ * data built in lib/app/home-data.ts); the progress layouts are pure view components over the
+ * typed `HomeProgress` below, also exercised with `HOME_FIXTURES`.
  */
 export type HomeVariant = "new-account" | "in-progress" | "welcome-back" | "finished";
 
@@ -128,8 +134,12 @@ export type ProgressPath = DashboardPath & {
     number: number;
     title: string;
     format: "Video" | "Article" | "Tool";
-    minutes: number;
+    minutes: number | null;
+    /** The lesson page; the path page when absent. */
+    href?: string;
   } | null;
+  /** The lesson done most recently, for "Last time you finished ...". */
+  lastDone?: { number: number; title: string } | null;
   /** Whole days since the learner last opened the path. */
   lastActiveDays: number;
 };
@@ -148,7 +158,7 @@ export type HomeProgress = {
 /** Days away after which "Welcome back" replaces the plain greeting. */
 export const WELCOME_BACK_AFTER_DAYS = 7;
 
-/** Picks the layout; with no progress data (every learner today) it is the new-account one. */
+/** Picks the layout; with nothing started (or no progress loaded) it is the new-account one. */
 export function pickHomeVariant(progress: HomeProgress | null): HomeVariant {
   if (!progress) return "new-account";
   if (progress.finished && progress.finished.daysAgo <= 1) return "finished";
